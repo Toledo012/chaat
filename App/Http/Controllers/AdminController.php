@@ -1,0 +1,211 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Usuario;
+use App\Models\Cuenta;
+use App\Models\Servicio;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+
+class AdminController extends Controller
+{
+    public function dashboard(Request $request)
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        if (!auth()->user()->isAdmin()) {
+            return redirect()->route('user.dashboard');
+        }
+
+        $stats = [
+            'total_usuarios' => DB::table('Usuarios')->count(),
+            'total_servicios' => DB::table('Servicios')->count(),
+            'total_formatos' => 0,
+            'cuentas_activas' => DB::table('Cuentas')->where('estado', 'activo')->count(),
+        ];
+
+        return view('admin.dashboard', compact('stats'));
+    }
+
+    //mampo sanchez
+
+    public function usersIndex(Request $request)
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $usuarios = Usuario::with('cuenta')->get();
+
+        return view('admin.users.index', compact('usuarios'));
+    }
+
+    public function updateUserRole(Request $request, $id)
+    {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
+            return redirect()->route('user.dashboard');
+        }
+
+        $usuario = Usuario::find($id);
+        
+        if ($usuario && $usuario->cuenta) {
+            $usuario->cuenta->update([
+                'id_rol' => $request->rol
+            ]);
+        }
+
+        return redirect()->route('admin.users.index')->with('success', 'Rol actualizado correctamente');
+    }
+
+ public function updateUserPermissions(Request $request, $id)
+{
+    if (!auth()->check() || !auth()->user()->isAdmin()) {
+        return redirect()->route('user.dashboard');
+    }
+
+    $usuario = Usuario::find($id);
+    
+    if ($usuario && $usuario->cuenta) {
+        $permisos = $request->input('permisos', []);
+        
+        // Actualizar permisos del rol
+        $usuario->cuenta->actualizarPermisos($permisos);
+
+        // Si el usuario modificado es el mismo que está logueado, actualizar su sesión
+        if (auth()->user()->id_cuenta == $usuario->cuenta->id_cuenta) {
+            $nuevosPermisos = $usuario->cuenta->permisosArray();
+            session(['permisos_usuario' => $nuevosPermisos]);
+        }
+        
+        return redirect()->route('admin.users.index')->with('success', 'Permisos actualizados correctamente');
+    }
+
+    return redirect()->route('admin.users.index')->with('error', 'Error al actualizar permisos');
+}
+
+    public function toggleUserStatus(Request $request, $id)
+    {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
+            return redirect()->route('user.dashboard');
+        }
+
+        $usuario = Usuario::find($id);
+        
+        if ($usuario && $usuario->cuenta) {
+            $nuevoEstado = $usuario->cuenta->estado == 'activo' ? 'inactivo' : 'activo';
+            $usuario->cuenta->update([
+                'estado' => $nuevoEstado
+            ]);
+        }
+
+        return redirect()->route('admin.users.index')->with('success', 'Estado de cuenta actualizado');
+    }
+
+    public function updateUser(Request $request, $id)
+    {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
+            return redirect()->route('user.dashboard');
+        }
+
+        $usuario = Usuario::find($id);
+        
+        if ($usuario) {
+            $usuario->update([
+                'nombre' => $request->nombre,
+                'departamento' => $request->departamento,
+                'puesto' => $request->puesto,
+                'email' => $request->email,
+            ]);
+
+            if ($usuario->cuenta && $request->username) {
+                $usuario->cuenta->update([
+                    'username' => $request->username
+                ]);
+            }
+        }
+
+        return redirect()->route('admin.users.index')->with('success', 'Usuario actualizado correctamente');
+    }
+
+    public function createUserAccount(Request $request, $id)
+    {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
+            return redirect()->route('user.dashboard');
+        }
+
+        $usuario = Usuario::find($id);
+        
+        if ($usuario) {
+            Cuenta::create([
+                'username' => strtolower(str_replace(' ', '.', $usuario->nombre)),
+                'password' => Hash::make('password123'),
+                'estado' => 'activo',
+                'id_usuario' => $usuario->id_usuario,
+                'id_rol' => 2
+            ]);
+        }
+
+        return redirect()->route('admin.users.index')->with('success', 'Cuenta creada. Password: password123');
+    }
+
+    public function storeUser(Request $request)
+    {
+    
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
+            return redirect()->route('user.dashboard');
+        }
+        $request->validate([
+            'nombre' => 'required|string|max:30',
+            'username' => 'required|string|unique:Cuentas,username',
+            'password' => 'required|string|min:6',
+            'rol' => 'required|in:1,2'
+        ]);
+
+        $usuario = Usuario::create([
+            'nombre' => $request->nombre,
+            'departamento' => $request->departamento,
+            'puesto' => $request->puesto,
+            'extension' => $request->extension,
+            'email' => $request->email
+        ]);
+
+        Cuenta::create([
+            'username' => $request->username,
+            'password' => Hash::make($request->password),
+            'estado' => 'activo',
+            'id_usuario' => $usuario->id_usuario,
+            'id_rol' => $request->rol
+        ]);
+
+        return redirect()->route('admin.users.index')->with('success', 'Usuario y cuenta creados exitosamente');
+    }
+
+    public function destroyUser(Request $request, $id)
+    {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
+            return redirect()->route('user.dashboard');
+        }
+    
+        $usuario = Usuario::find($id);
+        
+        if ($usuario) {
+            if (auth()->user()->id_usuario == $usuario->id_usuario) {
+                return redirect()->route('admin.users.index')->with('error', 'No puedes eliminar tu propia cuenta');
+            }
+
+            if ($usuario->cuenta) {
+                $usuario->cuenta->delete();
+            }
+            
+            $usuario->delete();
+            
+            return redirect()->route('admin.users.index')->with('success', 'Usuario eliminado exitosamente');
+        }
+
+        return redirect()->route('admin.users.index')->with('error', 'Usuario no encontrado');
+    }
+}
