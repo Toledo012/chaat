@@ -107,10 +107,7 @@ class AdminController extends Controller
 
     public function updateUser(Request $request, $id)
     {
-        if (!auth()->check() || !auth()->user()->isAdmin()) {
-            return redirect()->route('user.dashboard');
-        }
-
+    
         $usuario = Usuario::find($id);
         
         if ($usuario) {
@@ -154,10 +151,6 @@ class AdminController extends Controller
 
     public function storeUser(Request $request)
     {
-    
-        if (!auth()->check() || !auth()->user()->isAdmin()) {
-            return redirect()->route('user.dashboard');
-        }
         $request->validate([
             'nombre' => 'required|string|max:30',
             'username' => 'required|string|unique:Cuentas,username',
