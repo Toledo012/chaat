@@ -37,6 +37,10 @@ class AdminController extends Controller
             return redirect()->route('login');
         }
 
+        if (!auth()->user()->isAdmin()) {
+            return redirect()->route('user.dashboard');
+        }
+
         $usuarios = Usuario::with('cuenta')->get();
 
         return view('admin.users.index', compact('usuarios'));
@@ -59,31 +63,36 @@ class AdminController extends Controller
         return redirect()->route('admin.users.index')->with('success', 'Rol actualizado correctamente');
     }
 
- public function updateUserPermissions(Request $request, $id)
-{
-    if (!auth()->check() || !auth()->user()->isAdmin()) {
-        return redirect()->route('user.dashboard');
-    }
-
-    $usuario = Usuario::find($id);
-    
-    if ($usuario && $usuario->cuenta) {
-        $permisos = $request->input('permisos', []);
-        
-        // Actualizar permisos del rol
-        $usuario->cuenta->actualizarPermisos($permisos);
-
-        // Si el usuario modificado es el mismo que está logueado, actualizar su sesión
-        if (auth()->user()->id_cuenta == $usuario->cuenta->id_cuenta) {
-            $nuevosPermisos = $usuario->cuenta->permisosArray();
-            session(['permisos_usuario' => $nuevosPermisos]);
+    public function updateUserPermissions(Request $request, $id)
+    {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
+            return redirect()->route('user.dashboard');
         }
-        
-        return redirect()->route('admin.users.index')->with('success', 'Permisos actualizados correctamente');
-    }
 
-    return redirect()->route('admin.users.index')->with('error', 'Error al actualizar permisos');
-}
+        $request->validate([
+            'permisos' => 'array',
+            'permisos.*' => 'integer',
+        ]);
+
+        $usuario = Usuario::find($id);
+
+        if ($usuario && $usuario->cuenta) {
+            $permisos = $request->input('permisos', []);
+
+            // Actualizar permisos del rol
+            $usuario->cuenta->actualizarPermisos($permisos);
+
+            // Si el usuario modificado es el mismo que está logueado, actualizar su sesión
+            if (auth()->user()->id_cuenta == $usuario->cuenta->id_cuenta) {
+                $nuevosPermisos = $usuario->cuenta->permisosArray();
+                session(['permisos_usuario' => $nuevosPermisos]);
+            }
+
+            return redirect()->route('admin.users.index')->with('success', 'Permisos actualizados correctamente');
+        }
+
+        return redirect()->route('admin.users.index')->with('error', 'Error al actualizar permisos');
+    }
 
     public function toggleUserStatus(Request $request, $id)
     {
