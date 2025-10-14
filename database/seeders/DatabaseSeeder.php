@@ -13,33 +13,43 @@ class DatabaseSeeder extends Seeder
     {
         // Limpiar tablas (opcional - solo si quieres datos frescos)
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        DB::table('Rol_Permiso')->truncate();
-        DB::table('Permisos')->truncate();
-        DB::table('Cuentas')->truncate();
-        DB::table('Usuarios')->truncate();
-        DB::table('Roles')->truncate();
+        DB::table('rol_permiso')->truncate();
+        DB::table('permisos')->truncate();
+        DB::table('cuentas')->truncate();
+        DB::table('usuarios')->truncate();
+        DB::table('roles')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         // 1. Insertar Roles
-        DB::table('Roles')->insert([
+        DB::table('roles')->insert([
             ['id_rol' => 1, 'nombre' => 'Administrador'],
             ['id_rol' => 2, 'nombre' => 'Usuario'],
         ]);
 
         // 2. Insertar Permisos (opcional)
-        DB::table('Permisos')->insert([
+        DB::table('permisos')->insert([
             ['id_permiso' => 1, 'nombre' => 'gestion_usuarios'],
             ['id_permiso' => 2, 'nombre' => 'gestion_formatos'],
+            ['id_permiso' => 3, 'nombre' => 'crear_usuarios'],
+            ['id_permiso' => 4, 'nombre' => 'editar_usuarios'],
+            ['id_permiso' => 5, 'nombre' => 'eliminar_usuarios'],
+            ['id_permiso' => 6, 'nombre' => 'cambiar_roles'],
+            ['id_permiso' => 7, 'nombre' => 'activar_cuentas'],
         ]);
 
         // 3. Insertar Rol-Permiso
-        DB::table('Rol_Permiso')->insert([
+        DB::table('rol_permiso')->insert([
             ['id_rol' => 1, 'id_permiso' => 1],
             ['id_rol' => 1, 'id_permiso' => 2],
+            ['id_rol' => 1, 'id_permiso' => 3],
+            ['id_rol' => 1, 'id_permiso' => 4],
+            ['id_rol' => 1, 'id_permiso' => 5],
+            ['id_rol' => 1, 'id_permiso' => 6],
+            ['id_rol' => 1, 'id_permiso' => 7],
         ]);
 
         // 4. Insertar Usuarios
-        DB::table('Usuarios')->insert([
+        DB::table('usuarios')->insert([
             [
                 'id_usuario' => 1,
                 'nombre' => 'Admin Principal',
@@ -59,7 +69,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // 5. Insertar Cuentas (CONTRASEÑA: "password")
-        DB::table('Cuentas')->insert([
+        DB::table('cuentas')->insert([
             [
                 'username' => 'admin',
                 'password' => Hash::make('password'),

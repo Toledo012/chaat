@@ -8,7 +8,6 @@ use App\Models\Cuenta;
 use App\Models\Servicio;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -23,10 +22,10 @@ class AdminController extends Controller
         }
 
         $stats = [
-            'total_usuarios' => DB::table('usuarios')->count(),
-            'total_servicios' => DB::table('servicios')->count(),
+            'total_usuarios' => DB::table('Usuarios')->count(),
+            'total_servicios' => DB::table('Servicios')->count(),
             'total_formatos' => 0,
-            'cuentas_activas' => DB::table('cuentas')->where('estado', 'activo')->count(),
+            'cuentas_activas' => DB::table('Cuentas')->where('estado', 'activo')->count(),
         ];
 
         return view('admin.dashboard', compact('stats'));
@@ -37,17 +36,7 @@ class AdminController extends Controller
         if (!auth()->check()) {
             return redirect()->route('login');
         }
-        $user = auth()->user();
-        $puedeVerGestion = $user->isAdmin() ||
-            $user->puedeGestionarUsuarios() ||
-            $user->puedeCrearUsuarios() ||
-            $user->puedeEditarUsuarios() ||
-            $user->puedeEliminarUsuarios() ||
-            $user->puedeCambiarRoles() ||
-            $user->puedeActivarCuentas();
-        if (!$puedeVerGestion) {
-            return redirect()->route('user.dashboard');
-        }
+
         $usuarios = Usuario::with('cuenta')->get();
 
         return view('admin.users.index', compact('usuarios'));
@@ -55,7 +44,7 @@ class AdminController extends Controller
 
     public function updateUserRole(Request $request, $id)
     {
-        if (!auth()->check() || (!auth()->user()->isAdmin() && !auth()->user()->puedeCambiarRoles())) {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return redirect()->route('user.dashboard');
         }
 
@@ -72,7 +61,7 @@ class AdminController extends Controller
 
  public function updateUserPermissions(Request $request, $id)
 {
-    if (!auth()->check() || (!auth()->user()->isAdmin() && !auth()->user()->puedeCambiarRoles())) {
+    if (!auth()->check() || !auth()->user()->isAdmin()) {
         return redirect()->route('user.dashboard');
     }
 
@@ -98,7 +87,7 @@ class AdminController extends Controller
 
     public function toggleUserStatus(Request $request, $id)
     {
-        if (!auth()->check() || (!auth()->user()->isAdmin() && !auth()->user()->puedeActivarCuentas())) {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return redirect()->route('user.dashboard');
         }
 
@@ -116,26 +105,13 @@ class AdminController extends Controller
 
     public function updateUser(Request $request, $id)
     {
-        if (!auth()->check() || (!auth()->user()->isAdmin() && !auth()->user()->puedeEditarUsuarios())) {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return redirect()->route('user.dashboard');
         }
 
         $usuario = Usuario::find($id);
-
+        
         if ($usuario) {
-            $usernameRule = 'nullable|string|max:30|unique:cuentas,username';
-            if ($usuario->cuenta) {
-                $usernameRule = 'nullable|string|max:30|unique:cuentas,username,' . $usuario->cuenta->id_cuenta . ',id_cuenta';
-            }
-
-            $request->validate([
-                'nombre' => 'required|string|max:30',
-                'departamento' => 'nullable|string|max:50',
-                'puesto' => 'nullable|string|max:50',
-                'email' => 'nullable|email|max:50|unique:usuarios,email,' . $id . ',id_usuario',
-                'username' => $usernameRule,
-            ]);
-
             $usuario->update([
                 'nombre' => $request->nombre,
                 'departamento' => $request->departamento,
@@ -148,46 +124,41 @@ class AdminController extends Controller
                     'username' => $request->username
                 ]);
             }
-
-            return redirect()->route('admin.users.index')->with('success', 'Usuario actualizado correctamente');
         }
 
-        return redirect()->route('admin.users.index')->with('error', 'Usuario no encontrado');
+        return redirect()->route('admin.users.index')->with('success', 'Usuario actualizado correctamente');
     }
 
     public function createUserAccount(Request $request, $id)
     {
-        if (!auth()->check() || (!auth()->user()->isAdmin() && !auth()->user()->puedeCrearUsuarios())) {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return redirect()->route('user.dashboard');
         }
 
         $usuario = Usuario::find($id);
         
         if ($usuario) {
-            $tempPassword = Str::random(16);
             Cuenta::create([
                 'username' => strtolower(str_replace(' ', '.', $usuario->nombre)),
-                'password' => Hash::make($tempPassword),
+                'password' => Hash::make('password123'),
                 'estado' => 'activo',
                 'id_usuario' => $usuario->id_usuario,
                 'id_rol' => 2
             ]);
-
-            return redirect()->route('admin.users.index')->with('success', 'Cuenta creada. Password temporal: ' . $tempPassword);
         }
 
-        return redirect()->route('admin.users.index')->with('error', 'No se pudo crear la cuenta');
+        return redirect()->route('admin.users.index')->with('success', 'Cuenta creada. Password: password123');
     }
 
     public function storeUser(Request $request)
     {
-        if (!auth()->check() || (!auth()->user()->isAdmin() && !auth()->user()->puedeCrearUsuarios())) {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return redirect()->route('user.dashboard');
         }
 
         $request->validate([
             'nombre' => 'required|string|max:30',
-            'username' => 'required|string|unique:cuentas,username',
+            'username' => 'required|string|unique:Cuentas,username',
             'password' => 'required|string|min:6',
             'rol' => 'required|in:1,2'
         ]);
@@ -213,7 +184,7 @@ class AdminController extends Controller
 
     public function destroyUser(Request $request, $id)
     {
-        if (!auth()->check() || (!auth()->user()->isAdmin() && !auth()->user()->puedeEliminarUsuarios())) {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
             return redirect()->route('user.dashboard');
         }
 
@@ -234,14 +205,5 @@ class AdminController extends Controller
         }
 
         return redirect()->route('admin.users.index')->with('error', 'Usuario no encontrado');
-    }
-
-    public function redirectUserPermissions(Request $request, $id)
-    {
-        if (!auth()->check() || (!auth()->user()->isAdmin() && !auth()->user()->puedeCambiarRoles())) {
-            return redirect()->route('user.dashboard');
-        }
-
-        return redirect()->route('admin.users.index')->with('open_permissions_id', (int) $id);
     }
 }

@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class Cuenta extends Authenticatable
 {
-    protected $table = 'Cuentas';
+    protected $table = 'cuentas';
     protected $primaryKey = 'id_cuenta';
     
     protected $fillable = [
@@ -38,12 +38,12 @@ class Cuenta extends Authenticatable
 
     public function isAdmin()
     {
-        return $this->id_rol === 1;
+        return (int) $this->id_rol === 1;
     }
 
     public function isUser()
     {
-        return $this->id_rol === 2;
+        return (int) $this->id_rol === 2;
     }
 
     public function getAuthPassword()
@@ -61,12 +61,37 @@ class Cuenta extends Authenticatable
             return true;
         }
 
-        // Verificar permiso en la tabla Rol_Permiso
-        return DB::table('Rol_Permiso')
-            ->join('Permisos', 'Rol_Permiso.id_permiso', '=', 'Permisos.id_permiso')
-            ->where('Rol_Permiso.id_rol', $this->id_rol)
-            ->where('Permisos.nombre', $permiso)
+        // Verificar permiso en la tabla rol_permiso
+        $hasByName = DB::table('rol_permiso')
+            ->join('permisos', 'rol_permiso.id_permiso', '=', 'permisos.id_permiso')
+            ->where('rol_permiso.id_rol', $this->id_rol)
+            ->where('permisos.nombre', $permiso)
             ->exists();
+
+        if ($hasByName) {
+            return true;
+        }
+
+        // Fallback: si por alguna razón falta el registro en 'permisos',
+        // intentamos validar por ID conocido (congruente con la UI y seeder)
+        $map = [
+            'gestion_usuarios' => 1,
+            'gestion_formatos' => 2,
+            'crear_usuarios' => 3,
+            'editar_usuarios' => 4,
+            'eliminar_usuarios' => 5,
+            'cambiar_roles' => 6,
+            'activar_cuentas' => 7,
+        ];
+
+        if (isset($map[$permiso])) {
+            return DB::table('rol_permiso')
+                ->where('id_rol', $this->id_rol)
+                ->where('id_permiso', $map[$permiso])
+                ->exists();
+        }
+
+        return false;
     }
 
     /**
@@ -74,37 +99,37 @@ class Cuenta extends Authenticatable
      */
     public function puedeGestionarUsuarios()
     {
-        return $this->tienePermiso('gestion_usuarios');
+        return $this->tienePermiso('gestion_usuarios') || in_array(1, $this->permisosArray(), true);
     }
 
     public function puedeCrearUsuarios()
     {
-        return $this->tienePermiso('crear_usuarios');
+        return $this->tienePermiso('crear_usuarios') || in_array(3, $this->permisosArray(), true);
     }
 
     public function puedeEditarUsuarios()
     {
-        return $this->tienePermiso('editar_usuarios');
+        return $this->tienePermiso('editar_usuarios') || in_array(4, $this->permisosArray(), true);
     }
 
     public function puedeEliminarUsuarios()
     {
-        return $this->tienePermiso('eliminar_usuarios');
+        return $this->tienePermiso('eliminar_usuarios') || in_array(5, $this->permisosArray(), true);
     }
 
     public function puedeCambiarRoles()
     {
-        return $this->tienePermiso('cambiar_roles');
+        return $this->tienePermiso('cambiar_roles') || in_array(6, $this->permisosArray(), true);
     }
 
     public function puedeActivarCuentas()
     {
-        return $this->tienePermiso('activar_cuentas');
+        return $this->tienePermiso('activar_cuentas') || in_array(7, $this->permisosArray(), true);
     }
 
     public function puedeGestionarFormatos()
     {
-        return $this->tienePermiso('gestion_formatos');
+        return $this->tienePermiso('gestion_formatos') || in_array(2, $this->permisosArray(), true);
     }
 
     /**
@@ -112,9 +137,10 @@ class Cuenta extends Authenticatable
      */
     public function permisosArray()
     {
-        return DB::table('Rol_Permiso')
+        return DB::table('rol_permiso')
             ->where('id_rol', $this->id_rol)
             ->pluck('id_permiso')
+            ->map(function($v){ return (int) $v; })
             ->toArray();
     }
 
@@ -123,10 +149,10 @@ class Cuenta extends Authenticatable
      */
     public function permisosNombres()
     {
-        $nombres = DB::table('Rol_Permiso')
-            ->join('Permisos', 'Rol_Permiso.id_permiso', '=', 'Permisos.id_permiso')
-            ->where('Rol_Permiso.id_rol', $this->id_rol)
-            ->pluck('Permisos.nombre')
+        $nombres = DB::table('rol_permiso')
+            ->join('permisos', 'rol_permiso.id_permiso', '=', 'permisos.id_permiso')
+            ->where('rol_permiso.id_rol', $this->id_rol)
+            ->pluck('permisos.nombre')
             ->toArray();
 
         // Mapear nombres amigables
@@ -151,11 +177,11 @@ class Cuenta extends Authenticatable
     public function actualizarPermisos($nuevosPermisos)
     {
         // Eliminar permisos actuales del rol
-        DB::table('Rol_Permiso')->where('id_rol', $this->id_rol)->delete();
+        DB::table('rol_permiso')->where('id_rol', $this->id_rol)->delete();
         
         // Insertar nuevos permisos
         foreach ($nuevosPermisos as $permisoId) {
-            DB::table('Rol_Permiso')->insert([
+            DB::table('rol_permiso')->insert([
                 'id_rol' => $this->id_rol,
                 'id_permiso' => $permisoId
             ]);

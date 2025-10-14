@@ -18,7 +18,6 @@ class CheckPermission
         if (!Auth::user()->tienePermiso($permission)) {
             return redirect()->route('user.dashboard')
                 ->with('error', 'No tienes permisos para realizar esta acción.');
-                
         }
 
         return $next($request);

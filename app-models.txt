@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digitial Worker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+    <div class="logo">
+        <img src="casco.png" alt="casco" class="casco">
+        <h1>DIGITIAL WORKER</h1>
+    </div>
+    <div class="icons">
+        <img src="perfil.png" alt="Perfil">
+        <img src="buscar.png" alt="Buscar">
+        <img src="mas.png" alt="Agregar">
+    </div>
+</header>
+
+<main>
+    <div class="container">
+        <div class="left-panel">
+            <img src="mascota.png" alt="Mascota" class="mascota">
+            <div class="bocadillo">DIME TU DUDA</div>
+            <div class="chat-box">
+                <div class="barra-negra"></div>
+
+                <div class="preguntas">
+                    <button class="btn duda2">DUDA 2</button>
+                    <button class="btn duda1">DUDA 1</button>
+                </div>
+
+                <div class="respuestas oculto">
+                    <div class="respuesta-burbuja">Respuestas</div>
+                   <div class="barra">
+                       <input type="text" placeholder="Escribe">
+                   </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ads">
+            <div class="ad">AD</div>
+            <div class="ad">AD</div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>
+
+
+
+////CSS
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+header {
+    background-color: #fcb900;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo .casco {
+    width: 30px;
+    margin-right: 10px;
+}
+
+.icons img {
+    width: 30px;
+    margin-left: 20px;
+    border: 2px solid black;
+    border-radius: 50%;
+    padding: 5px;
+}
+
+main {
+    padding: 20px;
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid #aaa;
+    padding: 20px;
+}
+
+.left-panel {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.mascota {
+    width: 120px;
+    position: absolute;
+}
+
+.bocadillo {
+    color: black;
+    position: relative;
+    margin-left: 70px;
+    margin-top: 20px;
+    background: white;
+    border: 1px solid black;
+    border-radius: 20px;
+    padding: 1px 1px;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.chat-box {
+    background-color: #d9d9d9;
+    border-radius: 45px;
+    padding: 20px;
+    width: 300px;
+    position: relative;
+}
+
+.barra-negra {
+    position: absolute;
+    left: -10px;
+    top: 20px;
+    width: 10px;
+    height: 100px;
+    background-color: black;
+    border-radius: 5px;
+}
+
+.preguntas {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.btn {
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 150px;
+}
+
+.duda2 {
+    background-color: #f0b43b;
+}
+
+.duda1 {
+    background-color: #c4411b;
+    color: black;
+}
+
+.respuestas {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+.respuesta-burbuja {
+    background-color: white;
+    border-radius: 20px;
+    padding: 10px 20px;
+    width: fit-content;
+    font-weight: bold;
+    text-decoration: underline;
+}
+.barra{
+    color: white;
+    display: flex;
+    align-items: center;
+}
+.respuestas input {
+    padding: 15px;
+    border-radius: 20px;
+    border: none;
+    font-size: 16px;
+    color: #777;
+}
+
+.ads {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.ad {
+    width: 150px;
+    height: 150px;
+    background-color: #d9d9d9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #999;
+}
+
+footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+}
+
+footer img {
+    width: 25px;
+}
+
+.oculto {
+    display: none;
+}

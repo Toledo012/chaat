@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\MovimientoController;
 use Illuminate\Support\Facades\Route;
 
 // Login
@@ -12,51 +13,41 @@ Route::post('/', [AuthController::class, 'login']);
 // Logout
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-
-
 // Dashboards
-Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-Route::get('/user/dashboard', [UserController::class, 'dashboard'])->name('user.dashboard');
+Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->middleware('auth')->name('admin.dashboard');
+Route::get('/user/dashboard', [UserController::class, 'dashboard'])->middleware('auth')->name('user.dashboard');
 
-// Gestión de usuarios CON PERMISOS
-Route::prefix('admin')->name('admin.')->group(function () {
+// Gesti�n de usuarios CON PERMISOS
+Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     // Ver lista de usuarios
-    Route::get('/users', [AdminController::class, 'usersIndex'])
-        ->middleware('permission:gestion_usuarios') // <-- AÑADIDO
-        ->name('users.index');
+    Route::get('/users', [AdminController::class, 'usersIndex'])->middleware('perm:any,gestion_usuarios,crear_usuarios,editar_usuarios,eliminar_usuarios,cambiar_roles,activar_cuentas')->name('users.index');
 
     // Crear usuario nuevo
-    Route::post('/users', [AdminController::class, 'storeUser'])
-        ->middleware('permission:crear_usuarios') // <-- CORREGIDO (era crear_usuario)
-        ->name('users.store');
+    Route::post('/users', [AdminController::class, 'storeUser'])->middleware('perm:crear_usuarios')->name('users.store');
 
     // Cambiar rol
-    Route::put('/users/{id}/update-role', [AdminController::class, 'updateUserRole'])
-        ->middleware('permission:cambiar_roles') // <-- AÑADIDO
-        ->name('users.update-role');
+    Route::put('/users/{id}/update-role', [AdminController::class, 'updateUserRole'])->middleware('perm:cambiar_roles')->name('users.update-role');
 
-    // Actualizar permisos
-    Route::put('/users/{id}/update-permissions', [AdminController::class, 'updateUserPermissions'])
-        ->middleware('permission:cambiar_roles') // <-- AÑADIDO (o un permiso específico si lo creas)
-        ->name('users.update-permissions');
+    // Actualizar permisos - ✅ NUEVA RUTA
+    Route::put('/users/{id}/update-permissions', [AdminController::class, 'updateUserPermissions'])->middleware('perm:cambiar_roles')->name('users.update-permissions');
+    Route::get('/users/{id}/permissions', [AdminController::class, 'redirectUserPermissions'])->middleware('perm:cambiar_roles')->name('users.permissions');
+    Route::put('/users/{id}/permissions', [AdminController::class, 'updateUserPermissions'])->middleware('perm:cambiar_roles')->name('users.permissions.update');
+    Route::get('/usuarios/{id}/permisos', [AdminController::class, 'redirectUserPermissions'])->middleware('perm:cambiar_roles')->name('usuarios.permisos');
+    Route::put('/usuarios/{id}/permisos', [AdminController::class, 'updateUserPermissions'])->middleware('perm:cambiar_roles')->name('usuarios.permisos.update');
 
     // Activar/desactivar cuenta
-    Route::put('/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])
-        ->middleware('permission:activar_cuentas') // <-- AÑADIDO
-        ->name('users.toggle-status');
+    Route::put('/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->middleware('perm:activar_cuentas')->name('users.toggle-status');
 
     // Editar usuario
-    Route::put('/users/{id}', [AdminController::class, 'updateUser'])
-        ->middleware('permission:editar_usuarios') // <-- AÑADIDO
-        ->name('users.update');
+    Route::put('/users/{id}', [AdminController::class, 'updateUser'])->middleware('perm:editar_usuarios')->name('users.update');
 
     // Crear cuenta para usuario existente
-    Route::post('/users/{id}/create-account', [AdminController::class, 'createUserAccount'])
-        ->middleware('permission:crear_usuarios') // <-- AÑADIDO
-        ->name('users.create-account');
+    Route::post('/users/{id}/create-account', [AdminController::class, 'createUserAccount'])->middleware('perm:crear_usuarios')->name('users.create-account');
 
     // Eliminar usuario
-    Route::delete('/users/{id}', [AdminController::class, 'destroyUser'])
-        ->middleware('permission:eliminar_usuarios') // <-- CORREGIDO (era eliminar_usuario)
-        ->name('users.destroy');
+    Route::delete('/users/{id}', [AdminController::class, 'destroyUser'])->middleware('perm:eliminar_usuarios')->name('users.destroy');
+
+    // Auditor�a de movimientos
+    Route::get('/movimientos', [MovimientoController::class, 'index'])->middleware('perm:any,gestion_usuarios')->name('movimientos.index');
 });
+

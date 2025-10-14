@@ -11,10 +11,10 @@ return new class extends Migration
         // ================================
         DB::unprepared("
             CREATE TRIGGER trg_usuarios_insert
-            AFTER INSERT ON Usuarios
+            AFTER INSERT ON usuarios
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_nuevos, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_nuevos, id_cuenta)
                 VALUES ('Usuarios', 'INSERT', NEW.id_usuario,
                         JSON_OBJECT('nombre', NEW.nombre, 'email', NEW.email, 'departamento', NEW.departamento, 'puesto', NEW.puesto),
                         @id_cuenta);
@@ -23,10 +23,10 @@ return new class extends Migration
 
         DB::unprepared("
             CREATE TRIGGER trg_usuarios_update
-            AFTER UPDATE ON Usuarios
+            AFTER UPDATE ON usuarios
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_anteriores, datos_nuevos, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_anteriores, datos_nuevos, id_cuenta)
                 VALUES ('Usuarios', 'UPDATE', NEW.id_usuario,
                         JSON_OBJECT('nombre', OLD.nombre, 'email', OLD.email, 'departamento', OLD.departamento, 'puesto', OLD.puesto),
                         JSON_OBJECT('nombre', NEW.nombre, 'email', NEW.email, 'departamento', NEW.departamento, 'puesto', NEW.puesto),
@@ -36,10 +36,10 @@ return new class extends Migration
 
         DB::unprepared("
             CREATE TRIGGER trg_usuarios_delete
-            AFTER DELETE ON Usuarios
+            AFTER DELETE ON usuarios
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_anteriores, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_anteriores, id_cuenta)
                 VALUES ('Usuarios', 'DELETE', OLD.id_usuario,
                         JSON_OBJECT('nombre', OLD.nombre, 'email', OLD.email, 'departamento', OLD.departamento, 'puesto', OLD.puesto),
                         @id_cuenta);
@@ -51,10 +51,10 @@ return new class extends Migration
         // ================================
         DB::unprepared("
             CREATE TRIGGER trg_cuentas_insert
-            AFTER INSERT ON Cuentas
+            AFTER INSERT ON cuentas
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_nuevos, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_nuevos, id_cuenta)
                 VALUES ('Cuentas', 'INSERT', NEW.id_cuenta,
                         JSON_OBJECT('username', NEW.username, 'estado', NEW.estado, 'rol', NEW.id_rol),
                         @id_cuenta);
@@ -63,10 +63,10 @@ return new class extends Migration
 
         DB::unprepared("
             CREATE TRIGGER trg_cuentas_update
-            AFTER UPDATE ON Cuentas
+            AFTER UPDATE ON cuentas
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_anteriores, datos_nuevos, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_anteriores, datos_nuevos, id_cuenta)
                 VALUES ('Cuentas', 'UPDATE', NEW.id_cuenta,
                         JSON_OBJECT('username', OLD.username, 'estado', OLD.estado, 'rol', OLD.id_rol),
                         JSON_OBJECT('username', NEW.username, 'estado', NEW.estado, 'rol', NEW.id_rol),
@@ -76,10 +76,10 @@ return new class extends Migration
 
         DB::unprepared("
             CREATE TRIGGER trg_cuentas_delete
-            AFTER DELETE ON Cuentas
+            AFTER DELETE ON cuentas
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_anteriores, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_anteriores, id_cuenta)
                 VALUES ('Cuentas', 'DELETE', OLD.id_cuenta,
                         JSON_OBJECT('username', OLD.username, 'estado', OLD.estado, 'rol', OLD.id_rol),
                         @id_cuenta);
@@ -91,10 +91,10 @@ return new class extends Migration
         // ================================
         DB::unprepared("
             CREATE TRIGGER trg_servicios_insert
-            AFTER INSERT ON Servicios
+            AFTER INSERT ON servicios
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_nuevos, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_nuevos, id_cuenta)
                 VALUES ('Servicios', 'INSERT', NEW.id_servicio,
                         JSON_OBJECT('folio', NEW.folio, 'fecha', NEW.fecha, 'tipo_formato', NEW.tipo_formato),
                         @id_cuenta);
@@ -103,10 +103,10 @@ return new class extends Migration
 
         DB::unprepared("
             CREATE TRIGGER trg_servicios_update
-            AFTER UPDATE ON Servicios
+            AFTER UPDATE ON servicios
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_anteriores, datos_nuevos, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_anteriores, datos_nuevos, id_cuenta)
                 VALUES ('Servicios', 'UPDATE', NEW.id_servicio,
                         JSON_OBJECT('folio', OLD.folio, 'fecha', OLD.fecha, 'tipo_formato', OLD.tipo_formato),
                         JSON_OBJECT('folio', NEW.folio, 'fecha', NEW.fecha, 'tipo_formato', NEW.tipo_formato),
@@ -116,10 +116,10 @@ return new class extends Migration
 
         DB::unprepared("
             CREATE TRIGGER trg_servicios_delete
-            AFTER DELETE ON Servicios
+            AFTER DELETE ON servicios
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_anteriores, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_anteriores, id_cuenta)
                 VALUES ('Servicios', 'DELETE', OLD.id_servicio,
                         JSON_OBJECT('folio', OLD.folio, 'fecha', OLD.fecha, 'tipo_formato', OLD.tipo_formato),
                         @id_cuenta);
@@ -131,10 +131,10 @@ return new class extends Migration
         // ================================
         DB::unprepared("
             CREATE TRIGGER trg_materiales_insert
-            AFTER INSERT ON Materiales_Utilizados
+            AFTER INSERT ON materiales_utilizados
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_nuevos, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_nuevos, id_cuenta)
                 VALUES ('Materiales_Utilizados', 'INSERT', NEW.id_relacion,
                         JSON_OBJECT('id_servicio', NEW.id_servicio, 'id_material', NEW.id_material, 'cantidad', NEW.cantidad, 'costo', NEW.costo_aproximado),
                         @id_cuenta);
@@ -143,10 +143,10 @@ return new class extends Migration
 
         DB::unprepared("
             CREATE TRIGGER trg_materiales_update
-            AFTER UPDATE ON Materiales_Utilizados
+            AFTER UPDATE ON materiales_utilizados
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_anteriores, datos_nuevos, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_anteriores, datos_nuevos, id_cuenta)
                 VALUES ('Materiales_Utilizados', 'UPDATE', NEW.id_relacion,
                         JSON_OBJECT('id_servicio', OLD.id_servicio, 'id_material', OLD.id_material, 'cantidad', OLD.cantidad, 'costo', OLD.costo_aproximado),
                         JSON_OBJECT('id_servicio', NEW.id_servicio, 'id_material', NEW.id_material, 'cantidad', NEW.cantidad, 'costo', NEW.costo_aproximado),
@@ -156,10 +156,10 @@ return new class extends Migration
 
         DB::unprepared("
             CREATE TRIGGER trg_materiales_delete
-            AFTER DELETE ON Materiales_Utilizados
+            AFTER DELETE ON materiales_utilizados
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_anteriores, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_anteriores, id_cuenta)
                 VALUES ('Materiales_Utilizados', 'DELETE', OLD.id_relacion,
                         JSON_OBJECT('id_servicio', OLD.id_servicio, 'id_material', OLD.id_material, 'cantidad', OLD.cantidad, 'costo', OLD.costo_aproximado),
                         @id_cuenta);
@@ -171,10 +171,10 @@ return new class extends Migration
         // ================================
         DB::unprepared("
             CREATE TRIGGER trg_formatoA_insert
-            AFTER INSERT ON Formato_A
+            AFTER INSERT ON formato_a
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_nuevos, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_nuevos, id_cuenta)
                 VALUES ('Formato_A', 'INSERT', NEW.id_formatoA,
                         JSON_OBJECT('subtipo', NEW.subtipo, 'tipo_atencion', NEW.tipo_atencion, 'tipo_servicio', NEW.tipo_servicio, 'conclusion', NEW.conclusion_servicio),
                         @id_cuenta);
@@ -183,10 +183,10 @@ return new class extends Migration
 
         DB::unprepared("
             CREATE TRIGGER trg_formatoA_update
-            AFTER UPDATE ON Formato_A
+            AFTER UPDATE ON formato_a
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_anteriores, datos_nuevos, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_anteriores, datos_nuevos, id_cuenta)
                 VALUES ('Formato_A', 'UPDATE', NEW.id_formatoA,
                         JSON_OBJECT('subtipo', OLD.subtipo, 'tipo_atencion', OLD.tipo_atencion, 'tipo_servicio', OLD.tipo_servicio, 'conclusion', OLD.conclusion_servicio),
                         JSON_OBJECT('subtipo', NEW.subtipo, 'tipo_atencion', NEW.tipo_atencion, 'tipo_servicio', NEW.tipo_servicio, 'conclusion', NEW.conclusion_servicio),
@@ -196,10 +196,10 @@ return new class extends Migration
 
         DB::unprepared("
             CREATE TRIGGER trg_formatoA_delete
-            AFTER DELETE ON Formato_A
+            AFTER DELETE ON formato_a
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_anteriores, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_anteriores, id_cuenta)
                 VALUES ('Formato_A', 'DELETE', OLD.id_formatoA,
                         JSON_OBJECT('subtipo', OLD.subtipo, 'tipo_atencion', OLD.tipo_atencion, 'tipo_servicio', OLD.tipo_servicio, 'conclusion', OLD.conclusion_servicio),
                         @id_cuenta);
@@ -211,10 +211,10 @@ return new class extends Migration
         // ================================
         DB::unprepared("
             CREATE TRIGGER trg_formatoB_insert
-            AFTER INSERT ON Formato_B
+            AFTER INSERT ON formato_b
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_nuevos, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_nuevos, id_cuenta)
                 VALUES ('Formato_B', 'INSERT', NEW.id_formatoB,
                         JSON_OBJECT('subtipo', NEW.subtipo, 'equipo', NEW.equipo, 'marca', NEW.marca, 'tipo_servicio', NEW.tipo_servicio, 'diagnostico', NEW.diagnostico),
                         @id_cuenta);
@@ -223,10 +223,10 @@ return new class extends Migration
 
         DB::unprepared("
             CREATE TRIGGER trg_formatoB_update
-            AFTER UPDATE ON Formato_B
+            AFTER UPDATE ON formato_b
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_anteriores, datos_nuevos, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_anteriores, datos_nuevos, id_cuenta)
                 VALUES ('Formato_B', 'UPDATE', NEW.id_formatoB,
                         JSON_OBJECT('subtipo', OLD.subtipo, 'equipo', OLD.equipo, 'marca', OLD.marca, 'tipo_servicio', OLD.tipo_servicio, 'diagnostico', OLD.diagnostico),
                         JSON_OBJECT('subtipo', NEW.subtipo, 'equipo', NEW.equipo, 'marca', NEW.marca, 'tipo_servicio', NEW.tipo_servicio, 'diagnostico', NEW.diagnostico),
@@ -236,10 +236,10 @@ return new class extends Migration
 
         DB::unprepared("
             CREATE TRIGGER trg_formatoB_delete
-            AFTER DELETE ON Formato_B
+            AFTER DELETE ON formato_b
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_anteriores, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_anteriores, id_cuenta)
                 VALUES ('Formato_B', 'DELETE', OLD.id_formatoB,
                         JSON_OBJECT('subtipo', OLD.subtipo, 'equipo', OLD.equipo, 'marca', OLD.marca, 'tipo_servicio', OLD.tipo_servicio, 'diagnostico', OLD.diagnostico),
                         @id_cuenta);
@@ -251,10 +251,10 @@ return new class extends Migration
         // ================================
         DB::unprepared("
             CREATE TRIGGER trg_formatoC_insert
-            AFTER INSERT ON Formato_C
+            AFTER INSERT ON formato_c
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_nuevos, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_nuevos, id_cuenta)
                 VALUES ('Formato_C', 'INSERT', NEW.id_formatoC,
                         JSON_OBJECT('tipo_red', NEW.tipo_red, 'tipo_servicio', NEW.tipo_servicio, 'diagnostico', NEW.diagnostico),
                         @id_cuenta);
@@ -263,10 +263,10 @@ return new class extends Migration
 
         DB::unprepared("
             CREATE TRIGGER trg_formatoC_update
-            AFTER UPDATE ON Formato_C
+            AFTER UPDATE ON formato_c
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_anteriores, datos_nuevos, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_anteriores, datos_nuevos, id_cuenta)
                 VALUES ('Formato_C', 'UPDATE', NEW.id_formatoC,
                         JSON_OBJECT('tipo_red', OLD.tipo_red, 'tipo_servicio', OLD.tipo_servicio, 'diagnostico', OLD.diagnostico),
                         JSON_OBJECT('tipo_red', NEW.tipo_red, 'tipo_servicio', NEW.tipo_servicio, 'diagnostico', NEW.diagnostico),
@@ -276,10 +276,10 @@ return new class extends Migration
 
         DB::unprepared("
             CREATE TRIGGER trg_formatoC_delete
-            AFTER DELETE ON Formato_C
+            AFTER DELETE ON formato_c
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_anteriores, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_anteriores, id_cuenta)
                 VALUES ('Formato_C', 'DELETE', OLD.id_formatoC,
                         JSON_OBJECT('tipo_red', OLD.tipo_red, 'tipo_servicio', OLD.tipo_servicio, 'diagnostico', OLD.diagnostico),
                         @id_cuenta);
@@ -291,10 +291,10 @@ return new class extends Migration
         // ================================
         DB::unprepared("
             CREATE TRIGGER trg_formatoD_insert
-            AFTER INSERT ON Formato_D
+            AFTER INSERT ON formato_d
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_nuevos, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_nuevos, id_cuenta)
                 VALUES ('Formato_D', 'INSERT', NEW.id_formatoD,
                         JSON_OBJECT('equipo', NEW.equipo, 'marca', NEW.marca, 'modelo', NEW.modelo, 'serie', NEW.serie),
                         @id_cuenta);
@@ -303,10 +303,10 @@ return new class extends Migration
 
         DB::unprepared("
             CREATE TRIGGER trg_formatoD_update
-            AFTER UPDATE ON Formato_D
+            AFTER UPDATE ON formato_d
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_anteriores, datos_nuevos, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_anteriores, datos_nuevos, id_cuenta)
                 VALUES ('Formato_D', 'UPDATE', NEW.id_formatoD,
                         JSON_OBJECT('equipo', OLD.equipo, 'marca', OLD.marca, 'modelo', OLD.modelo, 'serie', OLD.serie),
                         JSON_OBJECT('equipo', NEW.equipo, 'marca', NEW.marca, 'modelo', NEW.modelo, 'serie', NEW.serie),
@@ -316,10 +316,10 @@ return new class extends Migration
 
         DB::unprepared("
             CREATE TRIGGER trg_formatoD_delete
-            AFTER DELETE ON Formato_D
+            AFTER DELETE ON formato_d
             FOR EACH ROW
             BEGIN
-                INSERT INTO Movimientos (tabla, accion, id_registro, datos_anteriores, id_cuenta)
+                INSERT INTO movimientos (tabla, accion, id_registro, datos_anteriores, id_cuenta)
                 VALUES ('Formato_D', 'DELETE', OLD.id_formatoD,
                         JSON_OBJECT('equipo', OLD.equipo, 'marca', OLD.marca, 'modelo', OLD.modelo, 'serie', OLD.serie),
                         @id_cuenta);
