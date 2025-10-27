@@ -179,6 +179,71 @@
     evidenciando el compromiso institucional en la atención técnica y administrativa de los equipos, redes y servicios tecnológicos.</p>
 </div>
 
+{{-- ====================== RENDIMIENTO POR USUARIO ====================== --}}
+@php
+  $porUsuario = $formatos->groupBy('usuario')->map(function($group) {
+      $total = $group->count();
+      return [
+          'total' => $total,
+          'A' => $group->where('tipo_formato','A')->count(),
+          'B' => $group->where('tipo_formato','B')->count(),
+          'C' => $group->where('tipo_formato','C')->count(),
+          'D' => $group->where('tipo_formato','D')->count(),
+      ];
+  })->sortByDesc('total');
+
+  $promedioUsuario = $porUsuario->count() > 0 ? round($porUsuario->avg('total'),2) : 0;
+@endphp
+
+<div class="resumen">
+  <h3>👥 Rendimiento por Usuario</h3>
+
+  <table class="tabla-mensual">
+    <tr>
+      <th>Usuario</th>
+      <th>Total</th>
+      <th>Formato A</th>
+      <th>Formato B</th>
+      <th>Formato C</th>
+      <th>Formato D</th>
+      <th>Participación</th>
+      <th>Rendimiento</th>
+    </tr>
+    @foreach($porUsuario as $nombre => $u)
+      @php
+        $participacion = $total > 0 ? round(($u['total']/$total)*100,1) : 0;
+        $rendimiento = $promedioUsuario > 0 ? round(($u['total']/$promedioUsuario)*100,1) : 0;
+      @endphp
+      <tr>
+        <td>{{ $nombre ?: 'Sin nombre' }}</td>
+        <td><strong>{{ $u['total'] }}</strong></td>
+        <td>{{ $u['A'] }}</td>
+        <td>{{ $u['B'] }}</td>
+        <td>{{ $u['C'] }}</td>
+        <td>{{ $u['D'] }}</td>
+        <td>{{ $participacion }}%</td>
+        <td>
+          {{ $rendimiento }}%
+          @if($rendimiento > 120)
+            🔺 Alto
+          @elseif($rendimiento < 80)
+            🔻 Bajo
+          @else
+            ⚖️ Promedio
+          @endif
+        </td>
+      </tr>
+    @endforeach
+  </table>
+
+  <p style="margin-top:15px;">
+    El promedio general de desempeño es de <strong>{{ $promedioUsuario }}</strong> formatos por usuario.  
+    Los usuarios con un rendimiento superior al 120% son considerados de <strong>alta productividad</strong>,  
+    mientras que aquellos por debajo del 80% pueden requerir seguimiento o apoyo técnico adicional.
+  </p>
+</div>
+
+
 <div class="footer">
   <p><em>Generado automáticamente por el Sistema de Formatos SEMAHN</em></p>
   <p><small>© {{ date('Y') }} Secretaría de Medio Ambiente e Historia Natural - Gobierno del Estado de Chiapas</small></p>

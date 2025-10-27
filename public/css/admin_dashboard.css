@@ -1,0 +1,418 @@
+/* ====== VARIABLES Y GENERAL - MINIMALISTA PURA AJUSTADA ====== */
+:root {
+    /* Paleta de Colores CLARO (Default) */
+    --primary-color: #399e91; /* Azul primario limpio para acento (se mantiene) */
+    --secondary-color: #6c757d; 
+    --accent-color: #dc3545; 
+    --dark-color: #343a40; 
+    --light-color: #f8f9fa; 
+    --success-color: #28a745;
+    --info-color: #17a2b8;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --bg-color: #ffffff; /* Fondo principal blanco puro */
+    --card-bg: white; /* Fondo de tarjetas blanco */
+    --text-color: var(--dark-color);
+    --shadow-light: 0 0.5rem 1rem rgba(0,0,0,0.05); /* Sombra muy sutil */
+    --border-radius: 8px;
+
+
+    --sidebar-bg-light: #e9ecef; /* Gris claro para el Sidebar */
+    --header-bg-light: #5f1f1f; /* Rojo oscuro para el Admin Panel */
+}
+
+/* Paleta de Colores OSCURO (Minimalista - Sin cambios) */
+.dark-mode {
+    --primary-color: #399e91; 
+    --secondary-color: #adb5bd;
+    --accent-color: #ff8a80;
+    --dark-color: #e9ecef; 
+    --light-color: #212529; 
+    --success-color: #4CAF50;
+    --info-color: #03A9F4;
+    --warning-color: #FFEB3B;
+    --danger-color: #F44336;
+    --bg-color: #1a1e24; 
+    --card-bg: #2b3038; 
+    --text-color: var(--dark-color);
+    --shadow-light: 0 0.5rem 1rem rgba(0,0,0,0.3);
+
+    /* Colores Específicos del Usuario (Modo Oscuro) */
+    --sidebar-bg-dark: #2b3038;
+    --header-bg-dark: #38a56f; /* Cambiamos el color de header en oscuro para evitar conflicto con el rojo */
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    min-height: 100vh;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+a, a:hover, a:focus {
+    text-decoration: none;
+    outline: none;
+}
+
+/* Fix para botones de Bootstrap en modo oscuro */
+.dark-mode .btn-outline-light {
+    color: var(--dark-color) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+.dark-mode .admin-header .btn-sm {
+    color: var(--dark-color) !important;
+}
+
+
+/* ====== SIDEBAR MINIMALISTA Y FUNCIONAL (Fondo Gris Claro) ====== */
+.sidebar {
+    /* Fondo: Usamos la variable de gris claro en modo claro, y oscura en modo oscuro */
+    background: var(--sidebar-bg-light);
+    color: var(--dark-color);
+    min-height: 100vh;
+    padding: 1.5rem 0;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 260px;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-light);
+    z-index: 1000;
+    border-right: 1px solid #dee2e6; 
+    border-radius: 0; 
+}
+
+.dark-mode .sidebar {
+    background: var(--sidebar-bg-dark);
+    color: var(--dark-color);
+    border-right-color: #3e444c;
+}
+
+
+/* ESTADO COLAPSADO - FUNCIONALIDAD DE ESCONDER/MOSTRAR */
+.sidebar.collapsed {
+    width: 80px; 
+}
+
+.admin-header, main {
+    margin-left: 260px; 
+    transition: all 0.3s ease;
+}
+
+.sidebar.collapsed ~ .admin-header,
+.sidebar.collapsed ~ main {
+    margin-left: 80px;
+}
+
+/* Logo */
+.sidebar .logo {
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+    text-align: center;
+}
+.sidebar .logo img {
+    max-width: 140px;
+    padding: 10px;
+    background-color: white; /* Se mantiene blanco para que resalte en el gris */
+    box-shadow: none; 
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+    border: 1px solid var(--light-color);
+}
+.dark-mode .sidebar {
+    background: var(--sidebar-bg-dark);
+    color: var(--dark-color);
+    border-right-color: #3e444c;
+}
+
+
+/* Logo */
+.sidebar .logo {
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+    text-align: center;
+}
+.sidebar .logo img {
+    max-width: 140px;
+    padding: 10px;
+    /* ESTO ES CRUCIAL: Forzamos el fondo blanco y un borde sutil para el logo */
+    background-color: white; 
+    box-shadow: none; 
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6; /* Un borde claro que se ve bien en blanco */
+}
+
+/* En modo oscuro, NO queremos que la imagen del logo cambie de fondo */
+.dark-mode .sidebar .logo img {
+    /* ¡IMPORTANTE! Revertimos o especificamos valores para el modo oscuro */
+    background-color: white; /* Forzar fondo blanco incluso en modo oscuro */
+    border-color: #dee2e6;   /* Borde claro para que no se pierda en el fondo oscuro del sidebar */
+}
+
+
+.sidebar.collapsed .logo {
+    margin-bottom: 1.5rem;
+    padding: 0.5rem 0;
+}
+.sidebar.collapsed .logo img {
+    max-width: 40px;
+    padding: 8px;
+}
+.sidebar .logo img:hover {
+    transform: scale(1.05); 
+    /* Podemos mantener la sombra de hover, pero podría verse raro si el fondo del sidebar es oscuro */
+    /* Para un aspecto más consistente en ambos modos, podrías quitar esta sombra también en modo oscuro */
+    box-shadow: var(--shadow-light); 
+}
+/* Navegación */
+.sidebar .nav-link {
+    color: var(--text-color);
+    padding: 10px 15px;
+    margin: 4px 10px;
+    display: flex;
+    align-items: center;
+    border-radius: var(--border-radius);
+    border-left: 4px solid transparent;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.sidebar.collapsed .nav-link span {
+    display: none;
+}
+.sidebar.collapsed .nav-link {
+    justify-content: center;
+    padding: 10px 0;
+    margin: 4px auto;
+}
+
+.sidebar .nav-link i {
+    color: var(--secondary-color);
+    margin-right: 10px;
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.sidebar.collapsed .nav-link i {
+    margin-right: 0;
+    font-size: 1.2rem;
+}
+
+.sidebar .nav-link:hover {
+    background: #e0e0e0;
+    color: var(--primary-color);
+}
+.dark-mode .sidebar .nav-link:hover {
+    background: #3e444c;
+    color: var(--primary-color);
+}
+
+.sidebar .nav-link.active {
+    background: rgba(0, 123, 255, 0.1); 
+    border-left: 4px solid var(--primary-color);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.sidebar .nav-link.active i {
+    color: var(--primary-color);
+}
+
+/* ====== HEADER MINIMALISTA (Fondo Rojo Oscuro/Marrón) ====== */
+.admin-header {
+    /* Color de Header en Modo Claro */
+    background: var(--header-bg-light);
+    color: white; /* Texto blanco en fondo oscuro */
+    padding: 1rem 2rem;
+    margin-left: 260px; 
+    box-shadow: var(--shadow-light);
+    position: relative;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    border-bottom: 2px solid var(--accent-color); 
+    transition: margin-left 0.3s ease, background 0.3s ease, color 0.3s ease;
+}
+
+.dark-mode .admin-header {
+    /* Color de Header en Modo Oscuro */
+    background: var(--sidebar-bg-dark); /* Usamos un color oscuro neutro */
+    color: var(--dark-color);
+    border-bottom-color: var(--primary-color);
+}
+
+
+.admin-header::before {
+    content: none;
+}
+
+.admin-header h1 {
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-bottom: 0;
+}
+
+.admin-header .subtitle {
+    font-weight: 400;
+    opacity: 0.9;
+    font-size: 0.85rem;
+}
+
+.user-info {
+    /* En el header oscuro (modo claro), el user-info debe contrastar */
+    background: rgba(255, 255, 255, 0.15);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white; /* Texto blanco para el user-info en el header oscuro */
+}
+
+.dark-mode .user-info {
+    background: #3e444c;
+    border-color: #555c65;
+    color: var(--dark-color); /* Texto claro para el user-info en el header claro */
+}
+
+.admin-header .btn-outline-light {
+    border-color: white;
+}
+
+
+/* El resto del CSS de contenido (main, cards, botones, responsive, animaciones)
+   se mantiene igual que la versión "Minimalista Pura" anterior. */
+
+
+/* ====== CONTENIDO PRINCIPAL, TARJETAS, BOTONES, ALERTAS, RESPONSIVE, ANIMACIONES... ====== */
+/* ... (El resto del código CSS se mantiene igual) ... */
+main {
+    margin-left: 260px; 
+    transition: all 0.4s ease;
+    padding: 2rem;
+}
+/* ====== TARJETAS DE ESTADÍSTICAS MINIMALISTAS ====== */
+.stats-card {
+    border: 1px solid #dee2e6; 
+    border-radius: var(--border-radius);
+    box-shadow: none; 
+    background: var(--card-bg);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+}
+.dark-mode .stats-card {
+    border-color: #3e444c;
+}
+.stats-card::before {
+    content: none;
+}
+.stats-card:hover {
+    transform: translateY(-4px); 
+    box-shadow: var(--shadow-light);
+}
+.stats-icon {
+    font-size: 2.5rem;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+.stats-number {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0;
+    color: var(--dark-color);
+}
+.dark-mode .stats-number {
+     color: var(--text-color);
+}
+.stats-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--secondary-color);
+}
+
+/* Colores de texto en modo oscuro */
+.dark-mode .stats-label { color: #adb5bd; }
+.dark-mode .text-primary { color: var(--primary-color) !important; }
+.dark-mode .text-success { color: var(--success-color) !important; }
+.dark-mode .text-info { color: var(--info-color) !important; }
+.dark-mode .text-warning { color: var(--warning-color) !important; }
+
+/* ====== ACCIONES RÁPIDAS (Se mantienen colores sólidos de Bootstrap) ====== */
+.quick-actions .btn {
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+}
+.quick-actions .btn:hover {
+    transform: translateY(-3px);
+}
+.btn-primary { background: #007bff; border-color: #007bff; color: white;}
+.btn-success { background: var(--success-color); border-color: var(--success-color); color: white;}
+.btn-info { background: var(--info-color); border-color: var(--info-color); color: white;}
+.btn-warning { background: var(--warning-color); border-color: var(--warning-color); color: var(--dark-color); }
+.btn-danger { background: var(--danger-color); border-color: var(--danger-color); color: white;}
+.btn-secondary { background: var(--secondary-color); border-color: var(--secondary-color); color: white;}
+
+/* ====== ALERTAS MINIMALISTAS ====== */
+.alert {
+    border: 1px solid;
+    border-radius: var(--border-radius);
+    box-shadow: none;
+    border-left: 4px solid;
+}
+.alert-success {
+    background: #d4edda;
+    border-color: #c3e6cb;
+    border-left-color: var(--success-color);
+    color: #155724;
+}
+.dark-mode .alert-success {
+    background: #1f4726;
+    border-color: #33613b;
+    border-left-color: var(--success-color);
+    color: #d4edda;
+}
+
+/* ====== RESPONSIVE MEJORADO ====== */
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-260px);
+    }
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    .admin-header, main {
+        margin-left: 0 !important;
+    }
+    .quick-actions .btn {
+        min-height: 80px;
+        margin-bottom: 1rem;
+    }
+}
+@media (max-width: 768px) {
+    .admin-header {
+        padding: 1rem;
+    }
+    .admin-header h1 {
+        font-size: 1.3rem;
+    }
+    .user-info {
+        font-size: 0.8rem;
+    }
+    main {
+        padding: 1rem;
+    }
+}
+
+/* ====== ANIMACIONES ADICIONALES (Se conservan) ====== */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.stats-card, .quick-actions .btn {
+    animation: fadeInUp 0.6s ease-out;
+}
+.loading { opacity: 0; transform: translateY(20px); transition: all 0.5s ease; }
+.loaded { opacity: 1; transform: translateY(0); }
