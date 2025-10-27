@@ -395,11 +395,11 @@
                     <i class="fas fa-users-cog"></i> Gestión de Usuarios
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-file-alt"></i> Gestión de Formatos
-                </a>
-            </li>
+<li class="nav-item">
+    <a class="nav-link" href="{{ route('admin.formatos.index') }}">
+        <i class="fas fa-file-alt"></i> Gestión de Formatos
+    </a>
+</li>   
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('admin.movimientos.index') }}">
                     <i class="fas fa-clipboard-list"></i> Movimientos

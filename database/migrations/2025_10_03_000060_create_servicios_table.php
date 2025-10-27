@@ -12,7 +12,7 @@ return new class extends Migration
             $table->string('folio', 20)->unique()->nullable();
             $table->date('fecha');
             $table->unsignedBigInteger('id_usuario')->nullable();
-            $table->enum('tipo_formato', ['A','B','C']);
+            $table->enum('tipo_formato', ['A','B','C', 'D']);
             $table->timestamps();
 
             $table->foreign('id_usuario')->references('id_usuario')->on('usuarios')->onDelete('cascade');
