@@ -34,50 +34,55 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
 
     // Auditoría
     Route::get('/movimientos', [MovimientoController::class, 'index'])->middleware('perm:any,gestion_usuarios')->name('movimientos.index');
-});
+
+
+
+
+
+}); 
 
 
 // ==========================
 // 📂 FORMATOS ADMIN
 // ==========================
-Route::prefix('admin/formatos')->name('admin.formatos.')->group(function () {
+Route::prefix('admin/formatos')->name('admin.formatos.')-> middleware (['auth', 'perm:any, gestion_formatos'])->group(function () {
 
     // 🔹 Vistas principales
     Route::get('/', [FormatoController::class, 'index'])->name('index');
-    Route::get('/create', [FormatoController::class, 'create'])->name('create');
+    Route::get('/create', [FormatoController::class, 'create'])->middleware('perm:gestion_formatos')->name('create');
 
     // Formatos A–D
     Route::get('/a', [FormatoController::class, 'formatoA'])->name('a');
-    Route::post('/a', [FormatoController::class, 'storeA'])->name('a.store');
+    Route::post('/a', [FormatoController::class, 'storeA'])->middleware('perm:gestion_formatos')->name('a.store');
 
     Route::get('/b', [FormatoController::class, 'formatoB'])->name('b');
-    Route::post('/b', [FormatoController::class, 'storeB'])->name('b.store');
+    Route::post('/b', [FormatoController::class, 'storeB'])->middleware('perm:gestion_formatos')->name('b.store');
 
     Route::get('/c', [FormatoController::class, 'formatoC'])->name('c');
-    Route::post('/c', [FormatoController::class, 'storeC'])->name('c.store');
+    Route::post('/c', [FormatoController::class, 'storeC'])->middleware('perm:gestion_formatos')->name('c.store');
 
     Route::get('/d', [FormatoController::class, 'formatoD'])->name('d');
-    Route::post('/d', [FormatoController::class, 'storeD'])->name('d.store');
+    Route::post('/d', [FormatoController::class, 'storeD'])->middleware('perm:gestion_formatos')->name('d.store');
 
     
 
     // 🔹 FORMATO A
     Route::get('/a/{id}/preview', [FormatoController::class, 'previewA'])->name('a.preview');
-    Route::get('/a/{id}/pdf', [FormatoController::class, 'generarPDFA'])->name('a.pdf');
+    Route::get('/a/{id}/pdf', [FormatoController::class, 'generarPDFA'])->middleware('perm:gestion_formatos')->name('a.pdf');
 
     // 🔹 FORMATO B
     Route::get('/b/{id}/preview', [FormatoController::class, 'previewB'])->name('b.preview');
-    Route::get('/b/{id}/pdf', [FormatoController::class, 'generarPDFB'])->name('b.pdf');
+    Route::get('/b/{id}/pdf', [FormatoController::class, 'generarPDFB'])->middleware('perm:gestion_formatos')->name('b.pdf');
 
     // 🔹 FORMATO C
     Route::get('/c/{id}/preview', [FormatoController::class, 'previewC'])->name('c.preview');
-    Route::get('/c/{id}/pdf', [FormatoController::class, 'generarPDFC'])->name('c.pdf');
+    Route::get('/c/{id}/pdf', [FormatoController::class, 'generarPDFC'])->middleware('perm:gestion_formatos')->name('c.pdf');
 
     // 🔹 FORMATO D
     Route::get('/d/{id}/preview', [FormatoController::class, 'previewD'])->name('d.preview');
-    Route::get('/d/{id}/pdf', [FormatoController::class, 'generarPDFD'])->name('d.pdf');
+    Route::get('/d/{id}/pdf', [FormatoController::class, 'generarPDFD'])->middleware('perm:gestion_formatos')->name('d.pdf');
 
 // 📊 REPORTE GENERAL DE FORMATOS
 Route::get('/reporte/general', [FormatoController::class, 'reporteGeneral'])
-    ->name('reporte.general');
+    ->middleware('perm:gestion_formatos')->name('reporte.general');
 });
