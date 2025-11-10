@@ -15,40 +15,42 @@ class FormatoController extends Controller
     // =============================
     public function index(Request $request)
     {
-        // 🔍 Filtros desde el formulario
-        $tipo = $request->input('tipo');
-        $usuario = $request->input('usuario');
-        $fecha = $request->input('fecha');
+      $tipo = $request->input('tipo');
+    $usuario = $request->input('usuario');
+    $fecha = $request->input('fecha');
 
-        // Consulta base
-        $query = DB::table('servicios')
-            ->leftJoin('usuarios', 'usuarios.id_usuario', '=', 'servicios.id_usuario')
-            ->select(
-                'servicios.id_servicio',            // 👈 Campo clave para los botones
-                'servicios.tipo_formato as tipo',
-                'servicios.fecha',
-                'usuarios.nombre'
-            )
-            ->orderByDesc('servicios.id_servicio');
+    $query = DB::table('servicios')
+        ->leftJoin('usuarios', 'usuarios.id_usuario', '=', 'servicios.id_usuario')
+        ->select(
+            'servicios.id_servicio',
+            'servicios.tipo_formato as tipo',
+            'servicios.fecha',
+            'usuarios.nombre'
+        )
+        ->orderByDesc('servicios.id_servicio');
 
-        // Aplicar filtros dinámicos
-        if (!empty($tipo)) {
-            $query->where('servicios.tipo_formato', $tipo);
-        }
+    // 🔍 Filtros desde el formulario
+    if (!empty($tipo)) {
+        $query->where('servicios.tipo_formato', $tipo);
+    }
+    if (!empty($usuario)) {
+        $query->where('usuarios.nombre', 'like', "%$usuario%");
+    }
+    if (!empty($fecha)) {
+        $query->whereDate('servicios.fecha', $fecha);
+    }
 
-        if (!empty($usuario)) {
-            $query->where('usuarios.nombre', 'like', "%$usuario%");
-        }
+    // ⚙️ Filtro por usuario autenticado
+    $cuenta = Auth::user();
 
-        if (!empty($fecha)) {
-            $query->whereDate('servicios.fecha', $fecha);
-        }
+    if (!$cuenta->isAdmin()) {
+        // Si no es admin, solo ve los servicios que él mismo creó
+        $query->where('servicios.id_usuario', $cuenta->id_usuario);
+    }
 
-        // Ejecutar consulta final
-        $formatos = $query->get();
+    $formatos = $query->get();
 
-        // Retornar vista con filtros
-        return view('admin.formatos.index', compact('formatos', 'tipo', 'usuario', 'fecha'));
+    return view('admin.formatos.index', compact('formatos', 'tipo', 'usuario', 'fecha'));
     }
 
     // =============================
@@ -97,7 +99,8 @@ class FormatoController extends Controller
     $idServicio = DB::table('servicios')->insertGetId([
         'folio' => 'A-' . time(),
         'fecha' => now()->format('Y-m-d'),
-        'id_usuario' => Auth::id(), // 👈 Nuevo campo
+      //  'id_usuario' => Auth::id(), // 👈 Nuevo campo
+'id_usuario' => Auth::user()->id_usuario,
 
         'tipo_formato' => 'A',
         'created_at' => now(),
@@ -158,7 +161,8 @@ public function storeB(Request $request)
     $idServicio = DB::table('servicios')->insertGetId([
         'folio' => 'B-' . time(),
         'fecha' => now()->format('Y-m-d'),
-        'id_usuario' => Auth::id(), // 👈 Nuevo campo
+      //  'id_usuario' => Auth::id(), // 👈 Nuevo campo
+'id_usuario' => Auth::user()->id_usuario,
 
         'tipo_formato' => 'B',
         'created_at' => now(),
@@ -238,7 +242,8 @@ public function storeC(Request $request)
     $idServicio = DB::table('servicios')->insertGetId([
         'folio' => 'C-' . time(),
         'fecha' => now()->format('Y-m-d'),
-        'id_usuario' => Auth::id(), // 👈 Nuevo campo
+     //   'id_usuario' => Auth::id(), // 👈 Nuevo campo
+'id_usuario' => Auth::user()->id_usuario,
 
         'tipo_formato' => 'C',
         'created_at' => now(),
@@ -298,7 +303,8 @@ public function storeD(Request $request)
     $idServicio = DB::table('servicios')->insertGetId([
         'folio' => 'D-' . time(),
         'fecha' => $data['fecha'] ?? now()->format('Y-m-d'),
-        'id_usuario' => Auth::id(), // 👈 Nuevo campo
+     //   'id_usuario' => Auth::id(), // 👈 Nuevo campo
+'id_usuario' => Auth::user()->id_usuario,
 
         'tipo_formato' => 'D',
         'created_at' => now(),
@@ -559,11 +565,13 @@ public function generarPDFD($id)
 
 public function reporteGeneral(Request $request)
 {
-    $tipo = $request->input('tipo');
+   $tipo = $request->input('tipo');
     $usuario = $request->input('usuario');
     $fecha = $request->input('fecha');
 
-    // Base principal
+    $cuenta = Auth::user();
+
+    // 🔍 Base principal
     $query = DB::table('servicios')
         ->leftJoin('usuarios', 'usuarios.id_usuario', '=', 'servicios.id_usuario')
         ->select(
@@ -574,13 +582,20 @@ public function reporteGeneral(Request $request)
             'usuarios.nombre as usuario'
         );
 
+    // 📌 Si el usuario NO es admin, limitar a sus registros
+    if (!$cuenta->isAdmin()) {
+        $query->where('servicios.id_usuario', $cuenta->id_usuario);
+    }
+
+    // 📅 Aplicar filtros opcionales
     if ($tipo) $query->where('servicios.tipo_formato', $tipo);
-    if ($usuario) $query->where('usuarios.nombre', 'like', "%$usuario%");
+    if ($usuario && $cuenta->isAdmin()) // Solo admins pueden filtrar por usuario
+        $query->where('usuarios.nombre', 'like', "%$usuario%");
     if ($fecha) $query->whereDate('servicios.fecha', $fecha);
 
     $servicios = $query->get();
 
-    // 👇 unir campos adicionales según tipo
+    // 👇 Unir campos adicionales según tipo
     $formatos = collect();
     foreach ($servicios as $s) {
         $detalle = match ($s->tipo_formato) {
@@ -602,7 +617,10 @@ public function reporteGeneral(Request $request)
         compact('formatos', 'tipo', 'usuario', 'fecha')
     )->setPaper('letter', 'portrait');
 
-    return $pdf->stream('Reporte_Formatos_'.now()->format('Ymd_His').'.pdf');
+    $nombre = 'Reporte_Formatos_' . ($cuenta->isAdmin() ? 'General' : $cuenta->usuario->nombre) . '_' . now()->format('Ymd_His') . '.pdf';
+
+    return $pdf->stream($nombre);
+    
 }
 
 

@@ -74,7 +74,9 @@
                     <i class="fas fa-chart-bar fa-2x text-warning mb-3"></i>
                     <h5 class="card-title">Reportes</h5>
                     <p class="card-text text-muted">Generar reportes del sistema</p>
-                    <a href="#" class="btn btn-warning w-100 text-dark">Ver Reportes</a>
+                    <a href="{{ route('admin.formatos.reporte.general') }}" class="btn btn-warning w-100 text-dark">Ver Reportes</a>
+                    
+                    
                 </div>
             </div>
         </div>

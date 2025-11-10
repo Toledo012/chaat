@@ -53,7 +53,16 @@
         <form method="POST" action="{{ route('admin.formatos.a.store') }}">
             @csrf
 
+            {{-- NUEVO CAMPO SUBTIPO --}}
             <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Subtipo <span class="text-danger">*</span></label>
+                    <select name="subtipo" class="form-select" required>
+                        <option value="">Selecciona...</option>
+                        <option>Desarrollo</option>
+                        <option>Soporte</option>
+                    </select>
+                </div>
                 <div class="col-md-4">
                     <label class="form-label">Tipo de Atención <span class="text-danger">*</span></label>
                     <select name="tipo_atencion" class="form-select" required>
@@ -64,9 +73,9 @@
                         <option>Usuario</option>
                     </select>
                 </div>
-                <div class="col-md-8">
+                <div class="col-md-4">
                     <label class="form-label">Petición <span class="text-danger">*</span></label>
-                    <textarea name="peticion" class="form-control" rows="2" required></textarea>
+                    <input type="text" name="peticion" class="form-control" placeholder="Describe brevemente la solicitud" required>
                 </div>
             </div>
 
@@ -103,7 +112,7 @@
 
             <div class="mb-3">
                 <label class="form-label">Trabajo Específico Realizado <span class="text-danger">*</span></label>
-                <textarea name="te_realizado" class="form-control" rows="3" required></textarea>
+                <textarea name="detalle_realizado" class="form-control" rows="3" required></textarea>
             </div>
 
             <div class="row mb-3">
@@ -127,7 +136,7 @@
                 <button class="btn btn-primary">
                     <i class="fas fa-save me-1"></i>Guardar
                 </button>
-                <a href="{{ route('admin.formatos.create') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('admin.formatos.index') }}" class="btn btn-outline-secondary">
                     Cancelar
                 </a>
             </div>
@@ -140,7 +149,6 @@
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Oculta la barra lateral automáticamente al cargar
     const sidebar = document.getElementById('navigation');
     if (sidebar && !sidebar.classList.contains('collapsed')) {
         sidebar.classList.add('collapsed');

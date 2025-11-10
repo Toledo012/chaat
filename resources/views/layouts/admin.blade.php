@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin Panel')</title>
 
-    {{-- Enlaces CSS de Bootstrap, FontAwesome y Google Fonts --}}
+    {{-- CSS principal --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    {{-- CSS PRINCIPAL --}}
     <link rel="stylesheet" href="{{ asset('css/admin_dashboard.css') }}">
     
     @yield('styles')
@@ -22,30 +20,59 @@
         <div class="logo">
             <img src="{{ asset('images/logo_semahn2.png') }}" alt="Logo del Sistema" class="logo">
         </div>
+
         <ul class="nav flex-column">
+            {{-- Dashboard dinámico --}}
             <li class="nav-item">
-                <a class="nav-link @if(request()->routeIs('admin.dashboard')) active @endif" href="{{ route('admin.dashboard') }}">
-                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
-                </a>
+                @if(Auth::user()->isAdmin())
+                    <a class="nav-link @if(request()->routeIs('admin.dashboard')) active @endif" href="{{ route('admin.dashboard') }}">
+                        <i class="fas fa-tachometer-alt"></i> <span>Dashboard (Admin)</span>
+                    </a>
+                @else
+                    <a class="nav-link @if(request()->routeIs('user.dashboard')) active @endif" href="{{ route('user.dashboard') }}">
+                        <i class="fas fa-home"></i> <span>Mi Panel</span>
+                    </a>
+                @endif
             </li>
+
+            {{-- GESTIÓN DE USUARIOS (cualquier permiso de usuarios) --}}
+            @php
+                $user = Auth::user();
+                $permisosUsuarios = [
+                    'gestion_usuarios', 'crear_usuarios', 'editar_usuarios',
+                    'eliminar_usuarios', 'cambiar_roles', 'activar_cuentas'
+                ];
+                $puedeGestionarUsuarios = $user->isAdmin() || collect($permisosUsuarios)->contains(fn($p) => $user->tienePermiso($p));
+            @endphp
+
+            @if($puedeGestionarUsuarios)
             <li class="nav-item">
                 <a class="nav-link @if(request()->routeIs('admin.users.*')) active @endif" href="{{ route('admin.users.index') }}">
                     <i class="fas fa-users-cog"></i> <span>Gestión de Usuarios</span>
                 </a>
             </li>
+            @endif
+
+            {{-- GESTIÓN DE FORMATOS --}}
+            @if(Auth::user()->isAdmin() || Auth::user()->tienePermiso('gestion_formatos'))
             <li class="nav-item">
                 <a class="nav-link @if(request()->routeIs('admin.formatos.*')) active @endif" href="{{ route('admin.formatos.index') }}">
                     <i class="fas fa-file-alt"></i> <span>Gestión de Formatos</span>
                 </a>
             </li>
+            @endif
+
+            {{-- MOVIMIENTOS (solo admin) --}}
+            @if(Auth::user()->isAdmin())
             <li class="nav-item">
                 <a class="nav-link @if(request()->routeIs('admin.movimientos.*')) active @endif" href="{{ route('admin.movimientos.index') }}">
                     <i class="fas fa-clipboard-list"></i> <span>Movimientos</span>
                 </a>
             </li>
+            @endif
         </ul>
     </nav>
-    
+
     {{-- ===== HEADER ===== --}}
     <header class="admin-header d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center">
@@ -63,7 +90,7 @@
                 <i class="fas fa-moon"></i>
             </button>
             <div class="user-info">
-                <span>Hola, <strong>{{ Auth::user()->usuario->nombre }}</strong></span>
+                <span>Hola, <strong>{{ Auth::user()->usuario->nombre ?? 'Usuario' }}</strong></span>
             </div>
             <form method="POST" action="{{ route('logout') }}" class="d-inline">
                 @csrf
@@ -96,47 +123,35 @@
             const darkModeToggle = document.getElementById('darkModeToggle');
             const body = document.body;
 
-            // === 1. Inicialización ===
-
-            // Recuperar modo oscuro guardado
+            // === Modo oscuro persistente ===
             const isDarkMode = localStorage.getItem('darkModeEnabled') === 'true';
             if (isDarkMode) {
                 body.classList.add('dark-mode');
-                if (darkModeToggle) {
-                    darkModeToggle.querySelector('i').className = 'fas fa-sun';
-                }
+                darkModeToggle.querySelector('i').className = 'fas fa-sun';
             }
 
-            // Recuperar estado del sidebar
+            // === Sidebar persistente ===
             const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
             if (isCollapsed && sidebar) {
                 sidebar.classList.add('collapsed');
             }
 
-            // === 2. Funcionalidades ===
+            // Toggle sidebar
+            toggleButton?.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            });
 
-            // Alternar sidebar
-            if (toggleButton && sidebar) {
-                toggleButton.addEventListener('click', function() {
-                    sidebar.classList.toggle('collapsed');
-                    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-                });
-            }
-
-            // Alternar modo oscuro
-            if (darkModeToggle) {
-                darkModeToggle.addEventListener('click', function() {
-                    body.classList.toggle('dark-mode');
-                    const isDarkModeNow = body.classList.contains('dark-mode');
-                    localStorage.setItem('darkModeEnabled', isDarkModeNow);
-                    darkModeToggle.querySelector('i').className = isDarkModeNow ? 'fas fa-sun' : 'fas fa-moon';
-                });
-            }
+            // Toggle dark mode
+            darkModeToggle?.addEventListener('click', () => {
+                body.classList.toggle('dark-mode');
+                const dark = body.classList.contains('dark-mode');
+                localStorage.setItem('darkModeEnabled', dark);
+                darkModeToggle.querySelector('i').className = dark ? 'fas fa-sun' : 'fas fa-moon';
+            });
         });
     </script>
 
-    {{--Scripts adicionales de cada vista se cargan fuera del DOMContentLoaded --}}
     @yield('scripts')
-
 </body>
 </html>

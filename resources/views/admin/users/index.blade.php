@@ -1,11 +1,41 @@
 @extends('layouts.admin')
 
-{{-- ======= Configuración de Títulos ======= --}}
+{{-- ======= CONFIGURACIÓN DE TÍTULOS ======= --}}
 @section('title', 'Gestión de Usuarios - Sistema de Formatos')
 @section('header_title', 'Gestión de Usuarios')
 @section('header_subtitle', 'Control de roles, permisos y estado de las cuentas')
 
-{{-- ======= Contenido Principal ======= --}}
+{{-- ======= ESTILOS ESPECÍFICOS ======= --}}
+@section('styles')
+<style>
+    .content-wrapper {
+        margin-left: 260px;
+        padding: 2rem;
+        transition: margin-left 0.3s ease;
+        animation: fadeInUp 0.5s ease-out;
+    }
+    .sidebar.collapsed + .content-wrapper {
+        margin-left: 80px;
+    }
+    .card-header {
+        background-color: #399e91;
+        color: white;
+        font-weight: 600;
+    }
+    .theme-toggle {
+        border: none;
+        background: transparent;
+        color: white;
+        cursor: pointer;
+        font-size: 1.2rem;
+    }
+    .theme-toggle:hover {
+        transform: scale(1.1);
+    }
+</style>
+@endsection
+
+{{-- ======= CONTENIDO PRINCIPAL ======= --}}
 @section('content')
 
 @if(session('success'))
@@ -44,16 +74,17 @@
     @endif
 </div>
 
-<div class="card">
-    <div class="card-header bg-primary text-white">
+<div class="card shadow-sm">
+    <div class="card-header">
         <h5 class="card-title mb-0">
             <i class="fas fa-list me-2"></i>Lista de Usuarios Registrados
-            <span class="badge bg-light text-dark ms-2">{{ $usuarios->count() }}</span>
+            <span class="badge bg-secondary ms-2">{{ $usuarios->count() }}</span>
         </h5>
     </div>
     <div class="card-body p-0">
         <div class="table-container">
             <div class="table-responsive">
+                {{-- ======= TABLA ORIGINAL SIN CAMBIOS ======= --}}
                 <table class="table table-striped table-hover mb-0">
                     <thead>
                         <tr>
@@ -72,17 +103,15 @@
                     <tbody>
                         @foreach($usuarios as $usuario)
                         <tr
-                            data-id="{{ $usuario->id_usuario }}"
-                            data-nombre="{{ $usuario->nombre }}"
-                            data-departamento="{{ $usuario->departamento }}"
-                            data-puesto="{{ $usuario->puesto }}"
-                            data-email="{{ $usuario->email }}"
-                            data-username="{{ optional($usuario->cuenta)->username }}"
-                            data-has-account="{{ $usuario->cuenta ? '1' : '0' }}"
-                            data-permisos='@json($usuario->cuenta->permisosArray() ?? [])'
+                          data-id="{{ $usuario->id_usuario }}"
+                          data-nombre="{{ $usuario->nombre }}"
+                          data-departamento="{{ $usuario->departamento }}"
+                          data-puesto="{{ $usuario->puesto }}"
+                          data-email="{{ $usuario->email }}"
+                          data-username="{{ optional($usuario->cuenta)->username }}"
+                          data-has-account="{{ $usuario->cuenta ? '1' : '0' }}"
+                          data-permisos='@json($usuario->cuenta->permisosArray() ?? [])'
                         >
-                            {{-- === (contenido de tu tabla original, sin cambios) === --}}
-                            {{-- copiado tal cual de tu versión anterior --}}
                             <td><strong>{{ $usuario->id_usuario }}</strong></td>
                             <td>
                                 <strong>{{ $usuario->nombre }}</strong>
@@ -128,7 +157,7 @@
                                 @elseif($usuario->cuenta)
                                     <small>
                                         @foreach($usuario->cuenta->permisosNombres() as $permiso)
-                                            <span class="badge bg-info d-block mb-1">{{ $permiso }}</span>
+                                            <span class="badge bg-info permisos-badge d-block mb-1">{{ $permiso }}</span>
                                         @endforeach
                                     </small>
                                 @else
@@ -194,26 +223,81 @@
                         @endforeach
                     </tbody>
                 </table>
+                {{-- ======= FIN DE TABLA ======= --}}
             </div>
         </div>
     </div>
 </div>
+
+{{-- ======= MODALES GLOBALES ======= --}}
+<div class="modal fade" id="globalEditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" id="editModalContent"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="globalPermisosModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" id="permisosModalContent"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="globalDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" id="deleteModalContent"></div>
+    </div>
+</div>
+
+@if(Auth::user()->puedeCrearUsuarios())
+<div class="modal fade" id="createUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('admin.users.store') }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Crear Nuevo Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3"><label class="form-label">Nombre Completo *</label><input type="text" class="form-control" name="nombre" required></div>
+                    <div class="mb-3"><label class="form-label">Departamento</label><input type="text" class="form-control" name="departamento"></div>
+                    <div class="mb-3"><label class="form-label">Puesto</label><input type="text" class="form-control" name="puesto"></div>
+                    <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" name="email"></div>
+                    <div class="mb-3"><label class="form-label">Extensión</label><input type="text" class="form-control" name="extension"></div>
+                    <div class="mb-3"><label class="form-label">Nombre de Usuario *</label><input type="text" class="form-control" name="username" required></div>
+                    <div class="mb-3"><label class="form-label">Contraseña *</label><input type="password" class="form-control" name="password" required></div>
+                    <div class="mb-3"><label class="form-label">Rol *</label>
+                        <select name="rol" class="form-select" required>
+                            <option value="2">Usuario Normal</option>
+                            <option value="1">Administrador</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Crear Usuario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 @endsection
 
-{{-- ======= Scripts ======= --}}
+{{-- ======= SCRIPTS ======= --}}
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const baseUrl = '{{ url("admin/users") }}';
 
-    // Limpieza de backdrop residual
+    // Limpieza de modales
     document.addEventListener('hidden.bs.modal', function () {
         document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
         document.body.classList.remove('modal-open');
         document.body.style.removeProperty('overflow');
     });
 
-    // --- Editar Usuario ---
+    // --- Editar usuario ---
     document.querySelectorAll('.btn-edit').forEach(btn => {
         btn.addEventListener('click', function() {
             const tr = this.closest('tr');
@@ -226,28 +310,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const contenido = `
                 <form action="${baseUrl}/${id}" method="POST">
-                    @csrf @method('PUT')
+                    @csrf
+                    @method('PUT')
                     <div class="modal-header">
                         <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Editar Usuario: ${nombre}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <label class="form-label">Nombre</label>
-                        <input type="text" class="form-control mb-2" name="nombre" value="${nombre}">
-                        <label class="form-label">Departamento</label>
-                        <input type="text" class="form-control mb-2" name="departamento" value="${departamento}">
-                        <label class="form-label">Puesto</label>
-                        <input type="text" class="form-control mb-2" name="puesto" value="${puesto}">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control mb-2" name="email" value="${email}">
-                        <label class="form-label">Usuario</label>
-                        <input type="text" class="form-control" name="username" value="${username}">
+                        <div class="mb-3"><label class="form-label">Nombre</label><input type="text" class="form-control" name="nombre" value="${nombre}" required></div>
+                        <div class="mb-3"><label class="form-label">Departamento</label><input type="text" class="form-control" name="departamento" value="${departamento}"></div>
+                        <div class="mb-3"><label class="form-label">Puesto</label><input type="text" class="form-control" name="puesto" value="${puesto}"></div>
+                        <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" name="email" value="${email}"></div>
+                        <div class="mb-3"><label class="form-label">Usuario</label><input type="text" class="form-control" name="username" value="${username}"></div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-1"></i>Guardar
-                        </button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Guardar Cambios</button>
                     </div>
                 </form>`;
             document.getElementById('editModalContent').innerHTML = contenido;
@@ -261,29 +339,30 @@ document.addEventListener('DOMContentLoaded', function() {
             const tr = this.closest('tr');
             const id = tr.dataset.id;
             const nombre = tr.dataset.nombre || '';
-            const permisos = JSON.parse(tr.dataset.permisos || '[]');
-            const checked = val => permisos.includes(val) ? 'checked' : '';
+            let permisos = [];
+            try { permisos = JSON.parse(tr.dataset.permisos || '[]'); } catch(e) {}
 
+            const checked = (val) => permisos.includes(val) ? 'checked' : '';
             const contenido = `
                 <form action="${baseUrl}/${id}/update-permissions" method="POST">
-                    @csrf @method('PUT')
+                    @csrf
+                    @method('PUT')
                     <div class="modal-header">
                         <h6 class="modal-title"><i class="fas fa-cog me-2"></i>Permisos: ${nombre}</h6>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="permisos[]" value="1" ${checked(1)}>
-                            <label class="form-check-label">Ver Usuarios</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="permisos[]" value="2" ${checked(2)}>
-                            <label class="form-check-label">Gestionar Formatos</label>
-                        </div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="permisos[]" value="1" ${checked(1)}> <label class="form-check-label">Ver Usuarios</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="permisos[]" value="2" ${checked(2)}> <label class="form-check-label">Gestionar Formatos</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="permisos[]" value="3" ${checked(3)}> <label class="form-check-label">Crear Usuarios</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="permisos[]" value="4" ${checked(4)}> <label class="form-check-label">Editar Usuarios</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="permisos[]" value="5" ${checked(5)}> <label class="form-check-label">Eliminar Usuarios</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="permisos[]" value="6" ${checked(6)}> <label class="form-check-label">Cambiar Roles</label></div>
+                        <div class="form-check"><input class="form-check-input" type="checkbox" name="permisos[]" value="7" ${checked(7)}> <label class="form-check-label">Activar Cuentas</label></div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+                        <button type="submit" class="btn btn-primary btn-sm">Guardar Permisos</button>
                     </div>
                 </form>`;
             document.getElementById('permisosModalContent').innerHTML = contenido;
@@ -297,27 +376,29 @@ document.addEventListener('DOMContentLoaded', function() {
             const tr = this.closest('tr');
             const id = tr.dataset.id;
             const nombre = tr.dataset.nombre || '';
+            const hasAccount = tr.dataset.hasAccount === '1';
+            const mensajeCuenta = hasAccount ? '<p>Se eliminará también su cuenta asociada.</p>' : '';
             const contenido = `
                 <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Eliminar Usuario</h5>
+                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Confirmar Eliminación</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>¿Eliminar a <strong>${nombre}</strong>? Esta acción no se puede deshacer.</p>
+                    <p>¿Deseas eliminar al usuario <strong>${nombre}</strong>?</p>
+                    ${mensajeCuenta}
+                    <p class="text-danger"><strong>Esta acción no se puede deshacer.</strong></p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <form action="${baseUrl}/${id}" method="POST" class="d-inline">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-trash me-1"></i>Eliminar
-                        </button>
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger"><i class="fas fa-trash me-1"></i>Eliminar</button>
                     </form>
                 </div>`;
             document.getElementById('deleteModalContent').innerHTML = contenido;
             new bootstrap.Modal(document.getElementById('globalDeleteModal')).show();
         });
-
     });
 });
 </script>
