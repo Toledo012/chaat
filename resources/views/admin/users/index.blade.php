@@ -32,6 +32,8 @@
     .theme-toggle:hover {
         transform: scale(1.1);
     }
+
+    
 </style>
 @endsection
 
@@ -100,10 +102,12 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+ <tbody>
                         @foreach($usuarios as $usuario)
                         <tr
                           data-id="{{ $usuario->id_usuario }}"
+                          data-rol="{{ optional($usuario->cuenta)->id_rol }}"
+                          data-es-super="{{ $usuario->id_usuario == 1 ? '1' : '0' }}"
                           data-nombre="{{ $usuario->nombre }}"
                           data-departamento="{{ $usuario->departamento }}"
                           data-puesto="{{ $usuario->puesto }}"
@@ -113,15 +117,24 @@
                           data-permisos='@json($usuario->cuenta->permisosArray() ?? [])'
                         >
                             <td><strong>{{ $usuario->id_usuario }}</strong></td>
+
                             <td>
                                 <strong>{{ $usuario->nombre }}</strong>
+
+                                {{-- IDENTIFICADOR SUPER ADMIN --}}
+                                @if($usuario->id_usuario == 1)
+                                    <span class="badge bg-danger ms-1">Super Admin</span>
+                                @endif
+
                                 @if($usuario->id_usuario == Auth::user()->id_usuario)
                                     <span class="badge bg-info ms-1">Tú</span>
                                 @endif
                             </td>
+
                             <td>{{ $usuario->departamento }}</td>
                             <td>{{ $usuario->puesto }}</td>
                             <td>{{ $usuario->email }}</td>
+
                             <td>
                                 @if($usuario->cuenta)
                                     <span class="badge bg-primary">{{ $usuario->cuenta->username }}</span>
@@ -129,9 +142,18 @@
                                     <span class="badge bg-secondary">Sin cuenta</span>
                                 @endif
                             </td>
+
+                            {{-- ========================= --}}
+                            {{--   COLUMNA: ROL           --}}
+                            {{-- ========================= --}}
                             <td>
                                 @if($usuario->cuenta)
-                                    @if(Auth::user()->puedeCambiarRoles())
+
+                                    {{-- ⚠️ Solo SUPER ADMIN puede cambiar rol de admins --}}
+                                    @if($usuario->cuenta->id_rol == 1 && Auth::user()->id_usuario != 1)
+                                        <span class="badge bg-danger">Admin (Protegido)</span>
+
+                                    @elseif(Auth::user()->puedeCambiarRoles())
                                         <form action="{{ route('admin.users.update-role', $usuario->id_usuario) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('PUT')
@@ -140,33 +162,55 @@
                                                 <option value="2" {{ $usuario->cuenta->id_rol == 2 ? 'selected' : '' }}>Usuario</option>
                                             </select>
                                         </form>
+
                                     @else
                                         <span class="badge {{ $usuario->cuenta->id_rol == 1 ? 'bg-danger' : 'bg-primary' }}">
                                             {{ $usuario->cuenta->id_rol == 1 ? 'Admin' : 'Usuario' }}
                                         </span>
                                     @endif
+
                                 @else
                                     <span class="badge bg-warning">Sin rol</span>
                                 @endif
                             </td>
+
+                            {{-- ========================= --}}
+                            {{--   COLUMNA: PERMISOS       --}}
+                            {{-- ========================= --}}
                             <td>
                                 @if($usuario->cuenta && Auth::user()->puedeCambiarRoles())
-                                    <button type="button" class="btn btn-outline-info btn-sm btn-permisos">
-                                        <i class="fas fa-cog me-1"></i>Permisos
-                                    </button>
+
+                                    {{-- Admins protegidos --}}
+                                    @if($usuario->cuenta->id_rol == 1 && Auth::user()->id_usuario != 1)
+                                        <span class="badge bg-danger">Protegido</span>
+                                    @else
+                                        <button type="button" class="btn btn-outline-info btn-sm btn-permisos">
+                                            <i class="fas fa-cog me-1"></i>Permisos
+                                        </button>
+                                    @endif
+
                                 @elseif($usuario->cuenta)
                                     <small>
                                         @foreach($usuario->cuenta->permisosNombres() as $permiso)
-                                            <span class="badge bg-info permisos-badge d-block mb-1">{{ $permiso }}</span>
+                                            <span class="badge bg-info d-block mb-1">{{ $permiso }}</span>
                                         @endforeach
                                     </small>
                                 @else
                                     <span class="badge bg-warning">Sin cuenta</span>
                                 @endif
                             </td>
+
+                            {{-- ========================= --}}
+                            {{--   COLUMNA: ESTADO         --}}
+                            {{-- ========================= --}}
                             <td>
                                 @if($usuario->cuenta)
-                                    @if(Auth::user()->puedeActivarCuentas())
+
+                                    {{--Admin protegido --}}
+                                    @if($usuario->cuenta->id_rol == 1 && Auth::user()->id_usuario != 1)
+                                        <span class="badge bg-danger">No editable</span>
+
+                                    @elseif(Auth::user()->puedeActivarCuentas())
                                         <form action="{{ route('admin.users.toggle-status', $usuario->id_usuario) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('PUT')
@@ -185,24 +229,43 @@
                                             {{ $usuario->cuenta->estado == 'activo' ? 'Activo' : 'Inactivo' }}
                                         </span>
                                     @endif
+
                                 @else
                                     <span class="badge bg-danger">Sin cuenta</span>
                                 @endif
                             </td>
+
+                            {{-- ========================= --}}
+                            {{--   COLUMNA: ACCIONES       --}}
+                            {{-- ========================= --}}
                             <td>
                                 <div class="btn-group" role="group">
                                     @if($usuario->cuenta)
+
+                                        {{-- EDITAR --}}
                                         @if(Auth::user()->puedeEditarUsuarios())
-                                            <button type="button" class="btn btn-outline-primary btn-sm btn-edit">
-                                                <i class="fas fa-edit me-1"></i>Editar
-                                            </button>
+                                            @if($usuario->cuenta->id_rol == 1 && Auth::user()->id_usuario != 1)
+                                                <span class="badge bg-danger">Protegido</span>
+                                            @else
+                                                <button type="button" class="btn btn-outline-primary btn-sm btn-edit">
+                                                    <i class="fas fa-edit me-1"></i>Editar
+                                                </button>
+                                            @endif
                                         @endif
+
+                                        {{-- ELIMINAR --}}
                                         @if(Auth::user()->puedeEliminarUsuarios() && $usuario->id_usuario != Auth::user()->id_usuario)
-                                            <button type="button" class="btn btn-outline-danger btn-sm btn-delete">
-                                                <i class="fas fa-trash me-1"></i>Eliminar
-                                            </button>
+                                            @if($usuario->cuenta->id_rol == 1 && Auth::user()->id_usuario != 1)
+                                                <span class="badge bg-danger">No permitido</span>
+                                            @else
+                                                <button type="button" class="btn btn-outline-danger btn-sm btn-delete">
+                                                    <i class="fas fa-trash me-1"></i>Eliminar
+                                                </button>
+                                            @endif
                                         @endif
+
                                     @else
+                                        {{-- CREAR CUENTA --}}
                                         @if(Auth::user()->puedeCrearUsuarios())
                                             <form action="{{ route('admin.users.create-account', $usuario->id_usuario) }}" method="POST" class="d-inline">
                                                 @csrf
@@ -211,6 +274,8 @@
                                                 </button>
                                             </form>
                                         @endif
+
+                                        {{-- ELIMINAR --}}
                                         @if(Auth::user()->puedeEliminarUsuarios())
                                             <button type="button" class="btn btn-outline-danger btn-sm btn-delete">
                                                 <i class="fas fa-trash me-1"></i>Eliminar
@@ -219,9 +284,11 @@
                                     @endif
                                 </div>
                             </td>
+
                         </tr>
                         @endforeach
                     </tbody>
+
                 </table>
                 {{-- ======= FIN DE TABLA ======= --}}
             </div>
@@ -247,7 +314,6 @@
         <div class="modal-content" id="deleteModalContent"></div>
     </div>
 </div>
-
 @if(Auth::user()->puedeCrearUsuarios())
 <div class="modal fade" id="createUserModal" tabindex="-1">
     <div class="modal-dialog">
@@ -266,160 +332,200 @@
                                 <label>Departamento</label>
                                 <select name="departamento" class="form-select">
                                     <option value="">Seleccionar</option>
-                                    <option>Sistemas</option>
-                            
+                                        <option>Sistemas</option>
+                                
+                                    </select>
+                                </div>
+
+                                                        <div class="col-md-6">
+                                    <label>Puesto</label>
+                                    <select name="puesto" class="form-select">
+                                        <option value="">Seleccionar</option>
+                                        <option>Jefe de Area</option>
+                                        <option>Técnico</option>
+                                        <option>Programador</option>
+
+                                    </select>
+                                </div>
+                            <div class="mb-3"><label class="form-label">Extensión</label><input type="text" class="form-control" name="extension"></div>
+                            <div class="mb-3"><label class="form-label">Email *</label><input type="text" class="form-control" name="username" required></div>
+                            <div class="mb-3"><label class="form-label">Confirmar Email*</label><input type="text" class="form-control" name="email" required></div>
+
+                            <div class="mb-3"><label class="form-label">Contraseña *</label><input type="password" class="form-control" name="password" required></div>
+                            <div class="mb-3"><label class="form-label">Rol *</label>
+                                <select name="rol" class="form-select" required>
+                                    <option value="2">Usuario Normal</option>
+                                    <option value="1">Administrador</option>
                                 </select>
                             </div>
-
-                                                    <div class="col-md-6">
-                                <label>Puesto</label>
-                                <select name="puesto" class="form-select">
-                                    <option value="">Seleccionar</option>
-                                    <option>Jefe de Area</option>
-                                    <option>Técnico</option>
-                                    <option>Programador</option>
-
-                                </select>
-                            </div>
-                        <div class="mb-3"><label class="form-label">Extensión</label><input type="text" class="form-control" name="extension"></div>
-                        <div class="mb-3"><label class="form-label">Email *</label><input type="text" class="form-control" name="username" required></div>
-                        <div class="mb-3"><label class="form-label">Confirmar Email*</label><input type="text" class="form-control" name="email" required></div>
-
-                        <div class="mb-3"><label class="form-label">Contraseña *</label><input type="password" class="form-control" name="password" required></div>
-                        <div class="mb-3"><label class="form-label">Rol *</label>
-                            <select name="rol" class="form-select" required>
-                                <option value="2">Usuario Normal</option>
-                                <option value="1">Administrador</option>
-                            </select>
                         </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Crear Usuario</button>
                     </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Crear Usuario</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 @endif
 @endsection
 
-{{-- ======= SCRIPTS ======= --}}
 @section('scripts')
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
     const baseUrl = '{{ url("admin/users") }}';
 
-    // Limpieza de modales
-    document.addEventListener('hidden.bs.modal', function () {
-        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-        document.body.classList.remove('modal-open');
-        document.body.style.removeProperty('overflow');
-    });
-
-    // --- Editar usuario ---
     document.querySelectorAll('.btn-edit').forEach(btn => {
         btn.addEventListener('click', function() {
-            const tr = this.closest('tr');
-            const id = tr.dataset.id;
-            const nombre = tr.dataset.nombre || '';
-            const departamento = tr.dataset.departamento || '';
-            const puesto = tr.dataset.puesto || '';
-            const email = tr.dataset.email || '';
-            const username = tr.dataset.username || '';
 
-            const contenido = `
+            const tr = this.closest('tr');
+            const esAdmin = tr.dataset.rol == "1";
+            const esSuper = tr.dataset.esSuper == "1";
+            const yoSuper = "{{ Auth::user()->id_usuario }}" == "1";
+
+            if (esAdmin && !yoSuper) {
+                alert("Solo el Super Admin puede editar a administradores.");
+                return;
+            }
+
+            const id = tr.dataset.id;
+            const nombre = tr.dataset.nombre;
+            const departamento = tr.dataset.departamento;
+            const puesto = tr.dataset.puesto;
+            const email = tr.dataset.email;
+            const username = tr.dataset.username;
+
+            const html = `
                 <form action="${baseUrl}/${id}" method="POST">
                     @csrf
                     @method('PUT')
                     <div class="modal-header">
-                        <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Editar Usuario: ${nombre}</h5>
+                        <h5 class="modal-title">Editar Usuario: ${nombre}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-3"><label class="form-label">Nombre</label><input type="text" class="form-control" name="nombre" value="${nombre}" required></div>
-                        <div class="mb-3"><label class="form-label">Departamento</label><input type="text" class="form-control" name="departamento" value="${departamento}"></div>
-                        <div class="mb-3"><label class="form-label">Puesto</label><input type="text" class="form-control" name="puesto" value="${puesto}"></div>
-                        <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" name="email" value="${email}"></div>
-                        <div class="mb-3"><label class="form-label">Usuario</label><input type="text" class="form-control" name="username" value="${username}"></div>
+                        <div class="mb-3"><label>Nombre</label>
+                            <input type="text" name="nombre" class="form-control" value="${nombre}" required>
+                        </div>
+                        <div class="mb-3"><label>Departamento</label>
+                            <input type="text" name="departamento" class="form-control" value="${departamento}">
+                        </div>
+                        <div class="mb-3"><label>Puesto</label>
+                            <input type="text" name="puesto" class="form-control" value="${puesto}">
+                        </div>
+                        <div class="mb-3"><label>Email</label>
+                            <input type="email" name="email" class="form-control" value="${email}">
+                        </div>
+                        <div class="mb-3"><label>Usuario</label>
+                            <input type="text" name="username" class="form-control" value="${username}">
+                        </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Guardar Cambios</button>
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button class="btn btn-primary">Guardar Cambios</button>
                     </div>
-                </form>`;
-            document.getElementById('editModalContent').innerHTML = contenido;
+                </form>
+            `;
+
+            document.getElementById('editModalContent').innerHTML = html;
             new bootstrap.Modal(document.getElementById('globalEditModal')).show();
         });
     });
 
-    // --- Permisos ---
     document.querySelectorAll('.btn-permisos').forEach(btn => {
         btn.addEventListener('click', function() {
-            const tr = this.closest('tr');
-            const id = tr.dataset.id;
-            const nombre = tr.dataset.nombre || '';
-            let permisos = [];
-            try { permisos = JSON.parse(tr.dataset.permisos || '[]'); } catch(e) {}
 
-            const checked = (val) => permisos.includes(val) ? 'checked' : '';
-            const contenido = `
+            const tr = this.closest('tr');
+            const esAdmin = tr.dataset.rol == "1";
+            const yoSuper = "{{ Auth::user()->id_usuario }}" == "1";
+
+            if (esAdmin && !yoSuper) {
+                alert("Solo el Super Admin puede editar permisos de administradores.");
+                return;
+            }
+
+            const id = tr.dataset.id;
+            const nombre = tr.dataset.nombre;
+            let permisos = JSON.parse(tr.dataset.permisos || "[]");
+
+            const checked = v => permisos.includes(v) ? "checked" : "";
+
+            const html = `
                 <form action="${baseUrl}/${id}/update-permissions" method="POST">
-                    @csrf
-                    @method('PUT')
+                    @csrf @method('PUT')
                     <div class="modal-header">
-                        <h6 class="modal-title"><i class="fas fa-cog me-2"></i>Permisos: ${nombre}</h6>
+                        <h5 class="modal-title">Permisos: ${nombre}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="form-check"><input class="form-check-input" type="checkbox" name="permisos[]" value="1" ${checked(1)}> <label class="form-check-label">Ver Usuarios</label></div>
-                        <div class="form-check"><input class="form-check-input" type="checkbox" name="permisos[]" value="2" ${checked(2)}> <label class="form-check-label">Gestionar Formatos</label></div>
-                        <div class="form-check"><input class="form-check-input" type="checkbox" name="permisos[]" value="3" ${checked(3)}> <label class="form-check-label">Crear Usuarios</label></div>
-                        <div class="form-check"><input class="form-check-input" type="checkbox" name="permisos[]" value="4" ${checked(4)}> <label class="form-check-label">Editar Usuarios</label></div>
-                        <div class="form-check"><input class="form-check-input" type="checkbox" name="permisos[]" value="5" ${checked(5)}> <label class="form-check-label">Eliminar Usuarios</label></div>
-                        <div class="form-check"><input class="form-check-input" type="checkbox" name="permisos[]" value="6" ${checked(6)}> <label class="form-check-label">Cambiar Roles</label></div>
-                        <div class="form-check"><input class="form-check-input" type="checkbox" name="permisos[]" value="7" ${checked(7)}> <label class="form-check-label">Activar Cuentas</label></div>
+                        <div><input type="checkbox" name="permisos[]" value="1" ${checked(1)}> Ver Usuarios</div>
+                        <div><input type="checkbox" name="permisos[]" value="2" ${checked(2)}> Gestionar Formatos</div>
+                        <div><input type="checkbox" name="permisos[]" value="3" ${checked(3)}> Crear Usuarios</div>
+                        <div><input type="checkbox" name="permisos[]" value="4" ${checked(4)}> Editar Usuarios</div>
+                        <div><input type="checkbox" name="permisos[]" value="5" ${checked(5)}> Eliminar Usuarios</div>
+                        <div><input type="checkbox" name="permisos[]" value="6" ${checked(6)}> Cambiar Roles</div>
+                        <div><input type="checkbox" name="permisos[]" value="7" ${checked(7)}> Activar Cuentas</div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary btn-sm">Guardar Permisos</button>
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button class="btn btn-primary">Guardar</button>
                     </div>
-                </form>`;
-            document.getElementById('permisosModalContent').innerHTML = contenido;
+                </form>
+            `;
+
+            document.getElementById('permisosModalContent').innerHTML = html;
             new bootstrap.Modal(document.getElementById('globalPermisosModal')).show();
         });
     });
 
-    // --- Eliminar ---
     document.querySelectorAll('.btn-delete').forEach(btn => {
         btn.addEventListener('click', function() {
+
             const tr = this.closest('tr');
+            const esAdmin = tr.dataset.rol == "1";
+            const esSuper = tr.dataset.esSuper == "1";
+            const yoSuper = "{{ Auth::user()->id_usuario }}" == "1";
+
+            if (esAdmin && !yoSuper) {
+                alert("Solo el Super Admin puede eliminar administradores.");
+                return;
+            }
+
+            if (esSuper) {
+                alert("El Super Admin no puede ser eliminado.");
+                return;
+            }
+
             const id = tr.dataset.id;
-            const nombre = tr.dataset.nombre || '';
-            const hasAccount = tr.dataset.hasAccount === '1';
-            const mensajeCuenta = hasAccount ? '<p>Se eliminará también su cuenta asociada.</p>' : '';
-            const contenido = `
+            const nombre = tr.dataset.nombre;
+
+            const html = `
                 <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Confirmar Eliminación</h5>
+                    <h5 class="modal-title">Confirmar Eliminación</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
+
                 <div class="modal-body">
-                    <p>¿Deseas eliminar al usuario <strong>${nombre}</strong>?</p>
-                    ${mensajeCuenta}
-                    <p class="text-danger"><strong>Esta acción no se puede deshacer.</strong></p>
+                    <p>¿Deseas eliminar a <strong>${nombre}</strong>?</p>
+                    <p class="text-danger fw-bold">Esta acción no se puede deshacer.</p>
                 </div>
+
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <form action="${baseUrl}/${id}" method="POST" class="d-inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger"><i class="fas fa-trash me-1"></i>Eliminar</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form action="${baseUrl}/${id}" method="POST">
+                        @csrf @method('DELETE')
+                        <button class="btn btn-danger">Eliminar</button>
                     </form>
-                </div>`;
-            document.getElementById('deleteModalContent').innerHTML = contenido;
+                </div>
+            `;
+
+            document.getElementById('deleteModalContent').innerHTML = html;
             new bootstrap.Modal(document.getElementById('globalDeleteModal')).show();
         });
     });
+
 });
 </script>
 @endsection

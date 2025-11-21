@@ -111,6 +111,11 @@ public function updateUserPermissions(Request $request, $id)
                 ->with('error', 'Solo el Super Admin puede editar a un Administrador.');
         }
 
+                if ($usuario->id_usuario == auth()->user()->id_usuario) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'No puedes cambiar tu propio permiso.');
+        }
+
         $permisos = $request->input('permisos', []);
 
         // Actualizar permisos del rol
@@ -136,6 +141,14 @@ public function toggleUserStatus(Request $request, $id)
     $usuario = Usuario::find($id);
     
     if ($usuario && $usuario->cuenta) {
+
+
+        
+                if ($usuario->id_usuario == auth()->user()->id_usuario) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'No puedes desactivar al Super Admin.');
+        }
+
 
         // solo Super Admin puede activar/desactivar un Administrador
         if ($usuario->cuenta->id_rol == 1 && auth()->user()->id_usuario != 1) {

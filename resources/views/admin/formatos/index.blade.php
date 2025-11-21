@@ -2,6 +2,39 @@
 
 @section('title', 'Gestión de Formatos')
 
+
+<style>
+.card-header { background-color: #399e91; color: white; font-weight: 600; }
+pre {
+  max-height: 300px;
+  overflow-y: auto;
+  border-radius: 8px;
+  padding: 0.75rem;
+  background-color: #f8f9fa;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+}
+.dark-mode pre { background-color: #2b3038; color: #e9ecef; }
+.table-success th { background-color: #399e91 !important; color: white; }
+.badge { font-size: 0.85rem; }
+.details-card {
+  border: 1px solid #399e91;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(57,158,145,0.2);
+  background: white;
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.4s ease both;
+}
+.details-card:hover {
+  box-shadow: 0 0 20px rgba(57,158,145,0.35);
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.dark-mode .details-card { background: #1e2227; border-color: #2f847a; }
+.dark-mode .details-card:hover { box-shadow: 0 0 20px rgba(63,193,170,0.4); }
+</style>
 @section('content')
 <div class="content-wrapper fade-in">
     <div class="d-flex justify-content-between align-items-center mb-4">
