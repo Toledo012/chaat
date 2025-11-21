@@ -18,7 +18,9 @@
     {{-- ===== SIDEBAR ===== --}}
     <nav class="sidebar" id="navigation">
         <div class="logo">
-            <img src="{{ asset('images/logo_semahn2.png') }}" alt="Logo del Sistema" class="logo">
+            <a href="{{ route('admin.dashboard') }}">
+                <img src="{{ asset('images/logo_semahn2.png') }}" alt="Logo del Sistema" class="logo">
+            </a>
         </div>
 
         <ul class="nav flex-column">

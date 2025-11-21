@@ -66,7 +66,11 @@ Route::prefix('admin/formatos')
     Route::get('/d', [FormatoController::class, 'formatoD'])->name('d');
     Route::post('/d', [FormatoController::class, 'storeD'])->name('d.store');
 
-    // 🔹 Previsualizaciones y PDFs
+ 
+
+    // ==========================
+
+    // Previsualizaciones y PDFs
     Route::get('/a/{id}/preview', [FormatoController::class, 'previewA'])->name('a.preview');
     Route::get('/a/{id}/pdf', [FormatoController::class, 'generarPDFA'])->name('a.pdf');
 
@@ -81,4 +85,13 @@ Route::prefix('admin/formatos')
 
     // 📊 Reporte general
     Route::get('/reporte/general', [FormatoController::class, 'reporteGeneral'])->name('reporte.general');
+
+   // ==========================
+    //editar formatos
+        Route::get('/editar/{tipo}/{id}', [FormatoController::class, 'edit'])
+            ->name('edit');
+
+        Route::post('/editar/{tipo}/{id}', [FormatoController::class, 'update'])
+            ->name('update');   
+
 });

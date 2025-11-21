@@ -80,7 +80,7 @@ class FormatoController extends Controller
     public function formatoD()
     {
         return view('admin.formatos.formato_d');
-    }   
+    }
     public function storeA(Request $request)
     {
  $data = $request->validate([
@@ -127,6 +127,7 @@ DB::table('formato_a')->insert([
 
 public function storeB(Request $request)
 {
+    try {
     $data = $request->validate([
         'subtipo' => 'required|string',
         'descripcion_servicio' => 'nullable|string',
@@ -140,7 +141,7 @@ public function storeB(Request $request)
         'disco_duro' => 'nullable|string',
         'sistema_operativo' => 'nullable|string',
 
-        'tipo_servicio' => 'nullable|in: Preventivo,Correctivo,Instalación, Corrección, Diagnóstico',
+        'tipo_servicio' => 'nullable|in:Preventivo,Correctivo,Instalación,Corrección,Diagnóstico',
         'diagnostico' => 'nullable|string',
         'origen_falla' => 'nullable|in:Desgaste natural,Mala operación,Otro',
         'trabajo_realizado' => 'nullable|string',
@@ -212,8 +213,148 @@ public function storeB(Request $request)
     }
 
     return redirect()->route('admin.formatos.index')->with('success', 'Formato B guardado correctamente ✅');
+
+} catch (\Throwable $e) {
+    // 📋 Log y mensaje visible para debug
+\Log::error('Error en storeB: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+dd('Error en storeB:', $e->getMessage());
+}
 }
 
+//    public function storeB(Request $request)
+//    {
+//        try {
+//
+//            // =============================
+//            // VALIDACIÓN
+//            // =============================
+//            $data = $request->validate([
+//                'subtipo' => 'required|in:Computadora,Impresora',
+//
+//                'descripcion_servicio' => 'nullable|string',
+//
+//                'equipo' => 'nullable|string',
+//                'marca' => 'nullable|string',
+//                'modelo' => 'nullable|string',
+//
+//                'numero_inventario' => 'nullable|string',
+//                'numero_serie' => 'nullable|string',
+//
+//                'procesador' => 'nullable|string',
+//                'ram' => 'nullable|string',
+//                'disco_duro' => 'nullable|string',
+//                'sistema_operativo' => 'nullable|string',
+//
+//                'tipo_servicio' => 'nullable|in:Preventivo,Correctivo,Instalación,Corrección,Diagnóstico',
+//                'diagnostico' => 'nullable|string',
+//                'origen_falla' => 'nullable|in:Desgaste natural,Mala operación,Otro',
+//                'trabajo_realizado' => 'nullable|string',
+//                'conclusion_servicio' => 'nullable|string',
+//
+//                'detalle_realizado' => 'nullable|string',
+//                'observaciones' => 'nullable|string',
+//
+//                'firma_usuario' => 'nullable|string',
+//                'firma_tecnico' => 'nullable|string',
+//                'firma_jefe_area' => 'nullable|string',
+//
+//                // Materiales
+//                'materiales' => 'nullable|array',
+//                'materiales.*.id_material' => 'nullable|integer|exists:catalogo_materiales,id_material',
+//                'materiales.*.cantidad' => 'nullable|numeric|min:1',
+//            ]);
+//
+//            // =============================
+//            // CREAR SERVICIO
+//            // =============================
+//            $idServicio = DB::table('servicios')->insertGetId([
+//                'folio' => 'B-' . time(),
+//                'fecha' => now()->format('Y-m-d'),
+//                'id_usuario' => Auth::user()->id_usuario,
+//                'tipo_formato' => 'B',
+//                'created_at' => now(),
+//            ]);
+//
+//            // =============================
+//            // DETECTAR SUBTIPO
+//            // =============================
+//            $sub = $data['subtipo'];
+//
+//            // =============================
+//            // CAMPOS PARA COMPUTADORA
+//            // =============================
+//            $equipo = $sub === 'Computadora' ? ($data['equipo'] ?? null) : ($sub === 'Impresora' ? ($data['equipo'] ?? null) : null);
+//            $marca  = $sub === 'Computadora' ? ($data['marca'] ?? null) : ($sub === 'Impresora' ? ($data['marca'] ?? null) : null);
+//            $modelo = $sub === 'Computadora' ? ($data['modelo'] ?? null) : ($sub === 'Impresora' ? ($data['modelo'] ?? null) : null);
+//
+//            $procesador        = $sub === 'Computadora' ? ($data['procesador'] ?? null) : null;
+//            $ram               = $sub === 'Computadora' ? ($data['ram'] ?? null) : null;
+//            $disco_duro        = $sub === 'Computadora' ? ($data['disco_duro'] ?? null) : null;
+//            $sistema_operativo = $sub === 'Computadora' ? ($data['sistema_operativo'] ?? null) : null;
+//            $numero_inventario = $sub === 'Computadora' ? ($data['numero_inventario'] ?? null) : null;
+//            $numero_serie      = $sub === 'Computadora' ? ($data['numero_serie'] ?? null) : null;
+//
+//            // =============================
+//            // INSERT FINAL
+//            // =============================
+//            $insertData = [
+//                'id_servicio' => $idServicio,
+//                'subtipo' => $sub,
+//
+//                'descripcion_servicio' => $data['descripcion_servicio'] ?? null,
+//
+//                // CAMPOS DEPENDIENTES DEL SUBTIPO
+//                'equipo' => $equipo,
+//                'marca'  => $marca,
+//                'modelo' => $modelo,
+//
+//                'procesador' => $procesador,
+//                'ram' => $ram,
+//                'disco_duro' => $disco_duro,
+//                'sistema_operativo' => $sistema_operativo,
+//
+//                'numero_inventario' => $numero_inventario,
+//                'numero_serie'      => $numero_serie,
+//
+//                'tipo_servicio' => $data['tipo_servicio'] ?? null,
+//                'diagnostico' => $data['diagnostico'] ?? null,
+//                'origen_falla' => $data['origen_falla'] ?? null,
+//                'trabajo_realizado' => $data['trabajo_realizado'] ?? null,
+//                'conclusion_servicio' => $data['conclusion_servicio'] ?? null,
+//
+//                'detalle_realizado' => $data['detalle_realizado'] ?? null,
+//                'observaciones' => $data['observaciones'] ?? null,
+//
+//                'firma_usuario' => $data['firma_usuario'] ?? null,
+//                'firma_tecnico' => $data['firma_tecnico'] ?? (Auth::user()->usuario->nombre ?? Auth::user()->name),
+//                'firma_jefe_area' => $data['firma_jefe_area'] ?? 'Jefe de Área',
+//            ];
+//
+//            DB::table('formato_b')->insert($insertData);
+//
+//            // =============================
+//            // GUARDAR MATERIALES (opcionales)
+//            // =============================
+//            if (!empty($data['materiales'])) {
+//                foreach ($data['materiales'] as $mat) {
+//                    if (!empty($mat['id_material'])) {
+//                        DB::table('materiales_utilizados')->insert([
+//                            'id_servicio' => $idServicio,
+//                            'id_material' => $mat['id_material'],
+//                            'cantidad'    => $mat['cantidad'] ?? 1,
+//                        ]);
+//                    }
+//                }
+//            }
+//
+//            return redirect()->route('admin.formatos.index')
+//                ->with('success', 'Formato B guardado correctamente ✅');
+//
+//        } catch (\Throwable $e) {
+//            \Log::error('Error en storeB: ' . $e->getMessage());
+//            dd('Error en storeB:', $e->getMessage());
+//        }
+//    }
 
 
 
@@ -349,6 +490,7 @@ public function previewA($id)
 
 public function previewB($id)
 {
+    // Obtener datos principales del servicio + formato B
     $servicio = DB::table('servicios')
         ->leftJoin('formato_b', 'formato_b.id_servicio', '=', 'servicios.id_servicio')
         ->where('servicios.id_servicio', $id)
@@ -356,6 +498,7 @@ public function previewB($id)
             'servicios.*',
             'formato_b.subtipo',
             'formato_b.descripcion_servicio',
+            'formato_b.equipo',
             'formato_b.marca',
             'formato_b.modelo',
             'formato_b.procesador',
@@ -381,16 +524,19 @@ public function previewB($id)
             ->with('error', 'Formato B no encontrado.');
     }
 
-    // 🧱 Materiales usados
+    // 🧱 Materiales usados (CORREGIDO)
     $materiales = DB::table('materiales_utilizados')
         ->join('catalogo_materiales', 'catalogo_materiales.id_material', '=', 'materiales_utilizados.id_material')
         ->where('materiales_utilizados.id_servicio', $id)
-        ->select('catalogo_materiales.nombre', 'materiales_utilizados.cantidad')
+        ->select(
+            'materiales_utilizados.id_material',   // NECESARIO
+            'catalogo_materiales.nombre',
+            'materiales_utilizados.cantidad'
+        )
         ->get();
 
     return view('admin.formatos.preview.preview_b', compact('servicio', 'materiales'));
 }
-
 
 // preview formato c
 public function previewC($id)
@@ -516,7 +662,7 @@ public function generarPDFB($id)
     return $pdf->stream('FormatoB_'.$servicio->folio.'.pdf');
 }
 
-//pdf formato c     
+//pdf formato c
 
 public function generarPDFC($id)
 {
@@ -563,6 +709,126 @@ public function generarPDFD($id)
 }
 
 
+
+//editar FORMATO
+public function edit($tipo, $id)
+{
+    $servicio = DB::table('servicios')->where('id_servicio', $id)->first();
+
+    if (!$servicio) abort(404);
+
+    switch (strtoupper($tipo)) {
+
+        case 'A':
+            $formato = DB::table('formato_a')->where('id_servicio', $id)->first();
+            return view('admin.formatos.edit.edit_a', compact('servicio', 'formato'));
+
+        case 'B':
+            $formato = DB::table('formato_b')->where('id_servicio', $id)->first();
+
+           $materiales = DB::table('materiales_utilizados')
+    ->join('catalogo_materiales', 'catalogo_materiales.id_material', '=', 'materiales_utilizados.id_material')
+    ->where('materiales_utilizados.id_servicio', $id)
+    ->select(
+        'materiales_utilizados.id_material',   // 👈 NECESARIO
+        'catalogo_materiales.nombre',
+        'materiales_utilizados.cantidad'
+    )
+    ->get();
+
+            return view('admin.formatos.edit.edit_b', compact('servicio', 'formato', 'materiales'));
+
+        case 'C':
+            $formato = DB::table('formato_c')->where('id_servicio', $id)->first();
+
+            $materiales = DB::table('materiales_utilizados')
+                ->where('id_servicio', $id)
+                ->get();
+
+            return view('admin.formatos.edit.edit_c', compact('servicio', 'formato', 'materiales'));
+
+        case 'D':
+            $formato = DB::table('formato_d')->where('id_servicio', $id)->first();
+            return view('admin.formatos.edit.edit_d', compact('servicio', 'formato'));
+
+        default:
+            abort(404);
+    }
+}
+
+// ============================= 
+
+// ACTUALIZAR FORMATO
+public function update(Request $request, $tipo, $id)
+{
+    $data = $request->except('_token');
+
+    switch (strtoupper($tipo)) {
+
+        case 'A':
+            DB::table('formato_a')->where('id_servicio', $id)->update($data);
+            break;
+
+case 'B':
+
+    //  Quitar materiales antes del update
+    if (isset($data['materiales'])) {
+        unset($data['materiales']);
+    }
+
+    DB::table('formato_b')->where('id_servicio', $id)->update($data);
+
+    // 🔁 Actualizar materiales
+    if ($request->has('materiales')) {
+        DB::table('materiales_utilizados')->where('id_servicio', $id)->delete();
+
+        foreach ($request->materiales as $m) {
+            if (!empty($m['id_material'])) {
+                DB::table('materiales_utilizados')->insert([
+                    'id_servicio' => $id,
+                    'id_material' => $m['id_material'],
+                    'cantidad'    => $m['cantidad'] ?? 1,
+                ]);
+            }
+        }
+    }
+
+    break;
+
+        case 'C':
+            DB::table('formato_c')->where('id_servicio', $id)->update($data);
+
+            // Materiales igual que B
+            if ($request->has('materiales')) {
+                DB::table('materiales_utilizados')->where('id_servicio', $id)->delete();
+
+                foreach ($request->materiales as $m) {
+                    if (!empty($m['id_material'])) {
+                        DB::table('materiales_utilizados')->insert([
+                            'id_servicio' => $id,
+                            'id_material' => $m['id_material'],
+                            'cantidad'    => $m['cantidad'] ?? 1
+                        ]);
+                    }
+                }
+            }
+
+            break;
+
+        case 'D':
+            DB::table('formato_d')->where('id_servicio', $id)->update($data);
+            break;
+
+        default:
+            abort(404);
+    }
+
+    return redirect()->back()->with('success', 'Formato actualizado correctamente.');
+}
+// =============================
+
+// REPORTE GENERAL PDF
+// =============================
 public function reporteGeneral(Request $request)
 {
    $tipo = $request->input('tipo');
@@ -571,7 +837,7 @@ public function reporteGeneral(Request $request)
 
     $cuenta = Auth::user();
 
-    // 🔍 Base principal
+    // Base principal
     $query = DB::table('servicios')
         ->leftJoin('usuarios', 'usuarios.id_usuario', '=', 'servicios.id_usuario')
         ->select(
@@ -582,12 +848,12 @@ public function reporteGeneral(Request $request)
             'usuarios.nombre as usuario'
         );
 
-    // 📌 Si el usuario NO es admin, limitar a sus registros
+    //Si el usuario NO es admin, limitar a sus registros
     if (!$cuenta->isAdmin()) {
         $query->where('servicios.id_usuario', $cuenta->id_usuario);
     }
 
-    // 📅 Aplicar filtros opcionales
+    //  Aplicar filtros opcionales
     if ($tipo) $query->where('servicios.tipo_formato', $tipo);
     if ($usuario && $cuenta->isAdmin()) // Solo admins pueden filtrar por usuario
         $query->where('usuarios.nombre', 'like', "%$usuario%");
@@ -595,7 +861,7 @@ public function reporteGeneral(Request $request)
 
     $servicios = $query->get();
 
-    // 👇 Unir campos adicionales según tipo
+    // Unir campos adicionales según tipo
     $formatos = collect();
     foreach ($servicios as $s) {
         $detalle = match ($s->tipo_formato) {
@@ -620,7 +886,7 @@ public function reporteGeneral(Request $request)
     $nombre = 'Reporte_Formatos_' . ($cuenta->isAdmin() ? 'General' : $cuenta->usuario->nombre) . '_' . now()->format('Ymd_His') . '.pdf';
 
     return $pdf->stream($nombre);
-    
+
 }
 
 

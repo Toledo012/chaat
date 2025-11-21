@@ -254,25 +254,45 @@
         <div class="modal-content">
             <form action="{{ route('admin.users.store') }}" method="POST">
                 @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Crear Nuevo Usuario</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3"><label class="form-label">Nombre Completo *</label><input type="text" class="form-control" name="nombre" required></div>
-                    <div class="mb-3"><label class="form-label">Departamento</label><input type="text" class="form-control" name="departamento"></div>
-                    <div class="mb-3"><label class="form-label">Puesto</label><input type="text" class="form-control" name="puesto"></div>
-                    <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" name="email"></div>
-                    <div class="mb-3"><label class="form-label">Extensión</label><input type="text" class="form-control" name="extension"></div>
-                    <div class="mb-3"><label class="form-label">Nombre de Usuario *</label><input type="text" class="form-control" name="username" required></div>
-                    <div class="mb-3"><label class="form-label">Contraseña *</label><input type="password" class="form-control" name="password" required></div>
-                    <div class="mb-3"><label class="form-label">Rol *</label>
-                        <select name="rol" class="form-select" required>
-                            <option value="2">Usuario Normal</option>
-                            <option value="1">Administrador</option>
-                        </select>
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Crear Nuevo Usuario</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                </div>
+                    <div class="modal-body">
+                        <div class="mb-3"><label class="form-label">Nombre Completo *</label><input type="text" class="form-control" name="nombre" required></div>
+
+                                            <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label>Departamento</label>
+                                <select name="departamento" class="form-select">
+                                    <option value="">Seleccionar</option>
+                                    <option>Sistemas</option>
+                            
+                                </select>
+                            </div>
+
+                                                    <div class="col-md-6">
+                                <label>Puesto</label>
+                                <select name="puesto" class="form-select">
+                                    <option value="">Seleccionar</option>
+                                    <option>Jefe de Area</option>
+                                    <option>Técnico</option>
+                                    <option>Programador</option>
+
+                                </select>
+                            </div>
+                        <div class="mb-3"><label class="form-label">Extensión</label><input type="text" class="form-control" name="extension"></div>
+                        <div class="mb-3"><label class="form-label">Email *</label><input type="text" class="form-control" name="username" required></div>
+                        <div class="mb-3"><label class="form-label">Confirmar Email*</label><input type="text" class="form-control" name="email" required></div>
+
+                        <div class="mb-3"><label class="form-label">Contraseña *</label><input type="password" class="form-control" name="password" required></div>
+                        <div class="mb-3"><label class="form-label">Rol *</label>
+                            <select name="rol" class="form-select" required>
+                                <option value="2">Usuario Normal</option>
+                                <option value="1">Administrador</option>
+                            </select>
+                        </div>
+                    </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Crear Usuario</button>
