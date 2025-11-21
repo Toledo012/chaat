@@ -6,6 +6,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\MovimientoController;
 use App\Http\Controllers\FormatoController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MaterialController;
 
 
 // ==========================
@@ -93,5 +94,26 @@ Route::prefix('admin/formatos')
 
         Route::post('/editar/{tipo}/{id}', [FormatoController::class, 'update'])
             ->name('update');   
+
+
+
+});
+
+Route::prefix('admin/materiales')
+    ->name('admin.materiales.')
+    ->middleware(['auth', 'perm:gestion_formatos'])
+    ->group(function () {
+
+    Route::get('/', [MaterialController ::class, 'index'])->name('index');
+    Route::get('/create', [MaterialController::class, 'create'])->name('create');
+    Route::post('/create', [MaterialController::class, 'store'])->name('store');
+
+    Route::get('/{id}/edit', [MaterialController::class, 'edit'])->name('edit');
+    Route::put('/{id}/edit', [MaterialController::class, 'update'])->name('update');
+
+    Route::delete('/{id}', [MaterialController::class, 'destroy'])->name('destroy');
+Route::delete('/eliminar-multiples', [MaterialController::class, 'destroyMultiple'])
+    ->name('destroy.multiple');
+
 
 });

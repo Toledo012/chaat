@@ -143,7 +143,7 @@ public function toggleUserStatus(Request $request, $id)
     if ($usuario && $usuario->cuenta) {
 
 
-        
+            
                 if ($usuario->id_usuario == auth()->user()->id_usuario) {
             return redirect()->route('admin.users.index')
                 ->with('error', 'No puedes desactivar al Super Admin.');

@@ -40,8 +40,9 @@ pre {
 @endsection
 
 @section('content')
+
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h4><i class="fas fa-database me-2 text-success"></i>Registro de movimientos</h4>
+  <h4><i class="fas fa-database me-2 text-primary"></i>Registro de movimientos</h4>
   <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
     <i class="fas fa-arrow-left me-1"></i>Volver
   </a>
