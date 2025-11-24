@@ -333,6 +333,9 @@
                                 <select name="departamento" class="form-select">
                                     <option value="">Seleccionar</option>
                                         <option>Sistemas</option>
+                                        <option>Soporte</option>
+                                        <option>Redes</option>
+                                        <option>Telefonía</option>
                                 
                                     </select>
                                 </div>

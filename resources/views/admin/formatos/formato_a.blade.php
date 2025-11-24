@@ -57,21 +57,26 @@
             <div class="row mb-3">
                 <div class="col-md-4">
                     <label class="form-label">Subtipo <span class="text-danger">*</span></label>
-                    <select name="subtipo" class="form-select" required>
-                        <option value="">Selecciona...</option>
-                        <option>Desarrollo</option>
-                        <option>Soporte</option>
-                    </select>
+                    
+<select name="subtipo" class="form-select" required>
+    <option value="">Selecciona...</option>
+    <option value="Desarrollo">Desarrollo</option>
+    <option value="Soporte">Soporte</option>
+</select>
+
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Tipo de Atención <span class="text-danger">*</span></label>
-                    <select name="tipo_atencion" class="form-select" required>
-                        <option value="">Selecciona...</option>
-                        <option>Memo</option>
-                        <option>Teléfono</option>
-                        <option>Jefe</option>
-                        <option>Usuario</option>
-                    </select>
+                    
+                    
+<select name="tipo_atencion" class="form-select" required>
+    <option value="">Selecciona...</option>
+    <option value="Memo">Memo</option>
+    <option value="Teléfono">Teléfono</option>
+    <option value="Jefe">Jefe</option>
+    <option value="Usuario">Usuario</option>
+</select>
+
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Petición <span class="text-danger">*</span></label>
@@ -82,32 +87,41 @@
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Tipo de Servicio <span class="text-danger">*</span></label>
-                    <select name="tipo_servicio" class="form-select" required>
-                        <option value="">Selecciona...</option>
-                        <option>Equipos</option>
-                        <option>Redes LAN/WAN</option>
-                        <option>Antivirus</option>
-                        <option>Software</option>
-                    </select>
+                    
+                    
+<select name="tipo_servicio" class="form-select" required>
+    <option value="">Selecciona...</option>
+    <option value="Equipos">Equipos</option>
+    <option value="Redes LAN/WAN">Redes LAN/WAN</option>
+    <option value="Antivirus">Antivirus</option>
+    <option value="Software">Software</option>
+</select>
+
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Trabajo Realizado <span class="text-danger">*</span></label>
-                    <select name="trabajo_realizado" class="form-select" required>
-                        <option value="">Selecciona...</option>
-                        <option>En sitio</option>
-                        <option>Área de producción</option>
-                        <option>Traslado de equipo</option>
-                    </select>
+                    
+                    
+<select name="trabajo_realizado" class="form-select" required>
+    <option value="">Selecciona...</option>
+    <option value="En sitio">En sitio</option>
+    <option value="Área de producción">Área de producción</option>
+    <option value="Traslado de equipo">Traslado de equipo</option>
+</select>
+
                 </div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Conclusión del Servicio <span class="text-danger">*</span></label>
-                <select name="conclusion_servicio" class="form-select" required>
-                    <option value="">Selecciona...</option>
-                    <option>Terminado</option>
-                    <option>En proceso</option>
-                </select>
+                
+                
+<select name="conclusion_servicio" class="form-select" required>
+    <option value="">Selecciona...</option>
+    <option value="Terminado">Terminado</option>
+    <option value="En proceso">En proceso</option>
+</select>
+
             </div>
 
             <div class="mb-3">
