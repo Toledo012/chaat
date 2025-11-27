@@ -72,6 +72,13 @@
 
 <div class="container bg-white shadow p-4 rounded">
 
+    {{-- BOTÓN VOLVER --}}
+    <div class="mb-3">
+        <a href="{{ route('admin.formatos.index') }}" class="btn btn-outline-secondary">
+            &larr; Volver a Formatos
+        </a>
+    </div>
+
     {{-- BOTÓN EDITAR --}}
     <div class="mb-3 text-end">
         <button type="button" class="btn btn-success" onclick="toggleEdicion()">
@@ -79,11 +86,11 @@
         </button>
     </div>
 
-    {{-- FORMULARIO PARA ACTUALIZAR --}}
+    {{-- FORMULARIO --}}
     <form method="POST" action="{{ route('admin.formatos.update', ['A', $servicio->id_servicio]) }}">
         @csrf
 
-        {{-- ENCABEZADO INSTITUCIONAL --}}
+        {{-- ENCABEZADO --}}
         <div class="row align-items-center header">
             <div class="col-3 text-center">
                 <img src="{{ asset('images/logo_semahn2.png') }}" alt="Logo SEMAHN">
@@ -124,6 +131,11 @@
         <p class="vista">{{ $servicio->trabajo_realizado ?? 'No especificado' }}</p>
         <textarea name="trabajo_realizado" class="form-control edicion">{{ $servicio->trabajo_realizado }}</textarea>
 
+        {{-- DETALLE REALIZADO (NUEVO) --}}
+        <div class="section-title">Detalle del Trabajo Realizado</div>
+        <p class="vista">{{ $servicio->detalle_realizado ?? 'Sin detalles adicionales' }}</p>
+        <textarea name="detalle_realizado" class="form-control edicion">{{ $servicio->detalle_realizado }}</textarea>
+
         {{-- CONCLUSIÓN --}}
         <div class="section-title">Conclusión del Servicio</div>
         <p class="vista">{{ $servicio->conclusion_servicio ?? 'Sin datos' }}</p>
@@ -156,8 +168,12 @@
             </tr>
         </table>
 
-        {{-- BOTÓN GUARDAR --}}
+        {{-- BOTONES --}}
         <div id="guardarBtn" class="text-end mt-4" style="display:none;">
+            <button type="button" class="btn btn-outline-secondary me-2" onclick="location.reload()">
+                Cancelar
+            </button>
+
             <button type="submit" class="btn btn-primary">
                 Guardar Cambios
             </button>
@@ -171,15 +187,9 @@
         <p>Generado desde el Sistema de Formatos Digitales</p>
     </div>
 
-                    <div class="text-end">
-                    <a href="{{ route('admin.formatos.index') }}" class="btn btn-outline-secondary">Cancelar</a>
-                </div>
-
 </div>
 
-
-
-{{-- SCRIPT PARA CAMBIAR A MODO EDICIÓN --}}
+{{-- SCRIPT PARA MODO EDICIÓN --}}
 <script>
 function toggleEdicion() {
     document.querySelectorAll('.vista').forEach(v => v.style.display = 'none');

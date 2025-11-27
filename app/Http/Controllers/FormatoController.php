@@ -81,6 +81,10 @@ class FormatoController extends Controller
     {
         return view('admin.formatos.formato_d');
     }
+
+
+
+    //logica para guardar formatos A, B, C, D
     public function storeA(Request $request)
     {
  $data = $request->validate([
@@ -468,6 +472,8 @@ public function previewA($id)
             'servicios.*',
             'formato_a.peticion',
             'formato_a.trabajo_realizado',
+
+            'formato_a.detalle_realizado',
             'formato_a.conclusion_servicio',
             'formato_a.observaciones',
             'formato_a.firma_usuario',
@@ -613,6 +619,8 @@ public function generarPDFA($id)
             'servicios.*',
             'formato_a.peticion',
             'formato_a.trabajo_realizado',
+        
+            'formato_a.detalle_realizado',
             'formato_a.conclusion_servicio',
             'formato_a.observaciones',
             'formato_a.firma_usuario',
