@@ -530,18 +530,22 @@ public function previewB($id)
             ->with('error', 'Formato B no encontrado.');
     }
 
-    // 🧱 Materiales usados (CORREGIDO)
+    // materiales usados
     $materiales = DB::table('materiales_utilizados')
         ->join('catalogo_materiales', 'catalogo_materiales.id_material', '=', 'materiales_utilizados.id_material')
         ->where('materiales_utilizados.id_servicio', $id)
         ->select(
-            'materiales_utilizados.id_material',   // NECESARIO
+            'materiales_utilizados.id_material',
             'catalogo_materiales.nombre',
             'materiales_utilizados.cantidad'
         )
         ->get();
 
-    return view('admin.formatos.preview.preview_b', compact('servicio', 'materiales'));
+    // catalogo completo-agregar nuevos
+    $catalogo_materiales = DB::table('catalogo_materiales')->get();
+
+    return view('admin.formatos.preview.preview_b',
+        compact('servicio', 'materiales', 'catalogo_materiales'));
 }
 
 // preview formato c
@@ -570,14 +574,24 @@ public function previewC($id)
         return redirect()->route('admin.formatos.index')->with('error', 'Formato C no encontrado.');
     }
 
+    // materiales usados
     $materiales = DB::table('materiales_utilizados')
         ->join('catalogo_materiales', 'catalogo_materiales.id_material', '=', 'materiales_utilizados.id_material')
         ->where('materiales_utilizados.id_servicio', $id)
-        ->select('catalogo_materiales.nombre', 'materiales_utilizados.cantidad')
+        ->select(
+            'materiales_utilizados.id_material',
+            'catalogo_materiales.nombre',
+            'materiales_utilizados.cantidad'
+        )
         ->get();
 
-    return view('admin.formatos.preview.preview_c', compact('servicio', 'materiales'));
+    // catalogo materiales
+    $catalogo_materiales = DB::table('catalogo_materiales')->get();
+
+    return view('admin.formatos.preview.preview_c',
+        compact('servicio', 'materiales', 'catalogo_materiales'));
 }
+
 
 public function previewD($id)
 {
@@ -591,10 +605,12 @@ public function previewD($id)
             'formato_d.marca',
             'formato_d.modelo',
             'formato_d.serie',
-            'formato_d.otorgante',
+
+            // 🔥 CAMPOS NECESARIOS PARA EL PREVIEW
+
+            'formato_d.observaciones',
             'formato_d.receptor',
-            'formato_d.firma_jefe_area',
-            'formato_d.observaciones'
+            'formato_d.firma_jefe_area'
         )
         ->first();
 
@@ -802,26 +818,31 @@ case 'B':
     }
 
     break;
+case 'C':
 
-        case 'C':
-            DB::table('formato_c')->where('id_servicio', $id)->update($data);
+    // ❗ QUITAR MATERIALES DEL UPDATE PARA QUE NO INTENTE INSERTARLO COMO COLUMNA
+    if (isset($data['materiales'])) {
+        unset($data['materiales']);
+    }
 
-            // Materiales igual que B
-            if ($request->has('materiales')) {
-                DB::table('materiales_utilizados')->where('id_servicio', $id)->delete();
+    DB::table('formato_c')->where('id_servicio', $id)->update($data);
 
-                foreach ($request->materiales as $m) {
-                    if (!empty($m['id_material'])) {
-                        DB::table('materiales_utilizados')->insert([
-                            'id_servicio' => $id,
-                            'id_material' => $m['id_material'],
-                            'cantidad'    => $m['cantidad'] ?? 1
-                        ]);
-                    }
-                }
+    // 🔁 Actualizar materiales
+    if ($request->has('materiales')) {
+        DB::table('materiales_utilizados')->where('id_servicio', $id)->delete();
+
+        foreach ($request->materiales as $m) {
+            if (!empty($m['id_material'])) {
+                DB::table('materiales_utilizados')->insert([
+                    'id_servicio' => $id,
+                    'id_material' => $m['id_material'],
+                    'cantidad'    => $m['cantidad'] ?? 1
+                ]);
             }
+        }
+    }
 
-            break;
+    break;
 
         case 'D':
             DB::table('formato_d')->where('id_servicio', $id)->update($data);
