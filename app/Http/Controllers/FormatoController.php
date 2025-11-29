@@ -609,6 +609,7 @@ public function previewD($id)
             // 🔥 CAMPOS NECESARIOS PARA EL PREVIEW
 
             'formato_d.observaciones',
+            'formato_d.otorgante',
             'formato_d.receptor',
             'formato_d.firma_jefe_area'
         )
