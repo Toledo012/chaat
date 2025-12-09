@@ -193,6 +193,7 @@ public function toggleUserStatus(Request $request, $id)
                 'puesto' => 'nullable|string|max:50',
                 'email' => 'nullable|email|max:50|unique:usuarios,email,' . $id . ',id_usuario',
                 'username' => $usernameRule,
+                'password' => 'nullable|string|min:6|confirmed',
             ]);
 
             $usuario->update([
@@ -200,12 +201,20 @@ public function toggleUserStatus(Request $request, $id)
                 'departamento' => $request->departamento,
                 'puesto' => $request->puesto,
                 'email' => $request->email,
+                'password' => $request->password ? Hash::make($request->password) : $usuario->password,
             ]);
 
             if ($usuario->cuenta && $request->username) {
                 $usuario->cuenta->update([
                     'username' => $request->username
+                    
                 ]);
+
+            if ($request->password) {
+                    $usuario->cuenta->update([
+                        'password' => Hash::make($request->password)
+                    ]);
+                }
             }
 
             return redirect()->route('admin.users.index')->with('success', 'Usuario actualizado correctamente');

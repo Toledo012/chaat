@@ -400,37 +400,63 @@ document.addEventListener('DOMContentLoaded', function() {
             const email = tr.dataset.email;
             const username = tr.dataset.username;
 
-            const html = `
-                <form action="${baseUrl}/${id}" method="POST">
-                    @csrf
-                    @method('PUT')
-                    <div class="modal-header">
-                        <h5 class="modal-title">Editar Usuario: ${nombre}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3"><label>Nombre</label>
-                            <input type="text" name="nombre" class="form-control" value="${nombre}" required>
-                        </div>
-                        <div class="mb-3"><label>Departamento</label>
-                            <input type="text" name="departamento" class="form-control" value="${departamento}">
-                        </div>
-                        <div class="mb-3"><label>Puesto</label>
-                            <input type="text" name="puesto" class="form-control" value="${puesto}">
-                        </div>
-                        <div class="mb-3"><label>Email</label>
-                            <input type="email" name="email" class="form-control" value="${email}">
-                        </div>
-                        <div class="mb-3"><label>Usuario</label>
-                            <input type="text" name="username" class="form-control" value="${username}">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button class="btn btn-primary">Guardar Cambios</button>
-                    </div>
-                </form>
-            `;
+const html = `
+    <form action="${baseUrl}/${id}" method="POST">
+        @csrf
+        @method('PUT')
+
+        <div class="modal-header">
+            <h5 class="modal-title">Editar Usuario: ${nombre}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+
+            <div class="mb-3">
+                <label>Nombre</label>
+                <input type="text" name="nombre" class="form-control" value="${nombre}" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Departamento</label>
+                <input type="text" name="departamento" class="form-control" value="${departamento}">
+            </div>
+
+            <div class="mb-3">
+                <label>Puesto</label>
+                <input type="text" name="puesto" class="form-control" value="${puesto}">
+            </div>
+
+            <div class="mb-3">
+                <label>Email</label>
+                <input type="email" name="email" class="form-control" value="${email}">
+            </div>
+<div class="mb-3">
+    <label>Nueva Contraseña</label>
+    <input type="text" id="password" name="password" class="form-control" placeholder="Dejar vacío para no cambiar">
+</div>
+
+<div class="mb-3">
+    <label>Confirmar Nueva Contraseña</label>
+    <input type="text" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="Confirmar">
+</div>
+
+
+            
+            <div class="mb-3">
+                <label>Usuario</label>
+                <input type="text" name="username" class="form-control" value="${username}">
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button class="btn btn-primary">Guardar Cambios</button>
+        </div>
+    </form>
+`;
+
 
             document.getElementById('editModalContent').innerHTML = html;
             new bootstrap.Modal(document.getElementById('globalEditModal')).show();
@@ -527,7 +553,14 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('deleteModalContent').innerHTML = html;
             new bootstrap.Modal(document.getElementById('globalDeleteModal')).show();
         });
+
+function togglePassword() {
+    let f = document.getElementById("password");
+    f.type = (f.type === "password") ? "text" : "password";
+}
     });
+
+
 
 });
 </script>

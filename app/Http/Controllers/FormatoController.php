@@ -606,7 +606,7 @@ public function previewD($id)
             'formato_d.modelo',
             'formato_d.serie',
 
-            // 🔥 CAMPOS NECESARIOS PARA EL PREVIEW
+            //  CAMPOS PARA EL PREVIEW
 
             'formato_d.observaciones',
             'formato_d.otorgante',

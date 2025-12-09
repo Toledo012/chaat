@@ -45,6 +45,9 @@
 <div class="section-title">Trabajo Realizado</div>
 <p>{{ $servicio->trabajo_realizado ?? 'No se especifica.' }}</p>
 
+<div class="section-title">Detalle Realizado</div>
+<p>{{ $servicio->detalle_realizado ?? 'No se especifica.' }}</p>
+
 <div class="section-title">Conclusión del Servicio</div>
 <p>{{ $servicio->conclusion_servicio ?? 'Sin datos.' }}</p>
 
