@@ -117,3 +117,6 @@ Route::delete('/eliminar-multiples', [MaterialController::class, 'destroyMultipl
 
 
 });
+
+Route::put('/user/update-password', [UserController::class, 'updatePassword'])
+    ->name('user.update-password');
