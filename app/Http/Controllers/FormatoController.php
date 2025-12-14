@@ -100,6 +100,12 @@ class FormatoController extends Controller
     'firma_jefe_area' => 'nullable|string',
     'observaciones' => 'nullable|string',
 ]);
+
+    $tipoServicioFinal = $data['tipo_servicio'] === 'otro'
+        ? $data['tipo_servicio_otro']
+        : $data['tipo_servicio'];
+
+        
     $idServicio = DB::table('servicios')->insertGetId([
         'folio' => 'A-' . time(),
         'fecha' => now()->format('Y-m-d'),

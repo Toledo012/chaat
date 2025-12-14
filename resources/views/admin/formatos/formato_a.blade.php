@@ -64,6 +64,13 @@
     <option value="Soporte">Soporte</option>
 </select>
 
+
+
+                <div class="col-md-4">
+                    <label class="form-label">Departamento <span class="text-danger">*</span></label>
+                    <input type="text" name="departamento" class="form-control" placeholder="Selecciona el departamento" required>
+                </div>
+
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Tipo de Atención <span class="text-danger">*</span></label>
@@ -84,33 +91,43 @@
                 </div>
             </div>
 
+  
+            {{-- TIPO SERVICIO / TRABAJO REALIZADO --}}
             <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">Tipo de Servicio <span class="text-danger">*</span></label>
-                    
-                    
-<select name="tipo_servicio" class="form-select" required>
-    <option value="">Selecciona...</option>
-    <option value="Equipos">Equipos</option>
-    <option value="Redes LAN/WAN">Redes LAN/WAN</option>
-    <option value="Antivirus">Antivirus</option>
-    <option value="Software">Software</option>
-</select>
 
+                <div class="col-md-6">
+                    <label class="form-label">Tipo de Servicio *</label>
+
+                    <select name="tipo_servicio" id="tipo_servicio" class="form-select" required>
+                        <option value="">Selecciona...</option>
+                        <option value="Equipos">Equipos</option>
+                        <option value="Redes LAN/WAN">Redes LAN/WAN</option>
+                        <option value="Antivirus">Antivirus</option>
+                        <option value="Software">Software</option>
+                        <option value="otro">Otro…</option>
+                    </select>
+
+                    <input
+                        type="text"
+                        name="tipo_servicio_otro"
+                        id="servicioOtro"
+                        class="form-control mt-2"
+                        placeholder="Especifica el tipo de servicio"
+                        style="display:none"
+                    >
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Trabajo Realizado <span class="text-danger">*</span></label>
-                    
-                    
-<select name="trabajo_realizado" class="form-select" required>
-    <option value="">Selecciona...</option>
-    <option value="En sitio">En sitio</option>
-    <option value="Área de producción">Área de producción</option>
-    <option value="Traslado de equipo">Traslado de equipo</option>
-</select>
 
+                <div class="col-md-6">
+                    <label class="form-label">Trabajo Realizado *</label>
+                    <select name="trabajo_realizado" class="form-select" required>
+                        <option value="">Selecciona...</option>
+                        <option value="En sitio">En sitio</option>
+                        <option value="Área de producción">Área de producción</option>
+                        <option value="Traslado de equipo">Traslado de equipo</option>
+                    </select>
                 </div>
             </div>
+
 
             <div class="mb-3">
                 <label class="form-label">Conclusión del Servicio <span class="text-danger">*</span></label>
@@ -168,6 +185,23 @@ document.addEventListener('DOMContentLoaded', function() {
         sidebar.classList.add('collapsed');
         localStorage.setItem('sidebarCollapsed', true);
     }
-});
+/* Mostrar campo "otro" */
+
+    /* TIPO SERVICIO OTRO */
+    const tipoServicio = document.getElementById('tipo_servicio');
+    const servicioOtro = document.getElementById('servicioOtro');
+
+    tipoServicio.addEventListener('change', () => {
+        if (tipoServicio.value === 'otro') {
+            servicioOtro.style.display = 'block';
+            servicioOtro.required = true;
+        } else {
+            servicioOtro.style.display = 'none';
+            servicioOtro.required = false;
+            servicioOtro.value = '';
+        }
+    });
+
+
 </script>
 @endsection

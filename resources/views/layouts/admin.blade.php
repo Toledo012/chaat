@@ -72,8 +72,30 @@
                 </a>
             </li>
             @endif
+
+
+                                    {{-- Departamentos (solo admin) --}}
+            @if(Auth::user()->isAdmin())
+            <li class="nav-item">
+                <a class="nav-link @if(request()->routeIs('admin.departamentos.*')) active @endif" href="{{ route('admin.departamentos.index') }}">
+                    <i class="fas fa-building"></i> <span>Departamentos</span>
+                </a>
+            </li>
+            @endif
+
+
+                        <li class="nav-item">
+                <a class="nav-link @if(request()->routeIs('admin.materiales.*')) active @endif" href="{{ route('admin.materiales.index') }}">
+                    <i class="fa-solid fa-boxes-stacked me-2"></i> <span>Materiales</span>
+                </a>
+            </li>
         </ul>
+
+
     </nav>
+
+
+
 
     {{-- ===== HEADER ===== --}}
     <header class="admin-header d-flex justify-content-between align-items-center">

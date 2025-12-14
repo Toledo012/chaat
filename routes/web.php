@@ -7,6 +7,7 @@ use App\Http\Controllers\MovimientoController;
 use App\Http\Controllers\FormatoController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MaterialController;
+use App\Http\Controllers\DepartamentoController;
 
 
 // ==========================
@@ -34,8 +35,8 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::delete('/users/{id}', [AdminController::class, 'destroyUser'])->middleware('perm:eliminar_usuarios')->name('users.destroy');
 
     // Auditoría
+    
     Route::get('/movimientos', [MovimientoController::class, 'index'])->middleware('perm:any,gestion_usuarios')->name('movimientos.index');
-
 
 
 
@@ -120,3 +121,11 @@ Route::delete('/eliminar-multiples', [MaterialController::class, 'destroyMultipl
 
 Route::put('/user/update-password', [UserController::class, 'updatePassword'])
     ->name('user.update-password');
+
+
+
+    Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::resource('departamentos', DepartamentoController::class)
+        ->names('admin.departamentos')
+        ->except(['show','destroy']);
+});

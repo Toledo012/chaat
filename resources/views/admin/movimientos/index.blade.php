@@ -1,170 +1,164 @@
 @extends('layouts.admin')
 
-@section('title', 'Movimientos (Auditoría del Sistema)')
-@section('header_title', 'Auditoría de Movimientos')
-@section('header_subtitle', 'Registro detallado de cambios realizados en el sistema')
-
-@section('styles')
-<style>
-.card-header { background-color: #399e91; color: white; font-weight: 600; }
-pre {
-  max-height: 300px;
-  overflow-y: auto;
-  border-radius: 8px;
-  padding: 0.75rem;
-  background-color: #f8f9fa;
-  font-family: 'Courier New', monospace;
-  font-size: 0.85rem;
-}
-.dark-mode pre { background-color: #2b3038; color: #e9ecef; }
-.table-success th { background-color: #399e91 !important; color: white; }
-.badge { font-size: 0.85rem; }
-.details-card {
-  border: 1px solid #399e91;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(57,158,145,0.2);
-  background: white;
-  transition: all 0.3s ease;
-  animation: fadeInUp 0.4s ease both;
-}
-.details-card:hover {
-  box-shadow: 0 0 20px rgba(57,158,145,0.35);
-}
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.dark-mode .details-card { background: #1e2227; border-color: #2f847a; }
-.dark-mode .details-card:hover { box-shadow: 0 0 20px rgba(63,193,170,0.4); }
-</style>
-@endsection
+@section('title', 'Movimientos')
+@section('header_title', 'Movimientos del Sistema')
+@section('header_subtitle', 'Auditoría y registro de acciones')
 
 @section('content')
+<div class="container-fluid">
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h4><i class="fas fa-database me-2 text-primary"></i>Registro de movimientos</h4>
-  <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">
-    <i class="fas fa-arrow-left me-1"></i>Volver
-  </a>
-</div>
+    {{-- CARD PRINCIPAL --}}
+    <div class="card shadow-sm border-0">
 
-{{-- 🔍 FILTROS --}}
-<form class="row g-2 mb-3" method="GET">
-  <div class="col-md-2">
-    <input type="text" list="tablas" class="form-control" name="tabla" placeholder="Tabla" value="{{ request('tabla') }}">
-    <datalist id="tablas">
-      @foreach(\DB::select('SHOW TABLES') as $t)
-        @php $tabla = array_values((array)$t)[0]; @endphp
-        <option value="{{ $tabla }}">
-      @endforeach
-    </datalist>
-  </div>
-  <div class="col-md-2">
-    <select class="form-select" name="accion">
-      <option value="">Acción</option>
-      @foreach(['INSERT','UPDATE','DELETE'] as $a)
-        <option value="{{ $a }}" @selected(request('accion')===$a)>{{ $a }}</option>
-      @endforeach
-    </select>
-  </div>
-  <div class="col-md-2">
-    <input type="text" list="usuarios" class="form-control" name="usuario" placeholder="Usuario" value="{{ request('usuario') }}">
-    <datalist id="usuarios">
-      @foreach(\App\Models\Usuario::orderBy('nombre')->get() as $u)
-        <option value="{{ $u->name }}">
-      @endforeach
-    </datalist>
-  </div>
-  <div class="col-md-2">
-    <input type="date" class="form-control" name="desde" value="{{ request('desde') }}">
-  </div>
-  <div class="col-md-2">
-    <input type="date" class="form-control" name="hasta" value="{{ request('hasta') }}">
-  </div>
-  <div class="col-md-2 d-grid">
-    <button class="btn btn-primary"><i class="fas fa-search me-1"></i>Filtrar</button>
-  </div>
-</form>
+        {{-- HEADER --}}
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fas fa-clipboard-list fa-lg text-primary"></i>
+                <div>
+                    <h5 class="mb-0">Historial de Movimientos</h5>
+                    <small class="text-muted">
+                        Registro de inserciones, modificaciones y eliminaciones
+                    </small>
+                </div>
+            </div>
 
+            {{-- BOTÓN EXPORTAR (MISMA RUTA) --}}
 <div class="d-flex justify-content-end mb-3">
   <a class="btn btn-outline-danger btn-sm" href="{{ route('admin.movimientos.index', array_merge(request()->query(), ['export' => 1, 'autoprint' => 0])) }}" target="_blank">
     <i class="fas fa-file-pdf me-1"></i> Exportar PDF
   </a>
 </div>
+        </div>
 
-{{-- 📋 TABLA --}}
-<div class="card shadow border-0">
-  <div class="card-header"><i class="fas fa-list me-2"></i>Movimientos registrados</div>
-  <div class="table-responsive">
-    <table class="table table-striped align-middle mb-0">
-      <thead class="table-success">
-        <tr>
-          <th>Fecha</th>
-          <th>Usuario</th>
-          <th>Tabla</th>
-          <th>Acción</th>
-          <th>ID Registro</th>
-          <th>Detalles</th>
-        </tr>
-      </thead>
-      <tbody>
-        @forelse($movimientos as $m)
-        <tr>
-          <td>{{ $m->fecha }}</td>
-          <td>{{ $m->username ?? '—' }}</td>
-          <td>{{ $m->tabla }}</td>
-          <td>
-            <span class="badge bg-{{ $m->accion==='DELETE'?'danger':($m->accion==='UPDATE'?'warning text-dark':'success') }}">
-              {{ $m->accion }}
-            </span>
-          </td>
-          <td>{{ $m->id_registro }}</td>
-          <td>
-            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#det{{ $m->id_movimiento }}">
-              <i class="fas fa-eye"></i> Ver
-            </button>
-          </td>
-        </tr>
-        <tr class="collapse" id="det{{ $m->id_movimiento }}">
-          <td colspan="6">
-            <div class="row g-3">
-              <div class="col-md-6">
-                <div class="details-card p-3 border-start border-danger border-3">
-                  <h6 class="text-danger mb-2"><i class="fas fa-arrow-left me-1"></i>ANTES</h6>
-                  <pre>{{ json_encode(json_decode($m->datos_anteriores ?? 'null', true), JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE) }}</pre>
+        {{-- FILTROS (MISMA LÓGICA) --}}
+        <div class="card-body border-bottom">
+            <form method="GET" class="row g-3 align-items-end">
+
+                <div class="col-md-3">
+                    <label class="form-label">Tabla</label>
+                    <select name="tabla" class="form-select">
+                        <option value="">Todas</option>
+                        <option value="Usuarios" {{ request('tabla')=='Usuarios' ? 'selected' : '' }}>Usuarios</option>
+                        <option value="Cuentas" {{ request('tabla')=='Cuentas' ? 'selected' : '' }}>Cuentas</option>
+                        <option value="Servicios" {{ request('tabla')=='Servicios' ? 'selected' : '' }}>Servicios</option>
+                        <option value="Materiales_Utilizados" {{ request('tabla')=='Materiales_Utilizados' ? 'selected' : '' }}>Materiales</option>
+                        <option value="Formato_A" {{ request('tabla')=='Formato_A' ? 'selected' : '' }}>Formato A</option>
+                        <option value="Formato_B" {{ request('tabla')=='Formato_B' ? 'selected' : '' }}>Formato B</option>
+                        <option value="Formato_C" {{ request('tabla')=='Formato_C' ? 'selected' : '' }}>Formato C</option>
+                        <option value="Formato_D" {{ request('tabla')=='Formato_D' ? 'selected' : '' }}>Formato D</option>
+                    </select>
                 </div>
-              </div>
-              <div class="col-md-6">
-                <div class="details-card p-3 border-start border-success border-3">
-                  <h6 class="text-success mb-2"><i class="fas fa-arrow-right me-1"></i>DESPUÉS</h6>
-                  <pre>{{ json_encode(json_decode($m->datos_nuevos ?? 'null', true), JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE) }}</pre>
+
+                <div class="col-md-2">
+                    <label class="form-label">Acción</label>
+                    <select name="accion" class="form-select">
+                        <option value="">Todas</option>
+                        <option value="INSERT" {{ request('accion')=='INSERT' ? 'selected' : '' }}>INSERT</option>
+                        <option value="UPDATE" {{ request('accion')=='UPDATE' ? 'selected' : '' }}>UPDATE</option>
+                        <option value="DELETE" {{ request('accion')=='DELETE' ? 'selected' : '' }}>DELETE</option>
+                    </select>
                 </div>
-              </div>
-            </div>
-          </td>
-        </tr>
-        @empty
-          <tr><td colspan="6" class="text-center text-muted">Sin movimientos registrados</td></tr>
-        @endforelse
-      </tbody>
-    </table>
-  </div>
-  <div class="card-footer bg-light">
-    {{ $movimientos->links() }}
-  </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Rango de fecha</label>
+                    <input type="date" name="fecha" class="form-control" value="{{ request('fecha') }}">
+                </div>
+
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-primary me-2">
+                        <i class="fas fa-filter me-1"></i> Filtrar
+                    </button>
+                    <a href="{{ route('admin.movimientos.index') }}" class="btn btn-secondary">
+                        Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        {{-- TABLA --}}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tabla</th>
+                        <th>Acción</th>
+                        <th>ID Registro</th>
+                        <th>Usuario</th>
+                        <th>Detalles</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @forelse($movimientos as $mov)
+                        <tr>
+                            <td class="text-muted">
+                                {{ $mov->fecha }}
+                            </td>
+
+                            <td>
+                                <span class="fw-semibold">{{ $mov->tabla }}</span>
+                            </td>
+
+                            <td>
+                                @if($mov->accion === 'INSERT')
+                                    <span class="badge bg-success-subtle text-success px-3 py-2">
+                                        INSERT
+                                    </span>
+                                @elseif($mov->accion === 'UPDATE')
+                                    <span class="badge bg-warning-subtle text-warning px-3 py-2">
+                                        UPDATE
+                                    </span>
+                                @else
+                                    <span class="badge bg-danger-subtle text-danger px-3 py-2">
+                                        DELETE
+                                    </span>
+                                @endif
+                            </td>
+
+                            <td>
+                                <span class="badge bg-info-subtle text-info px-3 py-2">
+                                    {{ $mov->id_registro }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {{ $mov->cuenta->username ?? 'Sistema' }}
+                            </td>
+
+                            <td>
+                                <details>
+                                    <summary class="text-primary" style="cursor:pointer">
+                                        Ver datos
+                                    </summary>
+                                    <pre class="mt-2 small text-muted">
+{{ json_encode([
+    'antes' => $mov->datos_anteriores,
+    'despues' => $mov->datos_nuevos
+], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}
+                                    </pre>
+                                </details>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                No hay movimientos registrados
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- PAGINACIÓN --}}
+        <div class="card-footer d-flex justify-content-between align-items-center">
+            <small class="text-muted">
+                Mostrando {{ $movimientos->count() }} de {{ $movimientos->total() }} registros
+            </small>
+
+            {{ $movimientos->withQueryString()->links() }}
+        </div>
+    </div>
 </div>
-@endsection
-
-@section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Sidebar colapsada al entrar
-  const sidebar = document.getElementById('navigation');
-  if (sidebar && !sidebar.classList.contains('collapsed')) {
-    sidebar.classList.add('collapsed');
-    localStorage.setItem('sidebarCollapsed', true);
-  }
-});
-</script>
 @endsection
