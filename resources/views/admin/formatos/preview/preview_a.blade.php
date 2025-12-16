@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Vista previa - Formato A</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
         body {
-            font-family: "Arial", sans-serif;
+            font-family: Arial, sans-serif;
             font-size: 14px;
             background-color: #f8f9fa;
             padding: 2rem;
@@ -63,7 +64,7 @@
             padding-top: 10px;
         }
 
-        /* Textarea oculto por defecto */
+        /* Vista / edición */
         .edicion { display: none; }
     </style>
 </head>
@@ -72,28 +73,33 @@
 
 <div class="container bg-white shadow p-4 rounded">
 
-    {{-- BOTÓN VOLVER --}}
-    <div class="mb-3">
+    {{-- BOTONES SUPERIORES --}}
+    <div class="d-flex justify-content-between mb-3">
         <a href="{{ route('admin.formatos.index') }}" class="btn btn-outline-secondary">
-            &larr; Volver a Formatos
+            ← Volver a Formatos
         </a>
+
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-success" onclick="toggleEdicion()">
+                ✏️ Editar
+            </button>
+
+            <a href="{{ route('admin.formatos.a.pdf', $servicio->id_servicio) }}"
+               target="_blank"
+               class="btn btn-danger">
+                📄 PDF
+            </a>
+        </div>
     </div>
 
-    {{-- BOTÓN EDITAR --}}
-    <div class="mb-3 text-end">
-        <button type="button" class="btn btn-success" onclick="toggleEdicion()">
-            <i class="fa-solid fa-pen-to-square"></i> Editar Formato
-        </button>
-    </div>
-
-    {{-- FORMULARIO --}}
+    {{-- FORM --}}
     <form method="POST" action="{{ route('admin.formatos.update', ['A', $servicio->id_servicio]) }}">
         @csrf
 
         {{-- ENCABEZADO --}}
         <div class="row align-items-center header">
             <div class="col-3 text-center">
-                <img src="{{ asset('images/logo_semahn2.png') }}" alt="Logo SEMAHN">
+                <img src="{{ asset('images/logo_semahn2.png') }}">
             </div>
             <div class="col-9 text-center">
                 <h5>SECRETARÍA DE MEDIO AMBIENTE E HISTORIA NATURAL</h5>
@@ -102,13 +108,13 @@
             </div>
         </div>
 
-        {{-- TÍTULO --}}
+        {{-- TITULO --}}
         <h5 class="titulo">Formato A - Soporte y Desarrollo</h5>
         <p class="subtitulo">Atención de servicios de soporte técnico o desarrollo institucional</p>
 
         {{-- DATOS GENERALES --}}
         <div class="section-title">Datos del Servicio</div>
-        <table class="table table-bordered">
+        <table>
             <tr>
                 <th width="25%">Folio</th>
                 <td>{{ $servicio->folio }}</td>
@@ -117,53 +123,70 @@
             </tr>
             <tr>
                 <th>Tipo de Formato</th>
-                <td colspan="3">A</td>
+                <td>A</td>
+                <th>Departamento</th>
+                <td>
+                    {{-- Vista --}}
+                    <span class="vista">
+                        {{ $departamentos->firstWhere('id_departamento', $servicio->id_departamento)?->nombre ?? 'No asignado' }}
+                    </span>
+
+                    {{-- Edición --}}
+                    <select name="id_departamento" class="form-select edicion">
+                        @foreach($departamentos as $dep)
+                            <option value="{{ $dep->id_departamento }}"
+                                {{ $dep->id_departamento == $servicio->id_departamento ? 'selected' : '' }}>
+                                {{ $dep->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </td>
             </tr>
         </table>
 
         {{-- PETICIÓN --}}
         <div class="section-title">Petición del Servicio</div>
-        <p class="vista">{{ $servicio->peticion ?? 'Sin descripción registrada.' }}</p>
+        <p class="vista">{{ $servicio->peticion ?: 'Sin descripción registrada.' }}</p>
         <textarea name="peticion" class="form-control edicion">{{ $servicio->peticion }}</textarea>
 
         {{-- TRABAJO REALIZADO --}}
         <div class="section-title">Trabajo Realizado</div>
-        <p class="vista">{{ $servicio->trabajo_realizado ?? 'No especificado' }}</p>
+        <p class="vista">{{ $servicio->trabajo_realizado ?: 'No especificado' }}</p>
         <textarea name="trabajo_realizado" class="form-control edicion">{{ $servicio->trabajo_realizado }}</textarea>
 
-        {{-- DETALLE REALIZADO (NUEVO) --}}
+        {{-- DETALLE --}}
         <div class="section-title">Detalle del Trabajo Realizado</div>
-        <p class="vista">{{ $servicio->detalle_realizado ?? 'Sin detalles adicionales' }}</p>
+        <p class="vista">{{ $servicio->detalle_realizado ?: 'Sin detalles' }}</p>
         <textarea name="detalle_realizado" class="form-control edicion">{{ $servicio->detalle_realizado }}</textarea>
 
         {{-- CONCLUSIÓN --}}
         <div class="section-title">Conclusión del Servicio</div>
-        <p class="vista">{{ $servicio->conclusion_servicio ?? 'Sin datos' }}</p>
+        <p class="vista">{{ $servicio->conclusion_servicio ?: 'Sin datos' }}</p>
         <textarea name="conclusion_servicio" class="form-control edicion">{{ $servicio->conclusion_servicio }}</textarea>
 
         {{-- OBSERVACIONES --}}
         <div class="section-title">Observaciones</div>
-        <p class="vista">{{ $servicio->observaciones ?? 'Ninguna' }}</p>
+        <p class="vista">{{ $servicio->observaciones ?: 'Ninguna' }}</p>
         <textarea name="observaciones" class="form-control edicion">{{ $servicio->observaciones }}</textarea>
 
         {{-- FIRMAS --}}
         <div class="section-title">Firmas de Conformidad</div>
-        <table class="firmas" width="100%">
+        <table class="firmas">
             <tr>
                 <td>
-                    <strong>Usuario Solicitante</strong><br>
-                    <span class="vista">{{ $servicio->firma_usuario ?? '___________________' }}</span>
-                    <input type="text" name="firma_usuario" class="form-control edicion" value="{{ $servicio->firma_usuario }}">
+                    <strong>Solicitante</strong><br>
+                    <span class="vista">{{ $servicio->firma_usuario ?: '_________________' }}</span>
+                    <input name="firma_usuario" class="form-control edicion" value="{{ $servicio->firma_usuario }}">
                 </td>
                 <td>
-                    <strong>Realiza el Servicio</strong><br>
-                    <span class="vista">{{ $servicio->firma_tecnico ?? '___________________' }}</span>
-                    <input type="text" name="firma_tecnico" class="form-control edicion" value="{{ $servicio->firma_tecnico }}">
+                    <strong>Técnico</strong><br>
+                    <span class="vista">{{ $servicio->firma_tecnico ?: '_________________' }}</span>
+                    <input name="firma_tecnico" class="form-control edicion" value="{{ $servicio->firma_tecnico }}">
                 </td>
                 <td>
                     <strong>Jefe de Área</strong><br>
-                    <span class="vista">{{ $servicio->firma_jefe_area ?? '___________________' }}</span>
-                    <input type="text" name="firma_jefe_area" class="form-control edicion" value="{{ $servicio->firma_jefe_area }}">
+                    <span class="vista">{{ $servicio->firma_jefe_area ?: '_________________' }}</span>
+                    <input name="firma_jefe_area" class="form-control edicion" value="{{ $servicio->firma_jefe_area }}">
                 </td>
             </tr>
         </table>
@@ -173,23 +196,20 @@
             <button type="button" class="btn btn-outline-secondary me-2" onclick="location.reload()">
                 Cancelar
             </button>
-
             <button type="submit" class="btn btn-primary">
                 Guardar Cambios
             </button>
         </div>
-
     </form>
 
-    {{-- PIE --}}
+    {{-- FOOTER --}}
     <div class="footer">
-        <p>Secretaría de Medio Ambiente e Historia Natural - Unidad de Apoyo Administrativo</p>
-        <p>Generado desde el Sistema de Formatos Digitales</p>
+        Secretaría de Medio Ambiente e Historia Natural – Sistema de Formatos Digitales
     </div>
 
 </div>
 
-{{-- SCRIPT PARA MODO EDICIÓN --}}
+{{-- SCRIPT --}}
 <script>
 function toggleEdicion() {
     document.querySelectorAll('.vista').forEach(v => v.style.display = 'none');
@@ -200,3 +220,4 @@ function toggleEdicion() {
 
 </body>
 </html>
+    

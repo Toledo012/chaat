@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use \Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Departamento;
 
 
 class FormatoController extends Controller
@@ -62,24 +63,36 @@ class FormatoController extends Controller
     }
 
 
-    public function formatoA()
-    {
-        return view('admin.formatos.formato_a');
-    }
+public function formatoA()
+{
+    $departamentos = Departamento::where('activo', 1)->get();
+
+    return view('admin.formatos.formato_a', compact('departamentos'));
+}
 
     public function formatoB()
     {
-        return view('admin.formatos.formato_b');
+
+            $departamentos = Departamento::where('activo', 1)->get();
+
+        return view('admin.formatos.formato_b' , compact('departamentos'));
+
     }
 
     public function formatoC()
+    
     {
-        return view('admin.formatos.formato_c');
+            $departamentos = Departamento::where('activo', 1)->get();
+
+        return view('admin.formatos.formato_c'  , compact('departamentos'));
     }
 
     public function formatoD()
     {
-        return view('admin.formatos.formato_d');
+
+            $departamentos = Departamento::where('activo', 1)->get();
+
+        return view('admin.formatos.formato_d'  , compact('departamentos'));
     }
 
 
@@ -88,6 +101,9 @@ class FormatoController extends Controller
     public function storeA(Request $request)
     {
  $data = $request->validate([
+
+        'id_departamento' => 'required|exists:departamentos,id_departamento',
+
     'subtipo' => 'required|string',
     'tipo_atencion' => 'nullable|string',
     'peticion' => 'nullable|string',
@@ -105,12 +121,15 @@ class FormatoController extends Controller
         ? $data['tipo_servicio_otro']
         : $data['tipo_servicio'];
 
-        
+
     $idServicio = DB::table('servicios')->insertGetId([
         'folio' => 'A-' . time(),
         'fecha' => now()->format('Y-m-d'),
       //  'id_usuario' => Auth::id(), // 👈 Nuevo campo
 'id_usuario' => Auth::user()->id_usuario,
+    'id_departamento' => $data['id_departamento'],
+
+ 
 
         'tipo_formato' => 'A',
         'created_at' => now(),
@@ -139,6 +158,8 @@ public function storeB(Request $request)
 {
     try {
     $data = $request->validate([
+        'id_departamento' => 'required|exists:departamentos,id_departamento',
+
         'subtipo' => 'required|string',
         'descripcion_servicio' => 'nullable|string',
         'equipo' => 'nullable|string',
@@ -174,6 +195,7 @@ public function storeB(Request $request)
         'fecha' => now()->format('Y-m-d'),
       //  'id_usuario' => Auth::id(), // 👈 Nuevo campo
 'id_usuario' => Auth::user()->id_usuario,
+    'id_departamento' => $data['id_departamento'],
 
         'tipo_formato' => 'B',
         'created_at' => now(),
@@ -374,6 +396,8 @@ dd('Error en storeB:', $e->getMessage());
 public function storeC(Request $request)
 {
     $data = $request->validate([
+        'id_departamento' => 'required|exists:departamentos,id_departamento',
+
         'descripcion_servicio' => 'nullable|string',
         'tipo_red' => 'required|in:Red,Telefonía',
         'tipo_servicio' => 'required|in:Preventivo,Correctivo,Configuracion',
@@ -395,6 +419,7 @@ public function storeC(Request $request)
         'fecha' => now()->format('Y-m-d'),
      //   'id_usuario' => Auth::id(), // 👈 Nuevo campo
 'id_usuario' => Auth::user()->id_usuario,
+    'id_departamento' => $data['id_departamento'],
 
         'tipo_formato' => 'C',
         'created_at' => now(),
@@ -438,6 +463,7 @@ public function storeC(Request $request)
 public function storeD(Request $request)
 {
     $data = $request->validate([
+        'id_departamento' => 'required|exists:departamentos,id_departamento',
         'fecha' => 'nullable|date',
         'equipo' => 'nullable|string',
         'marca' => 'nullable|string',
@@ -456,6 +482,7 @@ public function storeD(Request $request)
         'fecha' => $data['fecha'] ?? now()->format('Y-m-d'),
      //   'id_usuario' => Auth::id(), // 👈 Nuevo campo
 'id_usuario' => Auth::user()->id_usuario,
+    'id_departamento' => $data['id_departamento'],
 
         'tipo_formato' => 'D',
         'created_at' => now(),
@@ -488,13 +515,15 @@ public function previewA($id)
         )
         ->where('servicios.id_servicio', $id)
         ->first();
+            $departamentos = Departamento::where('activo', 1)->get();
+
 
     if (!$servicio) {
         return redirect()->route('admin.formatos.index')
             ->with('error', 'Formato A no encontrado.');
     }
 
-    return view('admin.formatos.preview.preview_a', compact('servicio'));
+    return view('admin.formatos.preview.preview_a', compact('servicio' , 'departamentos'));
 }
 
 
@@ -531,9 +560,13 @@ public function previewB($id)
         )
         ->first();
 
+                    $departamentos = Departamento::where('activo', 1)->get();
+
+
     if (!$servicio) {
         return redirect()->route('admin.formatos.index')
             ->with('error', 'Formato B no encontrado.');
+            
     }
 
     // materiales usados
@@ -551,7 +584,7 @@ public function previewB($id)
     $catalogo_materiales = DB::table('catalogo_materiales')->get();
 
     return view('admin.formatos.preview.preview_b',
-        compact('servicio', 'materiales', 'catalogo_materiales'));
+        compact('servicio', 'materiales', 'catalogo_materiales' , 'departamentos'));
 }
 
 // preview formato c
@@ -575,6 +608,7 @@ public function previewC($id)
             'formato_c.firma_jefe_area'
         )
         ->first();
+            $departamentos = Departamento::where('activo', 1)->get();
 
     if (!$servicio) {
         return redirect()->route('admin.formatos.index')->with('error', 'Formato C no encontrado.');
@@ -595,7 +629,7 @@ public function previewC($id)
     $catalogo_materiales = DB::table('catalogo_materiales')->get();
 
     return view('admin.formatos.preview.preview_c',
-        compact('servicio', 'materiales', 'catalogo_materiales'));
+        compact('servicio', 'materiales', 'catalogo_materiales', 'departamentos'));
 }
 
 
@@ -620,12 +654,14 @@ public function previewD($id)
             'formato_d.firma_jefe_area'
         )
         ->first();
+                    $departamentos = Departamento::where('activo', 1)->get();
+
 
     if (!$servicio) {
         return redirect()->route('admin.formatos.index')->with('error', 'Formato D no encontrado.');
     }
 
-    return view('admin.formatos.preview.preview_d', compact('servicio'));
+    return view('admin.formatos.preview.preview_d', compact('servicio' , 'departamentos'));
 }
 
 
@@ -653,12 +689,15 @@ public function generarPDFA($id)
         ->where('servicios.id_servicio', $id)
         ->first();
 
+            $departamentos = Departamento::where('activo', 1)->get();
+
+
     if (!$servicio) {
         return redirect()->route('admin.formatos.index')
             ->with('error', 'Formato A no encontrado.');
     }
 
-    $pdf = Pdf::loadView('admin.formatos.pdfs.pdf_formato_a', compact('servicio'))
+    $pdf = Pdf::loadView('admin.formatos.pdfs.pdf_formato_a', compact('servicio' , 'departamentos'))
         ->setPaper('letter', 'portrait');
 
     $nombre = 'FormatoA_' . ($servicio->folio ?? 'sin_folio') . '.pdf';
@@ -677,6 +716,9 @@ public function generarPDFB($id)
         ->select('servicios.*','formato_b.*')
         ->first();
 
+         $departamentos = Departamento::where('activo', 1)->get();
+
+
     if (!$servicio) {
         return redirect()->route('admin.formatos.index')->with('error', 'Formato B no encontrado.');
     }
@@ -687,7 +729,7 @@ public function generarPDFB($id)
         ->select('catalogo_materiales.nombre', 'materiales_utilizados.cantidad')
         ->get();
 
-    $pdf = Pdf::loadView('admin.formatos.pdfs.pdf_formato_b', compact('servicio','materiales'))
+    $pdf = Pdf::loadView('admin.formatos.pdfs.pdf_formato_b', compact('servicio','materiales', 'departamentos'))
         ->setPaper('letter','portrait');
 
     return $pdf->stream('FormatoB_'.$servicio->folio.'.pdf');
@@ -703,6 +745,9 @@ public function generarPDFC($id)
         ->select('servicios.*','formato_c.*')
         ->first();
 
+         $departamentos = Departamento::where('activo', 1)->get();
+
+
     if (!$servicio) {
         return redirect()->route('admin.formatos.index')->with('error', 'Formato C no encontrado.');
     }
@@ -713,7 +758,7 @@ public function generarPDFC($id)
         ->select('catalogo_materiales.nombre', 'materiales_utilizados.cantidad')
         ->get();
 
-    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.formatos.pdfs.pdf_formato_c', compact('servicio', 'materiales'))
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.formatos.pdfs.pdf_formato_c', compact('servicio', 'materiales' , 'departamentos'))
         ->setPaper('letter','portrait');
 
     return $pdf->stream('FormatoC_'.$servicio->folio.'.pdf');
@@ -728,12 +773,13 @@ public function generarPDFD($id)
         ->where('servicios.id_servicio', $id)
         ->select('servicios.*','formato_d.*')
         ->first();
+            $departamentos = Departamento::where('activo', 1)->get();
 
     if (!$servicio) {
         return redirect()->route('admin.formatos.index')->with('error', 'Formato D no encontrado.');
     }
 
-    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.formatos.pdfs.pdf_formato_d', compact('servicio'))
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.formatos.pdfs.pdf_formato_d', compact('servicio', 'departamentos'))
         ->setPaper('letter','portrait');
 
     return $pdf->stream('FormatoD_'.$servicio->folio.'.pdf');
@@ -797,21 +843,46 @@ public function update(Request $request, $tipo, $id)
     switch (strtoupper($tipo)) {
 
         case 'A':
-            DB::table('formato_a')->where('id_servicio', $id)->update($data);
+            DB::table('formato_a')->where('id_servicio' , $id)->update($data);
             break;
 
 case 'B':
 
-    //  Quitar materiales antes del update
+    // =============================
+    // 1. ACTUALIZAR DEPARTAMENTO (SERVICIOS)
+    // =============================
+    if (isset($data['id_departamento'])) {
+        DB::table('servicios')
+            ->where('id_servicio', $id)
+            ->update([
+                'id_departamento' => $data['id_departamento']
+            ]);
+
+        unset($data['id_departamento']); // 👈 MUY IMPORTANTE
+    }
+
+    // =============================
+    // 2. QUITAR MATERIALES DEL UPDATE
+    // =============================
     if (isset($data['materiales'])) {
         unset($data['materiales']);
     }
 
-    DB::table('formato_b')->where('id_servicio', $id)->update($data);
+    // =============================
+    // 3. ACTUALIZAR FORMATO B
+    // =============================
+    DB::table('formato_b')
+        ->where('id_servicio', $id)
+        ->update($data);
 
-    // 🔁 Actualizar materiales
+    // =============================
+    // 4. ACTUALIZAR MATERIALES
+    // =============================
     if ($request->has('materiales')) {
-        DB::table('materiales_utilizados')->where('id_servicio', $id)->delete();
+
+        DB::table('materiales_utilizados')
+            ->where('id_servicio', $id)
+            ->delete();
 
         foreach ($request->materiales as $m) {
             if (!empty($m['id_material'])) {
@@ -823,6 +894,8 @@ case 'B':
             }
         }
     }
+
+
 
     break;
 case 'C':

@@ -38,6 +38,28 @@
                             <option value="Impresora">Impresora</option>
                         </select>
                     </div>
+
+                    <!-- 🔥 DEPARTAMENTO DESDE CATÁLOGO -->
+                     
+                {{-- 🔥 DEPARTAMENTO DESDE CATÁLOGO --}}
+                <div class="col-md-4">
+                    <label class="form-label">Departamento <span class="text-danger">*</span></label>
+                    <select name="id_departamento"
+                            class="form-select @error('id_departamento') is-invalid @enderror"
+                            required>
+                        <option value="">Selecciona un departamento</option>
+                        @foreach($departamentos as $dep)
+                            <option value="{{ $dep->id_departamento }}">
+                                {{ $dep->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    @error('id_departamento')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
                 </div>
 
                 <hr>

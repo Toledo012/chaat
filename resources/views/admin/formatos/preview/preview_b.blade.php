@@ -21,18 +21,24 @@
 
 <div class="container bg-white shadow p-4 rounded">
 
-    {{-- VOLVER --}}
-    <a href="{{ route('admin.formatos.index') }}" class="btn btn-outline-secondary mb-3">
-        &larr; Volver a Formatos
-    </a>
+ {{-- BOTONES SUPERIORES --}}
+    <div class="d-flex justify-content-between mb-3">
+        <a href="{{ route('admin.formatos.index') }}" class="btn btn-outline-secondary">
+            ← Volver a Formatos
+        </a>
 
-    {{-- BOTÓN EDITAR --}}
-    <div class="mb-3 text-end">
-        <button type="button" class="btn btn-success" onclick="toggleEdicion()">
-            <i class="fa-solid fa-pen-to-square"></i> Editar Formato
-        </button>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-success" onclick="toggleEdicion()">
+                ✏️ Editar
+            </button>
+
+            <a href="{{ route('admin.formatos.b.pdf', $servicio->id_servicio) }}"
+               target="_blank"
+               class="btn btn-danger">
+                📄 PDF
+            </a>
+        </div>
     </div>
-
     {{-- FORMULARIO --}}
     <form method="POST" action="{{ route('admin.formatos.update', ['B', $servicio->id_servicio]) }}">
         @csrf
@@ -55,8 +61,32 @@
 
         <table class="table table-bordered">
             <tr>
-                <th>Folio</th> <td>{{ $servicio->folio }}</td>
-                <th>Fecha</th> <td>{{ \Carbon\Carbon::parse($servicio->fecha)->format('d/m/Y') }}</td>
+                <th>Folio</th>
+                <td>{{ $servicio->folio }}</td>
+
+                <th>Fecha</th>
+                <td>{{ \Carbon\Carbon::parse($servicio->fecha)->format('d/m/Y') }}</td>
+            </tr>
+
+            {{-- 🔹 DEPARTAMENTO (NUEVO) --}}
+            <tr>
+                <th>Departamento</th>
+                <td colspan="3">
+                    {{-- Vista --}}
+                    <span class="vista">
+                        {{ $departamentos->firstWhere('id_departamento', $servicio->id_departamento)?->nombre ?? 'No asignado' }}
+                    </span>
+
+                    {{-- Edición --}}
+                    <select name="id_departamento" class="form-select edicion">
+                        @foreach($departamentos as $dep)
+                            <option value="{{ $dep->id_departamento }}"
+                                {{ $dep->id_departamento == $servicio->id_departamento ? 'selected' : '' }}>
+                                {{ $dep->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </td>
             </tr>
         </table>
 
@@ -121,62 +151,61 @@
         <p class="vista">{{ $servicio->conclusion_servicio }}</p>
 
         <textarea name="conclusion_servicio" class="form-control edicion">{{ $servicio->conclusion_servicio }}</textarea>
-        {{-- Materiales --}}
+
+        {{-- MATERIALES --}}
         <div class="section-title">Materiales Utilizados</div>
 
         {{-- Vista --}}
         <table class="table table-bordered vista">
-            <thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+            <thead>
+                <tr><th>Material</th><th>Cantidad</th></tr>
+            </thead>
             <tbody>
                 @forelse($materiales as $m)
-                <tr><td>{{ $m->nombre }}</td><td>{{ $m->cantidad }}</td></tr>
+                    <tr>
+                        <td>{{ $m->nombre }}</td>
+                        <td>{{ $m->cantidad }}</td>
+                    </tr>
                 @empty
-                <tr><td colspan="2" class="text-center">Sin materiales</td></tr>
+                    <tr><td colspan="2" class="text-center">Sin materiales</td></tr>
                 @endforelse
             </tbody>
         </table>
 
-        {{-- Modo edición --}}
+        {{-- EDICIÓN DE MATERIALES --}}
         <div class="edicion">
             <table class="table table-bordered" id="tabla-materiales">
                 <thead>
-                    <tr>
-                        <th>Material</th>
-                        <th>Cantidad</th>
-                        <th>Acción</th>
-                    </tr>
+                    <tr><th>Material</th><th>Cantidad</th><th>Acción</th></tr>
                 </thead>
-
                 <tbody>
                     @foreach ($materiales as $i => $m)
-                    <tr>
-                        <td>
-                            <select name="materiales[{{ $i }}][id_material]" class="form-select">
-                                @foreach($catalogo_materiales as $mat)
-                                    <option value="{{ $mat->id_material }}"
-                                        {{ $mat->id_material == $m->id_material ? 'selected' : '' }}>
-                                        {{ $mat->nombre }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </td>
-
-                        <td>
-                            <input type="number" class="form-control"
-                                name="materiales[{{ $i }}][cantidad]"
-                                value="{{ $m->cantidad }}">
-                        </td>
-
-                        <td><button type="button" class="btn btn-danger btn-sm eliminarFila">X</button></td>
-
-                    </tr>
+                        <tr>
+                            <td>
+                                <select name="materiales[{{ $i }}][id_material]" class="form-select">
+                                    @foreach($catalogo_materiales as $mat)
+                                        <option value="{{ $mat->id_material }}"
+                                            {{ $mat->id_material == $m->id_material ? 'selected' : '' }}>
+                                            {{ $mat->nombre }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" class="form-control"
+                                       name="materiales[{{ $i }}][cantidad]"
+                                       value="{{ $m->cantidad }}">
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-danger btn-sm eliminarFila">X</button>
+                            </td>
+                        </tr>
                     @endforeach
                 </tbody>
             </table>
 
-            {{-- BOTÓN AGREGAR MATERIAL --}}
             <button type="button" class="btn btn-primary btn-sm mt-2" id="btnAgregar">
-                <i class="fa-solid fa-plus"></i> Agregar Material
+                + Agregar Material
             </button>
         </div>
 
@@ -225,7 +254,7 @@
 </div>
 
 {{-- ============================ --}}
-{{-- SCRIPT MODO EDICIÓN + MATERIALES --}}
+{{-- SCRIPT --}}
 {{-- ============================ --}}
 <script>
 function toggleEdicion() {
@@ -234,7 +263,7 @@ function toggleEdicion() {
     document.getElementById('guardarBtn').style.display = 'block';
 }
 
-let contador = {{ count($materiales) }}; // sigue donde se quedó
+let contador = {{ count($materiales) }};
 
 document.getElementById('btnAgregar').addEventListener('click', function() {
     let tabla = document.querySelector('#tabla-materiales tbody');
@@ -248,16 +277,11 @@ document.getElementById('btnAgregar').addEventListener('click', function() {
                     @endforeach
                 </select>
             </td>
-
             <td>
-                <input type="number" name="materiales[${contador}][cantidad]"
-                       class="form-control" value="1">
+                <input type="number" name="materiales[${contador}][cantidad]" class="form-control" value="1">
             </td>
-
-            <td class="text-center">
-                <button type="button" class="btn btn-danger btn-sm eliminarFila">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
+            <td>
+                <button type="button" class="btn btn-danger btn-sm eliminarFila">X</button>
             </td>
         </tr>
     `;
