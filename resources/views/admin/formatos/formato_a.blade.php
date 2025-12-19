@@ -57,7 +57,7 @@
                     </select>
                 </div>
 
-                {{-- 🔥 DEPARTAMENTO DESDE CATÁLOGO --}}
+                {{-- DEPARTAMENTO DESDE CATÁLOGO --}}
                 <div class="col-md-4">
                     <label class="form-label">Departamento <span class="text-danger">*</span></label>
                     <select name="id_departamento"

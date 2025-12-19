@@ -505,6 +505,9 @@ public function previewA($id)
             'servicios.*',
             'formato_a.peticion',
             'formato_a.trabajo_realizado',
+            'formato_a.subtipo',
+            'formato_a.tipo_atencion',
+            'formato_a.tipo_servicio',
 
             'formato_a.detalle_realizado',
             'formato_a.conclusion_servicio',
@@ -678,6 +681,10 @@ public function generarPDFA($id)
             'servicios.*',
             'formato_a.peticion',
             'formato_a.trabajo_realizado',
+            'formato_a.subtipo',
+            'formato_a.tipo_atencion',
+            'formato_a.tipo_servicio',
+            
         
             'formato_a.detalle_realizado',
             'formato_a.conclusion_servicio',
@@ -842,14 +849,31 @@ public function update(Request $request, $tipo, $id)
 
     switch (strtoupper($tipo)) {
 
-        case 'A':
-            DB::table('formato_a')->where('id_servicio' , $id)->update($data);
-            break;
+
+case 'A':
+
+    // 1. ACTUALIZAR DEPARTAMENTO (tabla servicios)
+    if (isset($data['id_departamento'])) {
+        DB::table('servicios')
+            ->where('id_servicio', $id)
+            ->update([
+                'id_departamento' => $data['id_departamento']
+            ]);
+
+        unset($data['id_departamento']); // 🔥 CLAVE
+    }
+
+    // 2. ACTUALIZAR FORMATO A
+    DB::table('formato_a')
+        ->where('id_servicio', $id)
+        ->update($data);
+
+    break;
 
 case 'B':
 
     // =============================
-    // 1. ACTUALIZAR DEPARTAMENTO (SERVICIOS)
+  
     // =============================
     if (isset($data['id_departamento'])) {
         DB::table('servicios')
@@ -898,18 +922,44 @@ case 'B':
 
 
     break;
+
 case 'C':
 
-    // ❗ QUITAR MATERIALES DEL UPDATE PARA QUE NO INTENTE INSERTARLO COMO COLUMNA
+    // =============================
+    // 1. ACTUALIZAR DEPARTAMENTO (SERVICIOS)
+    // =============================
+    if (isset($data['id_departamento'])) {
+        DB::table('servicios')
+            ->where('id_servicio', $id)
+            ->update([
+                'id_departamento' => $data['id_departamento']
+            ]);
+
+        unset($data['id_departamento']);
+    }
+
+    // =============================
+    // 2. QUITAR MATERIALES
+    // =============================
     if (isset($data['materiales'])) {
         unset($data['materiales']);
     }
 
-    DB::table('formato_c')->where('id_servicio', $id)->update($data);
+    // =============================
+    // 3. ACTUALIZAR FORMATO C
+    // =============================
+    DB::table('formato_c')
+        ->where('id_servicio', $id)
+        ->update($data);
 
-    // 🔁 Actualizar materiales
+    // =============================
+    // 4. ACTUALIZAR MATERIALES
+    // =============================
     if ($request->has('materiales')) {
-        DB::table('materiales_utilizados')->where('id_servicio', $id)->delete();
+
+        DB::table('materiales_utilizados')
+            ->where('id_servicio', $id)
+            ->delete();
 
         foreach ($request->materiales as $m) {
             if (!empty($m['id_material'])) {

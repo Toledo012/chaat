@@ -21,136 +21,147 @@
 
 <div class="container bg-white shadow p-4 rounded">
 
- {{-- BOTONES SUPERIORES --}}
-    <div class="d-flex justify-content-between mb-3">
-        <a href="{{ route('admin.formatos.index') }}" class="btn btn-outline-secondary">
-            ← Volver a Formatos
-        </a>
+{{-- BOTONES --}}
+<div class="d-flex justify-content-between mb-3">
+    <a href="{{ route('admin.formatos.index') }}" class="btn btn-outline-secondary">← Volver</a>
 
-        <div class="d-flex gap-2">
-            <button type="button" class="btn btn-success" onclick="toggleEdicion()">
-                ✏️ Editar
-            </button>
-
-            <a href="{{ route('admin.formatos.b.pdf', $servicio->id_servicio) }}"
-               target="_blank"
-               class="btn btn-danger">
-                📄 PDF
-            </a>
-        </div>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-success" onclick="toggleEdicion()">✏️ Editar</button>
+        <a href="{{ route('admin.formatos.b.pdf', $servicio->id_servicio) }}" target="_blank" class="btn btn-danger">📄 PDF</a>
     </div>
-    {{-- FORMULARIO --}}
-    <form method="POST" action="{{ route('admin.formatos.update', ['B', $servicio->id_servicio]) }}">
-        @csrf
+</div>
 
-        {{-- ENCABEZADO --}}
-        <div class="row header align-items-center">
-            <div class="col-3 text-center">
-                <img src="{{ asset('images/logo_semahn2.png') }}">
-            </div>
-            <div class="col-9 text-center">
-                <h5>SECRETARÍA DE MEDIO AMBIENTE E HISTORIA NATURAL</h5>
-                <p class="mb-0">ÁREA DE INFORMÁTICA</p>
-            </div>
-        </div>
+<form method="POST" action="{{ route('admin.formatos.update', ['B', $servicio->id_servicio]) }}">
+@csrf
 
-        <h5 class="titulo">Formato B - Equipos de Cómputo o Impresoras</h5>
+{{-- ENCABEZADO --}}
+<div class="row header align-items-center">
+    <div class="col-3 text-center">
+        <img src="{{ asset('images/logo_semahn2.png') }}">
+    </div>
+    <div class="col-9 text-center">
+        <h5>SECRETARÍA DE MEDIO AMBIENTE E HISTORIA NATURAL</h5>
+        <p class="mb-0">ÁREA DE INFORMÁTICA</p>
+    </div>
+</div>
 
-        {{-- DATOS --}}
-        <div class="section-title">Datos del Servicio</div>
+<h5 class="titulo">Formato B - Equipos de Cómputo o Impresoras</h5>
 
-        <table class="table table-bordered">
-            <tr>
-                <th>Folio</th>
-                <td>{{ $servicio->folio }}</td>
+{{-- DATOS GENERALES --}}
+<div class="section-title">Datos del Servicio</div>
+<table class="table table-bordered">
+    <tr>
+                <th width="25%">Número de Formato</th>
+                <td>{{ $servicio->id_servicio }}</td>
+        <th>Fecha</th>
+        <td>{{ \Carbon\Carbon::parse($servicio->fecha)->format('d/m/Y') }}</td>
+    </tr>
+    <tr>
+        <th>Departamento</th>
+        <td colspan="3">
+            <span class="vista">
+                {{ $departamentos->firstWhere('id_departamento', $servicio->id_departamento)?->nombre ?? 'No asignado' }}
+            </span>
+            <select name="id_departamento" class="form-select edicion">
+                @foreach($departamentos as $dep)
+                    <option value="{{ $dep->id_departamento }}" {{ $dep->id_departamento == $servicio->id_departamento ? 'selected' : '' }}>
+                        {{ $dep->nombre }}
+                    </option>
+                @endforeach
+            </select>
+        </td>
+    </tr>
+</table>
 
-                <th>Fecha</th>
-                <td>{{ \Carbon\Carbon::parse($servicio->fecha)->format('d/m/Y') }}</td>
-            </tr>
+{{-- SUBTIPO --}}
+<div class="section-title">Tipo de Equipo</div>
+<p class="vista">{{ $servicio->subtipo }}</p>
+<select name="subtipo" class="form-select edicion">
+    <option value="Computadora" {{ $servicio->subtipo=='Computadora'?'selected':'' }}>Computadora</option>
+    <option value="Impresora" {{ $servicio->subtipo=='Impresora'?'selected':'' }}>Impresora</option>
+</select>
 
-            {{-- 🔹 DEPARTAMENTO (NUEVO) --}}
-            <tr>
-                <th>Departamento</th>
-                <td colspan="3">
-                    {{-- Vista --}}
-                    <span class="vista">
-                        {{ $departamentos->firstWhere('id_departamento', $servicio->id_departamento)?->nombre ?? 'No asignado' }}
-                    </span>
+{{-- DESCRIPCIÓN --}}
+<div class="section-title">Descripción del Servicio</div>
+<p class="vista">{{ $servicio->descripcion_servicio }}</p>
+<textarea name="descripcion_servicio" class="form-control edicion">{{ $servicio->descripcion_servicio }}</textarea>
 
-                    {{-- Edición --}}
-                    <select name="id_departamento" class="form-select edicion">
-                        @foreach($departamentos as $dep)
-                            <option value="{{ $dep->id_departamento }}"
-                                {{ $dep->id_departamento == $servicio->id_departamento ? 'selected' : '' }}>
-                                {{ $dep->nombre }}
-                            </option>
-                        @endforeach
-                    </select>
-                </td>
-            </tr>
-        </table>
+{{-- DETALLES DEL EQUIPO --}}
+<div class="section-title">Detalles del Equipo</div>
+<table class="table table-bordered">
+<tr>
+    <th>Equipo</th>
+    <td class="vista">{{ $servicio->equipo }}</td>
+    <td class="edicion"><input name="equipo" class="form-control" value="{{ $servicio->equipo }}"></td>
 
-        {{-- SUBTIPO --}}
-        <div class="section-title">Tipo de Equipo</div>
+    <th>Marca</th>
+    <td class="vista">{{ $servicio->marca }}</td>
+    <td class="edicion"><input name="marca" class="form-control" value="{{ $servicio->marca }}"></td>
+</tr>
+<tr>
+    <th>Modelo</th>
+    <td class="vista">{{ $servicio->modelo }}</td>
+    <td class="edicion"><input name="modelo" class="form-control" value="{{ $servicio->modelo }}"></td>
 
-        <p class="vista">{{ $servicio->subtipo }}</p>
+    <th>No. Inventario</th>
+    <td class="vista">{{ $servicio->numero_inventario }}</td>
+    <td class="edicion"><input name="numero_inventario" class="form-control" value="{{ $servicio->numero_inventario }}"></td>
+</tr>
+<tr>
+    <th>No. Serie</th>
+    <td class="vista">{{ $servicio->numero_serie }}</td>
+    <td class="edicion"><input name="numero_serie" class="form-control" value="{{ $servicio->numero_serie }}"></td>
 
-        <select name="subtipo" class="form-select edicion">
-            <option value="Computadora" {{ $servicio->subtipo=='Computadora'?'selected':'' }}>Computadora</option>
-            <option value="Impresora" {{ $servicio->subtipo=='Impresora'?'selected':'' }}>Impresora</option>
+    <th>Sistema Operativo</th>
+    <td class="vista">{{ $servicio->sistema_operativo }}</td>
+    <td class="edicion"><input name="sistema_operativo" class="form-control" value="{{ $servicio->sistema_operativo }}"></td>
+</tr>
+<tr>
+    <th>Procesador</th>
+    <td class="vista">{{ $servicio->procesador }}</td>
+    <td class="edicion"><input name="procesador" class="form-control" value="{{ $servicio->procesador }}"></td>
+
+    <th>RAM</th>
+    <td class="vista">{{ $servicio->ram }}</td>
+    <td class="edicion"><input name="ram" class="form-control" value="{{ $servicio->ram }}"></td>
+</tr>
+<tr>
+    <th>Disco Duro</th>
+    <td class="vista">{{ $servicio->disco_duro }}</td>
+    <td class="edicion"><input name="disco_duro" class="form-control" value="{{ $servicio->disco_duro }}"></td>
+
+    <th>Origen de Falla</th>
+    <td class="vista">{{ $servicio->origen_falla }}</td>
+    <td class="edicion">
+        <select name="origen_falla" class="form-select">
+            @foreach(['Desgaste natural','Mala operación','Otro'] as $op)
+                <option {{ $servicio->origen_falla==$op?'selected':'' }}>{{ $op }}</option>
+            @endforeach
         </select>
+    </td>
+</tr>
+</table>
 
-        {{-- DESCRIPCIÓN --}}
-        <div class="section-title">Descripción del Servicio</div>
+{{-- DIAGNÓSTICO --}}
+<div class="section-title">Diagnóstico</div>
+<p class="vista">{{ $servicio->diagnostico }}</p>
+<textarea name="diagnostico" class="form-control edicion">{{ $servicio->diagnostico }}</textarea>
 
-        <p class="vista">{{ $servicio->descripcion_servicio }}</p>
+{{-- TRABAJO --}}
+<div class="section-title">Trabajo Realizado</div>
+<p class="vista">{{ $servicio->trabajo_realizado }}</p>
+<textarea name="trabajo_realizado" class="form-control edicion">{{ $servicio->trabajo_realizado }}</textarea>
 
-        <textarea name="descripcion_servicio" class="form-control edicion">{{ $servicio->descripcion_servicio }}</textarea>
+{{-- DETALLE --}}
+<div class="section-title">Detalle del Trabajo Realizado</div>
+<p class="vista">{{ $servicio->detalle_realizado }}</p>
+<textarea name="detalle_realizado" class="form-control edicion">{{ $servicio->detalle_realizado }}</textarea>
 
-        {{-- DETALLES --}}
-        <div class="section-title">Detalles del Equipo</div>
+{{-- CONCLUSIÓN --}}
+<div class="section-title">Conclusión</div>
+<p class="vista">{{ $servicio->conclusion_servicio }}</p>
+<textarea name="conclusion_servicio" class="form-control edicion">{{ $servicio->conclusion_servicio }}</textarea>
 
-        <table class="table table-bordered">
-            <tr>
-                <th>Equipo</th>
-                <td class="vista">{{ $servicio->equipo }}</td>
-                <td class="edicion"><input name="equipo" class="form-control" value="{{ $servicio->equipo }}"></td>
-
-                <th>Marca</th>
-                <td class="vista">{{ $servicio->marca }}</td>
-                <td class="edicion"><input name="marca" class="form-control" value="{{ $servicio->marca }}"></td>
-            </tr>
-            <tr>
-                <th>Modelo</th>
-                <td class="vista">{{ $servicio->modelo }}</td>
-                <td class="edicion"><input name="modelo" class="form-control" value="{{ $servicio->modelo }}"></td>
-
-                <th>No. Serie</th>
-                <td class="vista">{{ $servicio->numero_serie }}</td>
-                <td class="edicion"><input name="numero_serie" class="form-control" value="{{ $servicio->numero_serie }}"></td>
-            </tr>
-        </table>
-
-        {{-- DIAGNÓSTICO --}}
-        <div class="section-title">Diagnóstico</div>
-
-        <p class="vista">{{ $servicio->diagnostico }}</p>
-
-        <textarea name="diagnostico" class="form-control edicion">{{ $servicio->diagnostico }}</textarea>
-
-        {{-- TRABAJO REALIZADO --}}
-        <div class="section-title">Trabajo Realizado</div>
-
-        <p class="vista">{{ $servicio->trabajo_realizado }}</p>
-
-        <textarea name="trabajo_realizado" class="form-control edicion">{{ $servicio->trabajo_realizado }}</textarea>
-
-        {{-- CONCLUSIÓN --}}
-        <div class="section-title">Conclusión</div>
-
-        <p class="vista">{{ $servicio->conclusion_servicio }}</p>
-
-        <textarea name="conclusion_servicio" class="form-control edicion">{{ $servicio->conclusion_servicio }}</textarea>
 
         {{-- MATERIALES --}}
         <div class="section-title">Materiales Utilizados</div>
@@ -208,54 +219,44 @@
                 + Agregar Material
             </button>
         </div>
+{{-- OBSERVACIONES --}}
+<div class="section-title">Observaciones</div>
+<p class="vista">{{ $servicio->observaciones }}</p>
+<textarea name="observaciones" class="form-control edicion">{{ $servicio->observaciones }}</textarea>
 
-        {{-- OBSERVACIONES --}}
-        <div class="section-title">Observaciones</div>
+{{-- FIRMAS --}}
+<div class="section-title">Firmas</div>
+<table class="table">
+<tr>
+<td>
+    <strong>Usuario</strong><br>
+    <span class="vista">{{ $servicio->firma_usuario }}</span>
+    <input name="firma_usuario" class="form-control edicion" value="{{ $servicio->firma_usuario }}">
+</td>
+<td>
+    <strong>Técnico</strong><br>
+    <span class="vista">{{ $servicio->firma_tecnico }}</span>
+    <input name="firma_tecnico" class="form-control edicion" value="{{ $servicio->firma_tecnico }}">
+</td>
+<td>
+    <strong>Jefe Área</strong><br>
+    <span class="vista">{{ $servicio->firma_jefe_area }}</span>
+    <input name="firma_jefe_area" class="form-control edicion" value="{{ $servicio->firma_jefe_area }}">
+</td>
+</tr>
+</table>
 
-        <p class="vista">{{ $servicio->observaciones }}</p>
+<div id="guardarBtn" class="text-end mt-3" style="display:none;">
+    <button type="button" class="btn btn-outline-secondary" onclick="location.reload()">Cancelar</button>
+    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+</div>
 
-        <textarea name="observaciones" class="form-control edicion">{{ $servicio->observaciones }}</textarea>
+</form>
 
-        {{-- FIRMAS --}}
-        <div class="section-title">Firmas</div>
-
-        <table class="table">
-            <tr>
-                <td>
-                    <strong>Usuario</strong><br>
-                    <span class="vista">{{ $servicio->firma_usuario }}</span>
-                    <input name="firma_usuario" class="form-control edicion" value="{{ $servicio->firma_usuario }}">
-                </td>
-                <td>
-                    <strong>Técnico</strong><br>
-                    <span class="vista">{{ $servicio->firma_tecnico }}</span>
-                    <input name="firma_tecnico" class="form-control edicion" value="{{ $servicio->firma_tecnico }}">
-                </td>
-                <td>
-                    <strong>Jefe Área</strong><br>
-                    <span class="vista">{{ $servicio->firma_jefe_area }}</span>
-                    <input name="firma_jefe_area" class="form-control edicion" value="{{ $servicio->firma_jefe_area }}">
-                </td>
-            </tr>
-        </table>
-
-        {{-- BOTÓN GUARDAR --}}
-        <div id="guardarBtn" class="text-end mt-3" style="display:none;">
-            <button type="button" class="btn btn-outline-secondary" onclick="location.reload()">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-        </div>
-
-    </form>
-
-    <div class="footer">
-        Generado desde el Sistema de Formatos Digitales
-    </div>
+<div class="footer">Generado desde el Sistema de Formatos Digitales</div>
 
 </div>
 
-{{-- ============================ --}}
-{{-- SCRIPT --}}
-{{-- ============================ --}}
 <script>
 function toggleEdicion() {
     document.querySelectorAll('.vista').forEach(v => v.style.display = 'none');

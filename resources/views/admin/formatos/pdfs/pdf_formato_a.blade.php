@@ -1,84 +1,97 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Formato A - PDF</title>
+<meta charset="UTF-8">
+<title>Formato A - PDF</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 11px;
-            color: #000;
-            margin: 15px;
-        }
+<style>
+    @page {
+        margin: 12px;
+    }
 
-        .formato {
-            height: 48%;
-            box-sizing: border-box;
-        }
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 10px;
+        color: #000;
+    }
 
-        .header {
-            text-align: center;
-            border-bottom: 1px solid #000;
-            padding-bottom: 5px;
-            margin-bottom: 6px;
-            position: relative;
-        }
+    .formato {
+        height: 48%;
+        box-sizing: border-box;
+    }
 
-        .header img {
-            width: 80px;
-            position: absolute;
-            left: 0;
-            top: 0;
-        }
+    .header {
+        text-align: center;
+        border-bottom: 1px solid #000;
+        padding-bottom: 4px;
+        margin-bottom: 4px;
+        position: relative;
+    }
 
-        .titulo {
-            font-weight: bold;
-            font-size: 13px;
-            text-transform: uppercase;
-            margin: 4px 0;
-        }
+    .header img {
+        width: 50px;
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
 
-        .subtitulo {
-            font-size: 11px;
-            margin-bottom: 4px;
-        }
+    .titulo {
+        font-weight: bold;
+        font-size: 12px;
+        text-transform: uppercase;
+        margin: 2px 0;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 4px;
-        }
+    .subtitulo {
+        font-size: 10px;
+        margin-bottom: 4px;
+    }
 
-        th, td {
-            border: 1px solid #000;
-            padding: 4px;
-            text-align: left;
-            vertical-align: top;
-        }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 3px;
+    }
 
-        .section-title {
-            font-weight: bold;
-            background: #e2e3e5;
-            padding: 3px;
-            margin-top: 5px;
-            margin-bottom: 2px;
-        }
+    th, td {
+        border: 1px solid #000;
+        padding: 3px;
+        vertical-align: top;
+    }
 
-        .firmas td {
-            border: none;
-            text-align: center;
-            padding-top: 18px;
-            font-size: 10px;
-        }
+    th {
+        width: 22%;
+        background: #f1f1f1;
+    }
 
-        .corte {
-            border-top: 1px dashed #000;
-            margin: 8px 0;
-            text-align: center;
-            font-size: 9px;
-        }
-    </style>
+    .section-title {
+        font-weight: bold;
+        background: #e2e3e5;
+        padding: 2px;
+        margin-top: 4px;
+        margin-bottom: 2px;
+    }
+
+    .bloque {
+        border: 1px solid #000;
+        padding: 3px;
+        min-height: 24px;
+    }
+
+    .firmas td {
+        border: none;
+        text-align: center;
+        padding-top: 14px;
+        font-size: 9px;
+    }
+
+    .corte {
+        border-top: 1px dashed #000;
+        margin: 6px 0;
+        text-align: center;
+        font-size: 8px;
+    }
+</style>
 </head>
 
 <body>
@@ -96,56 +109,82 @@
     <div class="titulo">Formato A - Soporte y Desarrollo</div>
     <div class="subtitulo">Atención de servicios de soporte técnico o desarrollo institucional</div>
 
-    <div class="section-title">Datos del Servicio</div>
     <table>
         <tr>
-            <th>Folio</th>
-            <td>{{ $servicio->folio ?? 'N/A' }}</td>
+            <th>Número de Formato</th>
+            <td>{{ $servicio->id_servicio }}</td>
             <th>Fecha</th>
-            <td>{{ \Carbon\Carbon::parse($servicio->fecha ?? now())->format('d/m/Y') }}</td>
+            <td>{{ \Carbon\Carbon::parse($servicio->fecha)->format('d/m/Y') }}</td>
+        </tr>
+        <tr>
+            <th>Departamento</th>
+            <td colspan="3">
+                {{ $departamentos->firstWhere('id_departamento', $servicio->id_departamento)?->nombre ?? 'No asignado' }}
+            </td>
         </tr>
     </table>
 
+    <div class="section-title">Clasificación del Servicio</div>
+    <table>
+        <tr>
+            <th>Subtipo</th>
+            <td>{{ $servicio->subtipo ?? '—' }}</td>        
+            <th>Tipo de Atención</th>
+            <td>{{ $servicio->tipo_atencion ?? '—' }}</td>  
+        </tr>
+        <tr>
+            <th>Tipo de Servicio</th>
+            <td colspan="3">{{ $servicio->tipo_servicio ?? '—' }}</
+        </tr>
+    </table>
+
+    
+    
+
+
+
+
     <div class="section-title">Petición del Servicio</div>
-    <p>{{ $servicio->peticion ?? 'Sin descripción registrada.' }}</p>
+    <div class="bloque">{{ $servicio->peticion ?? '—' }}</div>
+
+    <div 
 
     <div class="section-title">Trabajo Realizado</div>
-    <p>{{ $servicio->trabajo_realizado ?? 'No se especifica.' }}</p>
+    <div class="bloque">{{ $servicio->trabajo_realizado ?? '—' }}</div>
 
-    <div class="section-title">Detalle Realizado</div>
-    <p>{{ $servicio->detalle_realizado ?? 'No se especifica.' }}</p>
+    <div class="section-title">Detalle del Trabajo Realizado</div>
+    <div class="bloque">{{ $servicio->detalle_realizado ?? '—' }}</div>
 
     <div class="section-title">Conclusión del Servicio</div>
-    <p>{{ $servicio->conclusion_servicio ?? 'Sin datos.' }}</p>
+    <div class="bloque">{{ $servicio->conclusion_servicio ?? '—' }}</div>
 
     <div class="section-title">Observaciones</div>
-    <p>{{ $servicio->observaciones ?? 'Ninguna.' }}</p>
+    <div class="bloque">{{ $servicio->observaciones ?? '—' }}</div>
 
-    <table class="firmas" width="100%">
+    <table class="firmas">
         <tr>
             <td>
                 _________________________<br>
                 Usuario Solicitante<br>
-                {{ $servicio->firma_usuario ?? '' }}
+                {{ $servicio->firma_usuario }}
             </td>
             <td>
                 _________________________<br>
-                Realiza el Servicio<br>
-                {{ $servicio->firma_tecnico ?? '' }}
+                Técnico<br>
+                {{ $servicio->firma_tecnico }}
             </td>
             <td>
                 _________________________<br>
                 Jefe de Área<br>
-                {{ $servicio->firma_jefe_area ?? '' }}
+                {{ $servicio->firma_jefe_area }}
             </td>
         </tr>
     </table>
 </div>
 
-{{-- ================== LÍNEA DE CORTE ================== --}}
-<div class="corte">✂︎ Corte aquí</div>
 
-{{-- ================== FORMATO INFERIOR (COPIA) ================== --}}
+
+{{-- ================== FORMATO SUPERIOR ================== --}}
 <div class="formato">
 
     <div class="header">
@@ -158,51 +197,79 @@
     <div class="titulo">Formato A - Soporte y Desarrollo</div>
     <div class="subtitulo">Atención de servicios de soporte técnico o desarrollo institucional</div>
 
-    <div class="section-title">Datos del Servicio</div>
     <table>
         <tr>
-            <th>Folio</th>
-            <td>{{ $servicio->folio ?? 'N/A' }}</td>
+            <th>Número de Formato</th>
+            <td>{{ $servicio->id_servicio }}</td>
             <th>Fecha</th>
-            <td>{{ \Carbon\Carbon::parse($servicio->fecha ?? now())->format('d/m/Y') }}</td>
+            <td>{{ \Carbon\Carbon::parse($servicio->fecha)->format('d/m/Y') }}</td>
+        </tr>
+        <tr>
+            <th>Departamento</th>
+            <td colspan="3">
+                {{ $departamentos->firstWhere('id_departamento', $servicio->id_departamento)?->nombre ?? 'No asignado' }}
+            </td>
         </tr>
     </table>
 
+    <div class="section-title">Clasificación del Servicio</div>
+    <table>
+        <tr>
+            <th>Subtipo</th>
+            <td>{{ $servicio->subtipo ?? '—' }}</td>        
+            <th>Tipo de Atención</th>
+            <td>{{ $servicio->tipo_atencion ?? '—' }}</td>  
+        </tr>
+        <tr>
+            <th>Tipo de Servicio</th>
+            <td colspan="3">{{ $servicio->tipo_servicio ?? '—' }}</
+        </tr>
+    </table>
+
+    
+    
+
+
+
+
     <div class="section-title">Petición del Servicio</div>
-    <p>{{ $servicio->peticion ?? 'Sin descripción registrada.' }}</p>
+    <div class="bloque">{{ $servicio->peticion ?? '—' }}</div>
+
+    <div 
 
     <div class="section-title">Trabajo Realizado</div>
-    <p>{{ $servicio->trabajo_realizado ?? 'No se especifica.' }}</p>
+    <div class="bloque">{{ $servicio->trabajo_realizado ?? '—' }}</div>
 
-    <div class="section-title">Detalle Realizado</div>
-    <p>{{ $servicio->detalle_realizado ?? 'No se especifica.' }}</p>
+    <div class="section-title">Detalle del Trabajo Realizado</div>
+    <div class="bloque">{{ $servicio->detalle_realizado ?? '—' }}</div>
 
     <div class="section-title">Conclusión del Servicio</div>
-    <p>{{ $servicio->conclusion_servicio ?? 'Sin datos.' }}</p>
+    <div class="bloque">{{ $servicio->conclusion_servicio ?? '—' }}</div>
 
     <div class="section-title">Observaciones</div>
-    <p>{{ $servicio->observaciones ?? 'Ninguna.' }}</p>
+    <div class="bloque">{{ $servicio->observaciones ?? '—' }}</div>
 
-    <table class="firmas" width="100%">
+    <table class="firmas">
         <tr>
             <td>
                 _________________________<br>
                 Usuario Solicitante<br>
-                {{ $servicio->firma_usuario ?? '' }}
+                {{ $servicio->firma_usuario }}
             </td>
             <td>
                 _________________________<br>
-                Realiza el Servicio<br>
-                {{ $servicio->firma_tecnico ?? '' }}
+                Técnico<br>
+                {{ $servicio->firma_tecnico }}
             </td>
             <td>
                 _________________________<br>
                 Jefe de Área<br>
-                {{ $servicio->firma_jefe_area ?? '' }}
+                {{ $servicio->firma_jefe_area }}
             </td>
         </tr>
     </table>
 </div>
+
 
 </body>
 </html>
