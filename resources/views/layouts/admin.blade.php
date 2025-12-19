@@ -64,6 +64,17 @@
             </li>
             @endif
 
+
+            {{-- GESTIÓN DE TICKETS --}}
+
+                        @if(Auth::user()->isAdmin() || Auth::user()->tienePermiso('gestion_formatos'))
+            <li class="nav-item">
+                <a class="nav-link @if(request()->routeIs('')) active @endif" href="}">
+                    <i class="fas fa-ticket-alt"></i> <span>Gestión de Tickets</span>
+                </a>
+            </li>
+            @endif
+
             {{-- MOVIMIENTOS (solo admin) --}}
             @if(Auth::user()->isAdmin())
             <li class="nav-item">
