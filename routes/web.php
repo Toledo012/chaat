@@ -43,6 +43,11 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
 
 }); 
 
+Route::put('/user/update-password', [UserController::class, 'updatePassword'])
+    ->name('user.update-password');
+
+
+
 // ==========================
 // 📂 FORMATOS ADMIN
 // ==========================
@@ -119,13 +124,16 @@ Route::delete('/eliminar-multiples', [MaterialController::class, 'destroyMultipl
 
 });
 
-Route::put('/user/update-password', [UserController::class, 'updatePassword'])
-    ->name('user.update-password');
+
 
 
 
     Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::resource('departamentos', DepartamentoController::class)
         ->names('admin.departamentos')
+
+        
         ->except(['show','destroy']);
+
+
 });

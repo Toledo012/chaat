@@ -418,3 +418,45 @@ main {
 .loaded { opacity: 1; transform: translateY(0); }
 
 
+/* ===============================
+   DARK MODE - MODALES
+================================ */
+
+body.dark-mode .modal-content {
+    background-color: #1e1e2d;
+    color: #e4e6ef;
+    border: 1px solid #2b2b40;
+}
+
+body.dark-mode .modal-header,
+body.dark-mode .modal-footer {
+    border-color: #2b2b40;
+}
+
+body.dark-mode .modal-header .modal-title {
+    color: #ffffff;
+}
+
+body.dark-mode .btn-close {
+    filter: invert(1);
+}
+
+body.dark-mode .modal-body input,
+body.dark-mode .modal-body textarea,
+body.dark-mode .modal-body select {
+    background-color: #2b2b40;
+    color: #e4e6ef;
+    border-color: #3f3f5f;
+}
+
+body.dark-mode .modal-body input::placeholder,
+body.dark-mode .modal-body textarea::placeholder {
+    color: #9da0b3;
+}
+
+body.dark-mode .modal-backdrop.show {
+    background-color: rgba(0, 0, 0, 0.85);
+}
+
+
+

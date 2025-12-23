@@ -6,11 +6,17 @@ use Illuminate\Http\Request;
 
 class DepartamentoController extends Controller
 {
-    public function index()
-    {
-        $departamentos = Departamento::all();
-        return view('admin.departamentos.index', compact('departamentos'));
-    }
+public function index()
+{
+    $departamentos = Departamento::all();
+
+    $departamentos = Departamento::with('usuarios')
+        ->withCount('usuarios')
+        ->get();
+
+    return view('admin.departamentos.index', compact('departamentos'));
+}
+
 
     public function create()
     {
@@ -37,16 +43,23 @@ class DepartamentoController extends Controller
 
 
     //actualizar departamento
-    public function update(Request $request, Departamento $departamento)
-    {
-        $request->validate([
-            'nombre' => 'required|string|max:50|unique:departamentos,nombre,' . $departamento->id_departamento . ',id_departamento',
-        ]);
+public function update(Request $request, Departamento $departamento)
+{
+    $request->validate([
+        'nombre' => 'required|string|max:50|unique:departamentos,nombre,' 
+            . $departamento->id_departamento . ',id_departamento',
+    ]);
 
-        $departamento->update($request->only('nombre','descripcion','activo'));
+    $departamento->update([
+        'nombre' => $request->nombre,
+        'descripcion' => $request->descripcion,
+        'activo' => $request->has('activo') ? 1 : 0,
+    ]);
 
-        return redirect()->route('admin.departamentos.index')
-            ->with('success', 'Departamento actualizado');
-    }
+    return redirect()->route('admin.departamentos.index')
+        ->with('success', 'Departamento actualizado');
+}
+
+
 }
 
