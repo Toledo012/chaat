@@ -15,8 +15,8 @@ class Usuario extends Model
     
     protected $fillable = [
         'nombre',
-        'departamento', 
         'puesto',
+        'id_departamento',
         'extension',
         'email'
     ];
@@ -34,4 +34,14 @@ class Usuario extends Model
     {
         return $this->hasMany(Servicio::class, 'id_usuario');
     }
+
+
+    // Relación con Departamento    
+    public function departamentos()
+{
+    return $this->belongsTo(Departamento::class, 'id_departamento');
 }
+
+}
+
+

@@ -109,7 +109,7 @@
                           data-rol="{{ optional($usuario->cuenta)->id_rol }}"
                           data-es-super="{{ $usuario->id_usuario == 1 ? '1' : '0' }}"
                           data-nombre="{{ $usuario->nombre }}"
-                          data-departamento="{{ $usuario->departamento }}"
+                          data-departamento-id="{{ $usuario->id_departamento }}"
                           data-puesto="{{ $usuario->puesto }}"
                           data-email="{{ $usuario->email }}"
                           data-username="{{ optional($usuario->cuenta)->username }}"
@@ -131,7 +131,7 @@
                                 @endif
                             </td>
 
-                            <td>{{ $usuario->departamento }}</td>
+                            <td>{{ $usuario->departamentos->nombre ?? 'Sin asignar' }}</td>
                             <td>{{ $usuario->puesto }}</td>
                             <td>{{ $usuario->email }}</td>
 
@@ -330,14 +330,13 @@
                                             <div class="row mb-3">
                             <div class="col-md-6">
                                 <label>Departamento</label>
-                                <select name="departamento" class="form-select">
-                                    <option value="">Seleccionar</option>
-                                        <option>Sistemas</option>
-                                        <option>Soporte</option>
-                                        <option>Redes</option>
-                                        <option>Telefonía</option>
-                                
-                                    </select>
+<select name="id_departamento" class="form-select" required>
+    <option value="">Seleccionar</option>
+    @foreach($departamentos as $dep)
+        <option value="{{ $dep->id_departamento }}">{{ $dep->nombre }}</option>
+    @endforeach
+</select>
+
                                 </div>
 
                                                         <div class="col-md-6">
@@ -373,98 +372,103 @@
 @endif
 @endsection
 
-@section('scripts')
 
+{{-- TEMPLATE OCULTO PARA SELECT DE DEPARTAMENTOS --}}
+<select id="departamentoSelectTemplate" class="d-none">
+    @foreach($departamentos as $dep)
+        <option value="{{ $dep->id_departamento }}">
+            {{ $dep->nombre }}
+        </option>
+    @endforeach
+</select>
+
+@section('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
 
     const baseUrl = '{{ url("admin/users") }}';
 
+    /* =======================
+       EDITAR USUARIO
+    ======================= */
     document.querySelectorAll('.btn-edit').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
 
             const tr = this.closest('tr');
-            const esAdmin = tr.dataset.rol == "1";
-            const esSuper = tr.dataset.esSuper == "1";
-            const yoSuper = "{{ Auth::user()->id_usuario }}" == "1";
-
-            if (esAdmin && !yoSuper) {
-                alert("Solo el Super Admin puede editar a administradores.");
-                return;
-            }
 
             const id = tr.dataset.id;
             const nombre = tr.dataset.nombre;
-            const departamento = tr.dataset.departamento;
+            const deptoId = tr.dataset.departamentoId;
             const puesto = tr.dataset.puesto;
             const email = tr.dataset.email;
             const username = tr.dataset.username;
 
-const html = `
-    <form action="${baseUrl}/${id}" method="POST">
-        @csrf
-        @method('PUT')
+            const selectTemplate = document.getElementById('departamentoSelectTemplate').innerHTML;
 
-        <div class="modal-header">
-            <h5 class="modal-title">Editar Usuario: ${nombre}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
+            const html = `
+                <form action="${baseUrl}/${id}" method="POST">
+                    @csrf
+                    @method('PUT')
 
-        <div class="modal-body">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Editar Usuario: ${nombre}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
 
-            <div class="mb-3">
-                <label>Nombre</label>
-                <input type="text" name="nombre" class="form-control" value="${nombre}" required>
-            </div>
+                    <div class="modal-body">
 
-            <div class="mb-3">
-                <label>Departamento</label>
-                <input type="text" name="departamento" class="form-control" value="${departamento}">
-            </div>
+                        <div class="mb-3">
+                            <label>Nombre</label>
+                            <input type="text" name="nombre" class="form-control" value="${nombre}" required>
+                        </div>
 
-            <div class="mb-3">
-                <label>Puesto</label>
-                <input type="text" name="puesto" class="form-control" value="${puesto}">
-            </div>
+                        <div class="mb-3">
+                            <label>Departamento</label>
+                            <select name="id_departamento" class="form-select" required>
+                                ${selectTemplate}
+                            </select>
+                        </div>
 
-            <div class="mb-3">
-                <label>Email</label>
-                <input type="email" name="email" class="form-control" value="${email}">
-            </div>
-<div class="mb-3">
-    <label>Nueva Contraseña</label>
-    <input type="text" id="password" name="password" class="form-control" placeholder="Dejar vacío para no cambiar">
-</div>
+                        <div class="mb-3">
+                            <label>Puesto</label>
+                            <input type="text" name="puesto" class="form-control" value="${puesto}">
+                        </div>
 
-<div class="mb-3">
-    <label>Confirmar Nueva Contraseña</label>
-    <input type="text" id="password_confirmation" name="password_confirmation" class="form-control" placeholder="Confirmar">
-</div>
+                        <div class="mb-3">
+                            <label>Email</label>
+                            <input type="email" name="email" class="form-control" value="${email}">
+                        </div>
 
+                        <div class="mb-3">
+                            <label>Usuario</label>
+                            <input type="text" name="username" class="form-control" value="${username}">
+                        </div>
 
-            
-            <div class="mb-3">
-                <label>Usuario</label>
-                <input type="text" name="username" class="form-control" value="${username}">
-            </div>
+                    </div>
 
-        </div>
-
-        <div class="modal-footer">
-            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button class="btn btn-primary">Guardar Cambios</button>
-        </div>
-    </form>
-`;
-
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </form>
+            `;
 
             document.getElementById('editModalContent').innerHTML = html;
             new bootstrap.Modal(document.getElementById('globalEditModal')).show();
+
+            // Preseleccionar departamento
+            setTimeout(() => {
+                const select = document.querySelector('#globalEditModal select[name="id_departamento"]');
+                if (select && deptoId) select.value = deptoId;
+            }, 50);
         });
     });
 
+    /* =======================
+       PERMISOS
+    ======================= */
     document.querySelectorAll('.btn-permisos').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
 
             const tr = this.closest('tr');
             const esAdmin = tr.dataset.rol == "1";
@@ -477,17 +481,19 @@ const html = `
 
             const id = tr.dataset.id;
             const nombre = tr.dataset.nombre;
-            let permisos = JSON.parse(tr.dataset.permisos || "[]");
+            const permisos = JSON.parse(tr.dataset.permisos || "[]");
 
             const checked = v => permisos.includes(v) ? "checked" : "";
 
             const html = `
                 <form action="${baseUrl}/${id}/update-permissions" method="POST">
                     @csrf @method('PUT')
+
                     <div class="modal-header">
                         <h5 class="modal-title">Permisos: ${nombre}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
+
                     <div class="modal-body">
                         <div><input type="checkbox" name="permisos[]" value="1" ${checked(1)}> Ver Usuarios</div>
                         <div><input type="checkbox" name="permisos[]" value="2" ${checked(2)}> Gestionar Formatos</div>
@@ -497,6 +503,7 @@ const html = `
                         <div><input type="checkbox" name="permisos[]" value="6" ${checked(6)}> Cambiar Roles</div>
                         <div><input type="checkbox" name="permisos[]" value="7" ${checked(7)}> Activar Cuentas</div>
                     </div>
+
                     <div class="modal-footer">
                         <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <button class="btn btn-primary">Guardar</button>
@@ -509,8 +516,11 @@ const html = `
         });
     });
 
+    /* =======================
+       ELIMINAR
+    ======================= */
     document.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
 
             const tr = this.closest('tr');
             const esAdmin = tr.dataset.rol == "1";
@@ -553,14 +563,7 @@ const html = `
             document.getElementById('deleteModalContent').innerHTML = html;
             new bootstrap.Modal(document.getElementById('globalDeleteModal')).show();
         });
-
-function togglePassword() {
-    let f = document.getElementById("password");
-    f.type = (f.type === "password") ? "text" : "password";
-}
     });
-
-
 
 });
 </script>

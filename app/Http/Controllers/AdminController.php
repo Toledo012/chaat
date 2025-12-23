@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Usuario;
 use App\Models\Cuenta;
 use App\Models\Servicio;
+use App\Models\Departamento;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -48,9 +49,10 @@ class AdminController extends Controller
         if (!$puedeVerGestion) {
             return redirect()->route('user.dashboard');
         }
-        $usuarios = Usuario::with('cuenta')->get();
+        $usuarios = Usuario::with(['cuenta', 'departamentos'])->get();
+     $departamentos = Departamento::orderBy('nombre')->get();
 
-        return view('admin.users.index', compact('usuarios'));
+        return view('admin.users.index', compact('usuarios', 'departamentos'));
     }
 public function updateUserRole(Request $request, $id)
 {
@@ -189,7 +191,7 @@ public function toggleUserStatus(Request $request, $id)
 
             $request->validate([
                 'nombre' => 'required|string|max:30',
-                'departamento' => 'nullable|string|max:50',
+                'id_departamento' => 'required|exists:departamentos,id_departamento',
                 'puesto' => 'nullable|string|max:50',
                 'email' => 'nullable|email|max:50|unique:usuarios,email,' . $id . ',id_usuario',
                 'username' => $usernameRule,
@@ -198,7 +200,7 @@ public function toggleUserStatus(Request $request, $id)
 
             $usuario->update([
                 'nombre' => $request->nombre,
-                'departamento' => $request->departamento,
+                'id_departamento' => $request->id_departamento,
                 'puesto' => $request->puesto,
                 'email' => $request->email,
                 'password' => $request->password ? Hash::make($request->password) : $usuario->password,
@@ -257,12 +259,14 @@ public function toggleUserStatus(Request $request, $id)
             'nombre' => 'required|string|max:30',
             'username' => 'required|string|unique:cuentas,username',
             'password' => 'required|string|min:6',
+            'id_departamento' => 'required|exists:departamentos,id_departamento',
+
             'rol' => 'required|in:1,2'
         ]);
 
         $usuario = Usuario::create([
             'nombre' => $request->nombre,
-            'departamento' => $request->departamento,
+            'id_departamento' => $request->id_departamento, //se relaciona con departamentos
             'puesto' => $request->puesto,
             'extension' => $request->extension,
             'email' => $request->email
