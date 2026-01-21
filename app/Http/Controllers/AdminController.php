@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Usuario;
 use App\Models\Cuenta;
 use App\Models\Servicio;
+use App\Models\Ticket;
 use App\Models\Departamento;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +46,12 @@ class AdminController extends Controller
             $user->puedeEditarUsuarios() ||
             $user->puedeEliminarUsuarios() ||
             $user->puedeCambiarRoles() ||
-            $user->puedeActivarCuentas();
+            $user->puedeActivarCuentas() ||
+            $user->puedeVertickets() ||
+            $user->puedeCrearTickets() ||
+            $user->puedeTomarTickets()||
+            $user->puedeCerrarTickets();
+            
         if (!$puedeVerGestion) {
             return redirect()->route('user.dashboard');
         }
@@ -243,6 +249,8 @@ public function toggleUserStatus(Request $request, $id)
                 'id_rol' => 2
             ]);
 
+
+
             return redirect()->route('admin.users.index')->with('success', 'Cuenta creada. Password temporal: ' . $tempPassword);
         }
 
@@ -261,7 +269,7 @@ public function toggleUserStatus(Request $request, $id)
             'password' => 'required|string|min:6',
             'id_departamento' => 'required|exists:departamentos,id_departamento',
 
-            'rol' => 'required|in:1,2'
+            'rol' => 'required|in:1,2,4', // 1=Admin, 2=Técnico, 4=Departamento
         ]);
 
         $usuario = Usuario::create([
@@ -331,4 +339,8 @@ public function destroyUser(Request $request, $id)
 
         return redirect()->route('admin.users.index')->with('open_permissions_id', (int) $id);
     }
+
+
+
+    
 }

@@ -8,6 +8,8 @@ use App\Http\Controllers\FormatoController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\DepartamentoController;
+use App\Http\Controllers\TicketController;
+use App\Http\Controllers\AdminTicketController;
 
 
 // ==========================
@@ -125,8 +127,15 @@ Route::delete('/eliminar-multiples', [MaterialController::class, 'destroyMultipl
 });
 
 
+// ==========================
+// DEPARTAMENTOS  ROL
+Route::get('/depto/dashboard', [UserController::class, 'deptoDashboard'])
+    ->middleware('auth')
+    ->name('depto.dashboard');
 
 
+// ==========================
+// DEPARTAMENTOS SECCIÓN 
 
     Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::resource('departamentos', DepartamentoController::class)
@@ -137,3 +146,53 @@ Route::delete('/eliminar-multiples', [MaterialController::class, 'destroyMultipl
 
 
 });
+
+
+// ==========================
+// TICKETS
+// ==========================
+Route::middleware(['auth'])->prefix('tickets')->name('tickets.')->group(function () {
+    Route::get('/', [TicketController::class, 'index'])->middleware('perm:ver_tickets')->name('index');
+    Route::post('/', [TicketController::class, 'store'])->middleware('perm:crear_tickets')->name('store');
+});
+
+
+
+Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
+
+    Route::get('/tickets', [AdminTicketController::class, 'index'])
+        ->middleware('perm:ver_tickets')
+        ->name('tickets.index');
+
+    // Técnico toma ticket (solo si lo creó, tu lógica ya lo valida)
+    Route::post('/tickets/{id_ticket}/take', [AdminTicketController::class, 'take'])
+        ->middleware('perm:tomar_tickets')
+        ->name('tickets.take');
+
+    //  Admin asigna/reasigna (solo admin)
+    Route::post('/tickets/{id_ticket}/assign', [AdminTicketController::class, 'assign'])
+        ->middleware('perm:gestion_usuarios')
+        ->name('tickets.assign');
+
+    // Admin cambia estado general (solo admin)
+    Route::post('/tickets/{id_ticket}/status', [AdminTicketController::class, 'setStatus'])
+        ->middleware('perm:gestion_usuarios')
+        ->name('tickets.status');
+
+    // Cerrar ticket: técnico asignado O admin (tu lógica ya lo valida)
+    Route::post('/tickets/{id_ticket}/close', [AdminTicketController::class, 'close'])
+        ->middleware('perm:cerrar_tickets')
+        ->name('tickets.close');
+
+    // Elegir formato desde ticket: técnico asignado o admin
+    // (como NO habrá generar_formatos, usamos gestion_formatos)
+    Route::post('/tickets/{id_ticket}/set-formato', [AdminTicketController::class, 'setFormato'])
+        ->middleware('perm:gestion_formatos')
+        ->name('tickets.set-formato');
+
+    // Redirigir a formulario A/B/C/D
+    Route::get('/tickets/{id_ticket}/generar-formato', [AdminTicketController::class, 'generarFormato'])
+        ->middleware('perm:gestion_formatos')
+        ->name('tickets.generar-formato');
+});
+

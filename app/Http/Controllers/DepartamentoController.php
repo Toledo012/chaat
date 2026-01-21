@@ -14,7 +14,13 @@ public function index()
         ->withCount('usuarios')
         ->get();
 
-    return view('admin.departamentos.index', compact('departamentos'));
+
+        $tickets = Ticket::where('id_usuario_creador', auth()->user()->id_usuario)
+    ->orderByDesc('created_at')
+    ->get();
+
+
+    return view('admin.departamentos.index', compact('departamentos', 'tickets'));
 }
 
 

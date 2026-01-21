@@ -48,6 +48,18 @@ class UserController extends Controller
 
         return back()->with('success', 'Tu contraseña ha sido actualizada correctamente.');
     }
+
+public function deptoDashboard()
+{
+    // seguridad: si no es departamento, fuera
+    if (!auth()->user()->isDepartamento()) {
+        return redirect()->route('user.dashboard');
+    }
+
+    return view('depto.dashboard');
+}
+
+    
 }
 
 

@@ -160,6 +160,8 @@
                                             <select name="rol" class="form-select form-select-sm" onchange="this.form.submit()">
                                                 <option value="1" {{ $usuario->cuenta->id_rol == 1 ? 'selected' : '' }}>Administrador</option>
                                                 <option value="2" {{ $usuario->cuenta->id_rol == 2 ? 'selected' : '' }}>Usuario</option>
+                                                <option value="4" {{ $usuario->cuenta->id_rol == 4 ? 'selected' : '' }}>Departamento</option>
+
                                             </select>
                                         </form>
 
@@ -502,6 +504,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div><input type="checkbox" name="permisos[]" value="5" ${checked(5)}> Eliminar Usuarios</div>
                         <div><input type="checkbox" name="permisos[]" value="6" ${checked(6)}> Cambiar Roles</div>
                         <div><input type="checkbox" name="permisos[]" value="7" ${checked(7)}> Activar Cuentas</div>
+                        <div><input type="checkbox" name="permisos[]" value="8" ${checked(8)}> Ver Tickets</div>
+                        <div><input type="checkbox" name="permisos[]" value="9" ${checked(9)}> Crear Tickets</div>
+                        <div><input type="checkbox" name="permisos[]" value="10" ${checked(10)}> Tomar Tickets</div>
+                        <div><input type="checkbox" name="permisos[]" value="11" ${checked(11)}> Cerrar Tickets</div>
+
                     </div>
 
                     <div class="modal-footer">

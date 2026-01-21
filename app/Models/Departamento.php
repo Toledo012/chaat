@@ -28,6 +28,13 @@ public function usuarios()
     {
         return $this->hasMany(Usuario::class, 'id_departamento', 'id_departamento');
     }
+
+
+    public function tickets()
+{
+    return $this->hasMany(Ticket::class, 'id_departamento', 'id_departamento');
+}
+
 }
 
 
