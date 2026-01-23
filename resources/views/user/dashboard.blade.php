@@ -146,31 +146,6 @@
             </div>
         </div>
 
-        <a href="{{ route('tickets.index') }}" class="text-decoration-none">
-    <div class="card shadow-sm border-0 hover-shadow">
-        <div class="card-body d-flex align-items-center gap-3">
-            <div class="rounded-circle d-flex align-items-center justify-content-center"
-                 style="width:48px;height:48px;background:#399e91;color:white;">
-                <i class="fa-solid fa-ticket"></i>
-            </div>
-
-            <div>
-                <div class="fw-semibold text-dark">Tickets</div>
-                <small class="text-muted">Crear y consultar solicitudes</small>
-            </div>
-
-            <div class="ms-auto text-muted">
-                <i class="fa-solid fa-chevron-right"></i>
-            </div>
-        </div>
-    </div>
-</a>
-
-<style>
-.hover-shadow:hover { box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15)!important; transform: translateY(-1px); transition: .15s; }
-</style>
-
-
         {{-- 🔷 MATERIALES --}}
         <div class="col-lg-8 mb-4">
             <div class="card p-4">
@@ -231,7 +206,6 @@
                         'Eliminar Usuarios' => Auth::user()->puedeEliminarUsuarios(),
                         'Cambiar Roles' => Auth::user()->puedeCambiarRoles(),
                         'Activar Cuentas' => Auth::user()->puedeActivarCuentas(),
-
                     ];
                 @endphp
 

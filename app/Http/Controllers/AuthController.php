@@ -4,29 +4,18 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Cuenta;
-use App\Models\Usuario;
 
 class AuthController extends Controller
 {
     public function showLoginForm()
     {
-
-
-
         // Si ya está autenticado, redirigir según su rol
         if (Auth::check()) {
-// Redirigir según rol
-if (Auth::user()->isAdmin()) {
-    return redirect()->route('admin.dashboard');
-}
-
-if (Auth::user()->isDepartamento()) {
-    return redirect()->route('depto.dashboard');
-}
-
-return redirect()->route('user.dashboard');
-
+            if (Auth::user()->isAdmin()) {
+                return redirect()->route('admin.dashboard');
+            } else {
+                return redirect()->route('user.dashboard');
+            }
         }
 
         return view('auth.login');
@@ -59,17 +48,12 @@ return redirect()->route('user.dashboard');
             $permisos = $cuenta->permisosArray();
             session(['permisos_usuario' => $permisos]);
 
-// Redirigir según rol
-if (Auth::user()->isAdmin()) {
-    return redirect()->route('admin.dashboard');
-}
-
-if (Auth::user()->isDepartamento()) {
-    return redirect()->route('depto.dashboard');
-}
-
-return redirect()->route('user.dashboard');
-
+            // Redirigir según el rol
+            if (Auth::user()->isAdmin()) {
+                return redirect()->route('admin.dashboard');
+            } else {
+                return redirect()->route('user.dashboard');
+            }
         }
 
         return back()->withErrors(['username' => 'Contraseña incorrecta.']);

@@ -21,12 +21,6 @@ class Usuario extends Model
         'email'
     ];
 
-
-    public function esDepartamento(): bool
-{
-    return optional($this->cuenta)->id_rol == 4;
-}
-
     public $timestamps = true;
 
     // Relación con Cuentas
@@ -46,18 +40,6 @@ class Usuario extends Model
     public function departamentos()
 {
     return $this->belongsTo(Departamento::class, 'id_departamento');
-}
-
-
-
-public function ticketsAsignados()
-{
-    return $this->hasMany(Ticket::class, 'id_tecnico_asignado', 'id_usuario');
-}
-
-public function ticketsCreados()
-{
-    return $this->hasMany(Ticket::class, 'id_usuario_creador', 'id_usuario');
 }
 
 }

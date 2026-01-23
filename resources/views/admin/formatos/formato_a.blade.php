@@ -88,13 +88,6 @@
                 </div>
             </div>
 
-
-            {{-- ticket  --}}
-
-            <div class="mb-3">
-                 <input type="hidden" name="ticket_id" value="{{ request('ticket_id') }}">
-            </div>
-
             {{-- PETICIÓN --}}
             <div class="mb-3">
                 <label class="form-label">Petición <span class="text-danger">*</span></label>

@@ -30,7 +30,7 @@ class FormatoController extends Controller
         )
         ->orderByDesc('servicios.id_servicio');
 
-    // ðŸ” Filtros desde el formulario
+    // 🔍 Filtros desde el formulario
     if (!empty($tipo)) {
         $query->where('servicios.tipo_formato', $tipo);
     }
@@ -41,11 +41,11 @@ class FormatoController extends Controller
         $query->whereDate('servicios.fecha', $fecha);
     }
 
-    // âš™ï¸ Filtro por usuario autenticado
+    // ⚙️ Filtro por usuario autenticado
     $cuenta = Auth::user();
 
     if (!$cuenta->isAdmin()) {
-        // Si no es admin, solo ve los servicios que Ã©l mismo creÃ³
+        // Si no es admin, solo ve los servicios que él mismo creó
         $query->where('servicios.id_usuario', $cuenta->id_usuario);
     }
 
@@ -60,7 +60,6 @@ class FormatoController extends Controller
     public function create()
     {
         return view('admin.formatos.create');
-        
     }
 
 
@@ -126,14 +125,16 @@ public function formatoA()
     $idServicio = DB::table('servicios')->insertGetId([
         'folio' => 'A-' . time(),
         'fecha' => now()->format('Y-m-d'),
-      //  'id_usuario' => Auth::id(), // ðŸ‘ˆ Nuevo campo
-        'id_usuario' => Auth::user()->id_usuario,
-         'id_departamento' => $data['id_departamento'],
+      //  'id_usuario' => Auth::id(), // 👈 Nuevo campo
+'id_usuario' => Auth::user()->id_usuario,
+    'id_departamento' => $data['id_departamento'],
+
+ 
+
         'tipo_formato' => 'A',
         'created_at' => now(),
     ]);
 
-$this->vincularTicket($request->ticket_id, $idServicio);
 
 DB::table('formato_a')->insert([
     'id_servicio' => $idServicio,
@@ -150,10 +151,9 @@ DB::table('formato_a')->insert([
     'observaciones' => $data['observaciones'] ?? null,
 ]);;
 
+        return redirect()->route('admin.formatos.index')->with('success', 'Formato A guardado correctamente ✅');
+    }
 
-    return redirect()->route('admin.formatos.index')
-        ->with('success', 'Formato A guardado correctamente ✅');
-}
 public function storeB(Request $request)
 {
     try {
@@ -172,9 +172,9 @@ public function storeB(Request $request)
         'disco_duro' => 'nullable|string',
         'sistema_operativo' => 'nullable|string',
 
-        'tipo_servicio' => 'nullable|in:Preventivo,Correctivo,InstalaciÃ³n,CorrecciÃ³n,DiagnÃ³stico',
+        'tipo_servicio' => 'nullable|in:Preventivo,Correctivo,Instalación,Corrección,Diagnóstico',
         'diagnostico' => 'nullable|string',
-        'origen_falla' => 'nullable|in:Desgaste natural,Mala operaciÃ³n,Otro',
+        'origen_falla' => 'nullable|in:Desgaste natural,Mala operación,Otro',
         'trabajo_realizado' => 'nullable|string',
         'conclusion_servicio' => 'nullable|string',
 
@@ -193,7 +193,7 @@ public function storeB(Request $request)
     $idServicio = DB::table('servicios')->insertGetId([
         'folio' => 'B-' . time(),
         'fecha' => now()->format('Y-m-d'),
-      //  'id_usuario' => Auth::id(), // ðŸ‘ˆ Nuevo campo
+      //  'id_usuario' => Auth::id(), // 👈 Nuevo campo
 'id_usuario' => Auth::user()->id_usuario,
     'id_departamento' => $data['id_departamento'],
 
@@ -225,13 +225,10 @@ public function storeB(Request $request)
         'observaciones'     => $data['observaciones'] ?? null,
         'firma_usuario'     => $data['firma_usuario'] ?? null,
         'firma_tecnico'     => $data['firma_tecnico'] ?? (Auth::user()->usuario->nombre ?? Auth::user()->name),
-        'firma_jefe_area'   => $data['firma_jefe_area'] ?? 'Jefe de Ãrea',
+        'firma_jefe_area'   => $data['firma_jefe_area'] ?? 'Jefe de Área',
         'created_at'        => now(),
         'updated_at'        => now(),
     ];
-
-    $this->vincularTicket($request->ticket_id, $idServicio);
-
 
     DB::table('formato_b')->insert($insertData);
 
@@ -247,10 +244,10 @@ public function storeB(Request $request)
         }
     }
 
-    return redirect()->route('admin.formatos.index')->with('success', 'Formato B guardado correctamente âœ…');
+    return redirect()->route('admin.formatos.index')->with('success', 'Formato B guardado correctamente ✅');
 
 } catch (\Throwable $e) {
-    // ðŸ“‹ Log y mensaje visible para debug
+    // 📋 Log y mensaje visible para debug
 \Log::error('Error en storeB: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
 dd('Error en storeB:', $e->getMessage());
 }
@@ -261,7 +258,7 @@ dd('Error en storeB:', $e->getMessage());
 //        try {
 //
 //            // =============================
-//            // VALIDACIÃ“N
+//            // VALIDACIÓN
 //            // =============================
 //            $data = $request->validate([
 //                'subtipo' => 'required|in:Computadora,Impresora',
@@ -280,9 +277,9 @@ dd('Error en storeB:', $e->getMessage());
 //                'disco_duro' => 'nullable|string',
 //                'sistema_operativo' => 'nullable|string',
 //
-//                'tipo_servicio' => 'nullable|in:Preventivo,Correctivo,InstalaciÃ³n,CorrecciÃ³n,DiagnÃ³stico',
+//                'tipo_servicio' => 'nullable|in:Preventivo,Correctivo,Instalación,Corrección,Diagnóstico',
 //                'diagnostico' => 'nullable|string',
-//                'origen_falla' => 'nullable|in:Desgaste natural,Mala operaciÃ³n,Otro',
+//                'origen_falla' => 'nullable|in:Desgaste natural,Mala operación,Otro',
 //                'trabajo_realizado' => 'nullable|string',
 //                'conclusion_servicio' => 'nullable|string',
 //
@@ -362,7 +359,7 @@ dd('Error en storeB:', $e->getMessage());
 //
 //                'firma_usuario' => $data['firma_usuario'] ?? null,
 //                'firma_tecnico' => $data['firma_tecnico'] ?? (Auth::user()->usuario->nombre ?? Auth::user()->name),
-//                'firma_jefe_area' => $data['firma_jefe_area'] ?? 'Jefe de Ãrea',
+//                'firma_jefe_area' => $data['firma_jefe_area'] ?? 'Jefe de Área',
 //            ];
 //
 //            DB::table('formato_b')->insert($insertData);
@@ -383,7 +380,7 @@ dd('Error en storeB:', $e->getMessage());
 //            }
 //
 //            return redirect()->route('admin.formatos.index')
-//                ->with('success', 'Formato B guardado correctamente âœ…');
+//                ->with('success', 'Formato B guardado correctamente ✅');
 //
 //        } catch (\Throwable $e) {
 //            \Log::error('Error en storeB: ' . $e->getMessage());
@@ -394,7 +391,7 @@ dd('Error en storeB:', $e->getMessage());
 
 
 // =============================
-// GUARDAR FORMATO C (Redes / TelefonÃ­a)
+// GUARDAR FORMATO C (Redes / Telefonía)
 // =============================
 public function storeC(Request $request)
 {
@@ -402,10 +399,10 @@ public function storeC(Request $request)
         'id_departamento' => 'required|exists:departamentos,id_departamento',
 
         'descripcion_servicio' => 'nullable|string',
-        'tipo_red' => 'required|in:Red,TelefonÃ­a',
+        'tipo_red' => 'required|in:Red,Telefonía',
         'tipo_servicio' => 'required|in:Preventivo,Correctivo,Configuracion',
         'diagnostico' => 'nullable|string',
-        'origen_falla' => 'nullable|in:Desgaste natural,Mala operaciÃ³n,Otro',
+        'origen_falla' => 'nullable|in:Desgaste natural,Mala operación,Otro',
         'trabajo_realizado' => 'nullable|string',
         'detalle_realizado' => 'nullable|string',
         'firma_usuario' => 'nullable|string',
@@ -420,15 +417,13 @@ public function storeC(Request $request)
     $idServicio = DB::table('servicios')->insertGetId([
         'folio' => 'C-' . time(),
         'fecha' => now()->format('Y-m-d'),
-     //   'id_usuario' => Auth::id(), // ðŸ‘ˆ Nuevo campo
+     //   'id_usuario' => Auth::id(), // 👈 Nuevo campo
 'id_usuario' => Auth::user()->id_usuario,
     'id_departamento' => $data['id_departamento'],
 
         'tipo_formato' => 'C',
         'created_at' => now(),
     ]);
-    $this->vincularTicket($request->ticket_id, $idServicio);
-
 
     DB::table('formato_c')->insert([
         'id_servicio' => $idServicio,
@@ -441,13 +436,11 @@ public function storeC(Request $request)
         'detalle_realizado' => $data['detalle_realizado'] ?? null,
         'firma_usuario' => $data['firma_usuario'] ?? null,
         'firma_tecnico' => $data['firma_tecnico'] ?? (Auth::user()->usuario->nombre ?? Auth::user()->name),
-        'firma_jefe_area' => $data['firma_jefe_area'] ?? 'Jefe de Ãrea',
+        'firma_jefe_area' => $data['firma_jefe_area'] ?? 'Jefe de Área',
         'observaciones' => $data['observaciones'] ?? null,
         'created_at' => now(),
         'updated_at' => now(),
     ]);
-
-    
 
     if (!empty($data['materiales'])) {
         foreach ($data['materiales'] as $mat) {
@@ -461,7 +454,7 @@ public function storeC(Request $request)
         }
     }
 
-    return redirect()->route('admin.formatos.index')->with('success', 'Formato C guardado correctamente âœ…');
+    return redirect()->route('admin.formatos.index')->with('success', 'Formato C guardado correctamente ✅');
 }
 
 // =============================
@@ -487,7 +480,7 @@ public function storeD(Request $request)
     $idServicio = DB::table('servicios')->insertGetId([
         'folio' => 'D-' . time(),
         'fecha' => $data['fecha'] ?? now()->format('Y-m-d'),
-     //   'id_usuario' => Auth::id(), // ðŸ‘ˆ Nuevo campo
+     //   'id_usuario' => Auth::id(), // 👈 Nuevo campo
 'id_usuario' => Auth::user()->id_usuario,
     'id_departamento' => $data['id_departamento'],
 
@@ -495,13 +488,9 @@ public function storeD(Request $request)
         'created_at' => now(),
     ]);
 
-
-        $this->vincularTicket($request->ticket_id, $idServicio);
-
-
     DB::table('formato_d')->insert(array_merge($data, ['id_servicio' => $idServicio]));
 
-    return redirect()->route('admin.formatos.index')->with('success', 'Formato D guardado correctamente âœ…');
+    return redirect()->route('admin.formatos.index')->with('success', 'Formato D guardado correctamente ✅');
 }
 
 
@@ -825,7 +814,7 @@ public function edit($tipo, $id)
     ->join('catalogo_materiales', 'catalogo_materiales.id_material', '=', 'materiales_utilizados.id_material')
     ->where('materiales_utilizados.id_servicio', $id)
     ->select(
-        'materiales_utilizados.id_material',   // ðŸ‘ˆ NECESARIO
+        'materiales_utilizados.id_material',   // 👈 NECESARIO
         'catalogo_materiales.nombre',
         'materiales_utilizados.cantidad'
     )
@@ -871,7 +860,7 @@ case 'A':
                 'id_departamento' => $data['id_departamento']
             ]);
 
-        unset($data['id_departamento']); // ðŸ”¥ CLAVE
+        unset($data['id_departamento']); // 🔥 CLAVE
     }
 
     // 2. ACTUALIZAR FORMATO A
@@ -893,7 +882,7 @@ case 'B':
                 'id_departamento' => $data['id_departamento']
             ]);
 
-        unset($data['id_departamento']); // ðŸ‘ˆ MUY IMPORTANTE
+        unset($data['id_departamento']); // 👈 MUY IMPORTANTE
     }
 
     // =============================
@@ -1031,7 +1020,7 @@ public function reporteGeneral(Request $request)
 
     $servicios = $query->get();
 
-    // Unir campos adicionales segÃºn tipo
+    // Unir campos adicionales según tipo
     $formatos = collect();
     foreach ($servicios as $s) {
         $detalle = match ($s->tipo_formato) {
@@ -1057,22 +1046,6 @@ public function reporteGeneral(Request $request)
 
     return $pdf->stream($nombre);
 
-}
-
-
-private function vincularTicket($ticketId, $idServicio)
-{
-    if (!$ticketId) return;
-
-    DB::table('tickets')
-        ->where('id_ticket', $ticketId)
-        ->where('estado', '!=', 'terminado')
-        ->update([
-            'id_servicio' => $idServicio,
-            'formato_generado_en' => now(),
-            'estado' => 'en_proceso',
-            'updated_at' => now(),
-        ]);
 }
 
 
