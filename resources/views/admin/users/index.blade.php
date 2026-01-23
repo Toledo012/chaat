@@ -160,6 +160,7 @@
                                             <select name="rol" class="form-select form-select-sm" onchange="this.form.submit()">
                                                 <option value="1" {{ $usuario->cuenta->id_rol == 1 ? 'selected' : '' }}>Administrador</option>
                                                 <option value="2" {{ $usuario->cuenta->id_rol == 2 ? 'selected' : '' }}>Usuario</option>
+                                                <option value="3" {{ $usuario->cuenta->id_rol == 3 ? 'selected' : '' }}>Departamento</option>
                                             </select>
                                         </form>
 
@@ -358,6 +359,7 @@
                                 <select name="rol" class="form-select" required>
                                     <option value="2">Usuario Normal</option>
                                     <option value="1">Administrador</option>
+                                    <option value="3">Departamento</option>
                                 </select>
                             </div>
                         </div>

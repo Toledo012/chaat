@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // Aliases de middleware
         $middleware->alias([
+            'rol' => \App\Http\Middleware\EnsureRole::class,
               'role' => \App\Http\Middleware\CheckRole::class,
             'account.status' => \App\Http\Middleware\CheckAccountStatus::class,
             'permission' => \App\Http\Middleware\CheckPermission::class, // ✅ NUEVO

@@ -29,51 +29,45 @@ class EnsurePermission
             array_shift($params);
         }
 
-        // Soportar una cadena con comas
-        if (count($params) === 1 && str_contains($params[0], ',')) {
+        // Soportar una cadena con comas (permiso:a,b,c)
+        if (count($params) === 1 && is_string($params[0]) && str_contains($params[0], ',')) {
             $params = array_map('trim', explode(',', $params[0]));
         }
 
         // Sin permisos definidos: negar
         if (empty($params)) {
-            return redirect()->route('user.dashboard')->with('error', 'No tienes permisos suficientes');
+            return redirect()->route('user.dashboard')
+                ->with('error', 'No tienes permisos suficientes');
         }
 
-        // Fallback genérico: usar método tienePermiso si existe
-        $has = false;
-        $map = [
-            'gestion_usuarios' => 1,
-            'gestion_formatos' => 2,
-            'crear_usuarios' => 3,
-            'editar_usuarios' => 4,
-            'eliminar_usuarios' => 5,
-            'cambiar_roles' => 6,
-            'activar_cuentas' => 7,
-        ];
+        $has = $modeAny ? false : true; // any: arranca false, all: arranca true
 
         foreach ($params as $perm) {
-            $ok = false;
-            if (method_exists($user, 'tienePermiso')) {
-                $ok = $user->tienePermiso($perm);
-            }
-            // Fallback por sesión permisos ID
-            if (!$ok && isset($map[$perm])) {
-                $sessionPerms = (array) session('permisos_usuario', []);
-                $ok = in_array((int) $map[$perm], array_map('intval', $sessionPerms), true);
-            }
-            // Fallback por método permisosArray
-            if (!$ok && method_exists($user, 'permisosArray')) {
-                $ok = in_array((int) ($map[$perm] ?? -1), (array) $user->permisosArray(), true);
-            }
+            $ok = method_exists($user, 'tienePermiso') && $user->tienePermiso($perm);
 
-            if ($modeAny && $ok) { $has = true; break; }
-            if (!$modeAny && !$ok) { $has = false; break; } // all-mode falla rápido
-            if (!$modeAny && $ok) { $has = true; }
+            if ($modeAny) {
+                if ($ok) { $has = true; break; }
+            } else {
+                if (!$ok) { $has = false; break; }
+            }
         }
 
-        if (!$has) {
-            return redirect()->route('user.dashboard')->with('error', 'No tienes permisos suficientes');
-        }
+
+
+        //redireccion por rol//prueba//
+if (!$has) {
+
+    if (method_exists($user, 'isAdmin') && $user->isAdmin()) {
+        return redirect()->route('admin.dashboard')->with('error', 'No tienes permisos suficientes');
+    }
+
+    if (method_exists($user, 'isDepartamento') && $user->isDepartamento()) {
+        return redirect()->route('departamento.dashboard')->with('error', 'No tienes permisos suficientes');
+    }
+
+    return redirect()->route('user.dashboard')->with('error', 'No tienes permisos suficientes');
+}
+
 
         return $next($request);
     }
