@@ -96,298 +96,223 @@ public function formatoA()
     }
 
 
+    // 
 
-    //logica para guardar formatos A, B, C, D
-    public function storeA(Request $request)
-    {
- $data = $request->validate([
+private function generarFolioGlobal(string $tipoFormato): string
+{
+    $lastFolio = DB::table('servicios')
+        ->orderByDesc('id_servicio')
+        ->lockForUpdate()
+        ->value('folio');
 
-        'id_departamento' => 'required|exists:departamentos,id_departamento',
-
-    'subtipo' => 'required|string',
-    'tipo_atencion' => 'nullable|string',
-    'peticion' => 'nullable|string',
-    'tipo_servicio' => 'nullable|string',
-    'trabajo_realizado' => 'nullable|string',
-    'conclusion_servicio' => 'nullable|string',
-    'detalle_realizado' => 'nullable|string',
-    'firma_usuario' => 'nullable|string',
-    'firma_tecnico' => 'nullable|string',
-    'firma_jefe_area' => 'nullable|string',
-    'observaciones' => 'nullable|string',
-]);
-
-    $tipoServicioFinal = $data['tipo_servicio'] === 'otro'
-        ? $data['tipo_servicio_otro']
-        : $data['tipo_servicio'];
-
-
-    $idServicio = DB::table('servicios')->insertGetId([
-        'folio' => 'A-' . time(),
-        'fecha' => now()->format('Y-m-d'),
-      //  'id_usuario' => Auth::id(), // 👈 Nuevo campo
-'id_usuario' => Auth::user()->id_usuario,
-    'id_departamento' => $data['id_departamento'],
-
- 
-
-        'tipo_formato' => 'A',
-        'created_at' => now(),
-    ]);
-
-
-DB::table('formato_a')->insert([
-    'id_servicio' => $idServicio,
-    'subtipo' => $data['subtipo'],
-    'tipo_atencion' => $data['tipo_atencion'] ?? null,
-    'peticion' => $data['peticion'] ?? null,
-    'tipo_servicio' => $data['tipo_servicio'] ?? null,
-    'trabajo_realizado' => $data['trabajo_realizado'] ?? null,
-    'conclusion_servicio' => $data['conclusion_servicio'] ?? null,
-    'detalle_realizado' => $data['detalle_realizado'] ?? null,
-    'firma_usuario' => $data['firma_usuario'] ?? null,
-    'firma_tecnico' => $data['firma_tecnico'] ?? null,
-    'firma_jefe_area' => $data['firma_jefe_area'] ?? null,
-    'observaciones' => $data['observaciones'] ?? null,
-]);;
-
-        return redirect()->route('admin.formatos.index')->with('success', 'Formato A guardado correctamente ✅');
+    $lastNum = 0;
+    if ($lastFolio && preg_match('/SEMAHN-[A-D]-(\d+)/', $lastFolio, $m)) {
+        $lastNum = (int) $m[1];
     }
 
-public function storeB(Request $request)
+    $nextNum = $lastNum + 1;
+
+    return 'SEMAHN-' . $tipoFormato . '-' . str_pad((string)$nextNum, 5, '0', STR_PAD_LEFT);
+}
+
+
+
+
+
+    //logica para guardar formatos A, B, C, D
+ public function storeA(Request $request)
 {
-    try {
     $data = $request->validate([
         'id_departamento' => 'required|exists:departamentos,id_departamento',
 
         'subtipo' => 'required|string',
-        'descripcion_servicio' => 'nullable|string',
-        'equipo' => 'nullable|string',
-        'marca' => 'nullable|string',
-        'modelo' => 'nullable|string',
-        'numero_inventario' => 'nullable|string',
-        'numero_serie' => 'nullable|string',
-        'procesador' => 'nullable|string',
-        'ram' => 'nullable|string',
-        'disco_duro' => 'nullable|string',
-        'sistema_operativo' => 'nullable|string',
 
-        'tipo_servicio' => 'nullable|in:Preventivo,Correctivo,Instalación,Corrección,Diagnóstico',
-        'diagnostico' => 'nullable|string',
-        'origen_falla' => 'nullable|in:Desgaste natural,Mala operación,Otro',
+        'tipo_atencion' => 'nullable|string',
+        'peticion' => 'nullable|string',
+
+        'tipo_servicio' => 'nullable|string',
+        'tipo_servicio_otro' => 'nullable|string|max:255',
+
         'trabajo_realizado' => 'nullable|string',
         'conclusion_servicio' => 'nullable|string',
-
         'detalle_realizado' => 'nullable|string',
-        'observaciones' => 'nullable|string',
+
         'firma_usuario' => 'nullable|string',
         'firma_tecnico' => 'nullable|string',
         'firma_jefe_area' => 'nullable|string',
 
-        // Materiales
-        'materiales' => 'nullable|array',
-        'materiales.*.id_material' => 'nullable|integer|exists:catalogo_materiales,id_material',
-        'materiales.*.cantidad' => 'nullable|numeric|min:1',
+        'observaciones' => 'nullable|string',
     ]);
 
-    $idServicio = DB::table('servicios')->insertGetId([
-        'folio' => 'B-' . time(),
-        'fecha' => now()->format('Y-m-d'),
-      //  'id_usuario' => Auth::id(), // 👈 Nuevo campo
-'id_usuario' => Auth::user()->id_usuario,
-    'id_departamento' => $data['id_departamento'],
+    // Normalizar "otro"
+    $tipoServicioFinal = ($data['tipo_servicio'] ?? null) === 'otro'
+        ? ($data['tipo_servicio_otro'] ?? null)
+        : ($data['tipo_servicio'] ?? null);
 
-        'tipo_formato' => 'B',
-        'created_at' => now(),
-    ]);
+    return DB::transaction(function () use ($data, $tipoServicioFinal) {
 
-    $insertData = [
-        'id_servicio'       => $idServicio,
-        'subtipo'           => $data['subtipo'],
-        'descripcion_servicio' => $data['descripcion_servicio'] ?? null,
-        'equipo' => $data['equipo'] ?? null,
-        'marca' => $data['marca'] ?? null,
-        'modelo' => $data['modelo'] ?? null,
-        'numero_inventario' => $data['numero_inventario'] ?? null,
-        'numero_serie' => $data['numero_serie'] ?? null,
-        'procesador' => $data['procesador'] ?? null,
-        'ram' => $data['ram'] ?? null,
-        'disco_duro' => $data['disco_duro'] ?? null,
-        'sistema_operativo' => $data['sistema_operativo'] ?? null,
+        $tipoFormato = 'A';
 
-        'tipo_servicio' => $data['tipo_servicio'] ?? null,
-        'diagnostico' => $data['diagnostico'] ?? null,
-        'origen_falla' => $data['origen_falla'] ?? null,
-        'trabajo_realizado' => $data['trabajo_realizado'] ?? null,
-        'conclusion_servicio' => $data['conclusion_servicio'] ?? null,
+        $folio = $this->generarFolioGlobal($tipoFormato);
 
-        'detalle_realizado' => $data['detalle_realizado'] ?? null,
-        'observaciones'     => $data['observaciones'] ?? null,
-        'firma_usuario'     => $data['firma_usuario'] ?? null,
-        'firma_tecnico'     => $data['firma_tecnico'] ?? (Auth::user()->usuario->nombre ?? Auth::user()->name),
-        'firma_jefe_area'   => $data['firma_jefe_area'] ?? 'Jefe de Área',
-        'created_at'        => now(),
-        'updated_at'        => now(),
-    ];
 
-    DB::table('formato_b')->insert($insertData);
+        // Crear servicio
+        $idServicio = DB::table('servicios')->insertGetId([
+            'folio' => $folio,
+            'fecha' => now()->format('Y-m-d'),
+            'id_usuario' => Auth::user()->id_usuario,
+            'id_departamento' => $data['id_departamento'],
+            'tipo_formato' => $tipoFormato,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
-    if (!empty($data['materiales'])) {
-        foreach ($data['materiales'] as $mat) {
-            if (!empty($mat['id_material'])) {
-                DB::table('materiales_utilizados')->insert([
-                    'id_servicio' => $idServicio,
-                    'id_material' => $mat['id_material'],
-                    'cantidad'    => $mat['cantidad'] ?? 1,
-                ]);
+        // Insertar Formato A
+        DB::table('formato_a')->insert([
+            'id_servicio' => $idServicio,
+            'subtipo' => $data['subtipo'],
+            'tipo_atencion' => $data['tipo_atencion'] ?? null,
+            'peticion' => $data['peticion'] ?? null,
+            'tipo_servicio' => $tipoServicioFinal,
+            'trabajo_realizado' => $data['trabajo_realizado'] ?? null,
+            'conclusion_servicio' => $data['conclusion_servicio'] ?? null,
+            'detalle_realizado' => $data['detalle_realizado'] ?? null,
+            'firma_usuario' => $data['firma_usuario'] ?? null,
+            'firma_tecnico' => $data['firma_tecnico'] ?? null,
+            'firma_jefe_area' => $data['firma_jefe_area'] ?? null,
+            'observaciones' => $data['observaciones'] ?? null,
+        ]);
+
+        /**
+         * ✅ HOOK: si este servicio pertenece a un ticket, márcalo completado.
+         * (Solo afectará si existe un ticket con ese id_servicio)
+         */
+        DB::table('tickets')
+            ->where('id_servicio', $idServicio)
+            ->update([
+                'estado' => 'completado',
+                'updated_at' => now(),
+            ]);
+
+        return redirect()
+            ->route('admin.formatos.index')
+            ->with('success', 'Formato A guardado correctamente ✅');
+    });
+}
+
+public function storeB(Request $request)
+{
+    try {
+        $data = $request->validate([
+            'id_departamento' => 'required|exists:departamentos,id_departamento',
+
+            'subtipo' => 'required|string',
+            'descripcion_servicio' => 'nullable|string',
+            'equipo' => 'nullable|string',
+            'marca' => 'nullable|string',
+            'modelo' => 'nullable|string',
+            'numero_inventario' => 'nullable|string',
+            'numero_serie' => 'nullable|string',
+            'procesador' => 'nullable|string',
+            'ram' => 'nullable|string',
+            'disco_duro' => 'nullable|string',
+            'sistema_operativo' => 'nullable|string',
+
+            'tipo_servicio' => 'nullable|in:Preventivo,Correctivo,Instalación,Corrección,Diagnóstico',
+            'diagnostico' => 'nullable|string',
+            'origen_falla' => 'nullable|in:Desgaste natural,Mala operación,Otro',
+            'trabajo_realizado' => 'nullable|string',
+            'conclusion_servicio' => 'nullable|string',
+
+            'detalle_realizado' => 'nullable|string',
+            'observaciones' => 'nullable|string',
+            'firma_usuario' => 'nullable|string',
+            'firma_tecnico' => 'nullable|string',
+            'firma_jefe_area' => 'nullable|string',
+
+            // Materiales
+            'materiales' => 'nullable|array',
+            'materiales.*.id_material' => 'nullable|integer|exists:catalogo_materiales,id_material',
+            'materiales.*.cantidad' => 'nullable|numeric|min:1',
+        ]);
+
+        return DB::transaction(function () use ($data) {
+
+            $tipoFormato = 'B';
+
+        $folio = $this->generarFolioGlobal($tipoFormato);
+
+            $idServicio = DB::table('servicios')->insertGetId([
+                'folio' => $folio,
+                'fecha' => now()->format('Y-m-d'),
+                'id_usuario' => Auth::user()->id_usuario,
+                'id_departamento' => $data['id_departamento'],
+                'tipo_formato' => $tipoFormato,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $insertData = [
+                'id_servicio'          => $idServicio,
+                'subtipo'              => $data['subtipo'],
+                'descripcion_servicio' => $data['descripcion_servicio'] ?? null,
+                'equipo'               => $data['equipo'] ?? null,
+                'marca'                => $data['marca'] ?? null,
+                'modelo'               => $data['modelo'] ?? null,
+                'numero_inventario'    => $data['numero_inventario'] ?? null,
+                'numero_serie'         => $data['numero_serie'] ?? null,
+                'procesador'           => $data['procesador'] ?? null,
+                'ram'                  => $data['ram'] ?? null,
+                'disco_duro'           => $data['disco_duro'] ?? null,
+                'sistema_operativo'    => $data['sistema_operativo'] ?? null,
+
+                'tipo_servicio'        => $data['tipo_servicio'] ?? null,
+                'diagnostico'          => $data['diagnostico'] ?? null,
+                'origen_falla'         => $data['origen_falla'] ?? null,
+                'trabajo_realizado'    => $data['trabajo_realizado'] ?? null,
+                'conclusion_servicio'  => $data['conclusion_servicio'] ?? null,
+
+                'detalle_realizado'    => $data['detalle_realizado'] ?? null,
+                'observaciones'        => $data['observaciones'] ?? null,
+                'firma_usuario'        => $data['firma_usuario'] ?? null,
+                'firma_tecnico'        => $data['firma_tecnico'] ?? (Auth::user()->usuario->nombre ?? Auth::user()->name),
+                'firma_jefe_area'      => $data['firma_jefe_area'] ?? 'Jefe de Área',
+                'created_at'           => now(),
+                'updated_at'           => now(),
+            ];
+
+            DB::table('formato_b')->insert($insertData);
+
+            // 
+            if (!empty($data['materiales'])) {
+                foreach ($data['materiales'] as $mat) {
+                    if (!empty($mat['id_material'])) {
+                        DB::table('materiales_utilizados')->insert([
+                            'id_servicio' => $idServicio,
+                            'id_material' => $mat['id_material'],
+                            'cantidad'    => $mat['cantidad'] ?? 1,
+                        ]);
+                    }
+                }
             }
-        }
+
+            //  si este servicio pertenece a un ticket, marcar como completado
+            DB::table('tickets')
+                ->where('id_servicio', $idServicio)
+                ->update([
+                    'estado' => 'completado',
+                    'updated_at' => now(),
+                ]);
+
+            return redirect()->route('admin.formatos.index')
+                ->with('success', 'Formato B guardado correctamente ✅');
+        });
+
+    } catch (\Throwable $e) {
+        \Log::error('Error en storeB: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+        dd('Error en storeB:', $e->getMessage());
     }
-
-    return redirect()->route('admin.formatos.index')->with('success', 'Formato B guardado correctamente ✅');
-
-} catch (\Throwable $e) {
-    // 📋 Log y mensaje visible para debug
-\Log::error('Error en storeB: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
-dd('Error en storeB:', $e->getMessage());
 }
-}
-
-//    public function storeB(Request $request)
-//    {
-//        try {
-//
-//            // =============================
-//            // VALIDACIÓN
-//            // =============================
-//            $data = $request->validate([
-//                'subtipo' => 'required|in:Computadora,Impresora',
-//
-//                'descripcion_servicio' => 'nullable|string',
-//
-//                'equipo' => 'nullable|string',
-//                'marca' => 'nullable|string',
-//                'modelo' => 'nullable|string',
-//
-//                'numero_inventario' => 'nullable|string',
-//                'numero_serie' => 'nullable|string',
-//
-//                'procesador' => 'nullable|string',
-//                'ram' => 'nullable|string',
-//                'disco_duro' => 'nullable|string',
-//                'sistema_operativo' => 'nullable|string',
-//
-//                'tipo_servicio' => 'nullable|in:Preventivo,Correctivo,Instalación,Corrección,Diagnóstico',
-//                'diagnostico' => 'nullable|string',
-//                'origen_falla' => 'nullable|in:Desgaste natural,Mala operación,Otro',
-//                'trabajo_realizado' => 'nullable|string',
-//                'conclusion_servicio' => 'nullable|string',
-//
-//                'detalle_realizado' => 'nullable|string',
-//                'observaciones' => 'nullable|string',
-//
-//                'firma_usuario' => 'nullable|string',
-//                'firma_tecnico' => 'nullable|string',
-//                'firma_jefe_area' => 'nullable|string',
-//
-//                // Materiales
-//                'materiales' => 'nullable|array',
-//                'materiales.*.id_material' => 'nullable|integer|exists:catalogo_materiales,id_material',
-//                'materiales.*.cantidad' => 'nullable|numeric|min:1',
-//            ]);
-//
-//            // =============================
-//            // CREAR SERVICIO
-//            // =============================
-//            $idServicio = DB::table('servicios')->insertGetId([
-//                'folio' => 'B-' . time(),
-//                'fecha' => now()->format('Y-m-d'),
-//                'id_usuario' => Auth::user()->id_usuario,
-//                'tipo_formato' => 'B',
-//                'created_at' => now(),
-//            ]);
-//
-//            // =============================
-//            // DETECTAR SUBTIPO
-//            // =============================
-//            $sub = $data['subtipo'];
-//
-//            // =============================
-//            // CAMPOS PARA COMPUTADORA
-//            // =============================
-//            $equipo = $sub === 'Computadora' ? ($data['equipo'] ?? null) : ($sub === 'Impresora' ? ($data['equipo'] ?? null) : null);
-//            $marca  = $sub === 'Computadora' ? ($data['marca'] ?? null) : ($sub === 'Impresora' ? ($data['marca'] ?? null) : null);
-//            $modelo = $sub === 'Computadora' ? ($data['modelo'] ?? null) : ($sub === 'Impresora' ? ($data['modelo'] ?? null) : null);
-//
-//            $procesador        = $sub === 'Computadora' ? ($data['procesador'] ?? null) : null;
-//            $ram               = $sub === 'Computadora' ? ($data['ram'] ?? null) : null;
-//            $disco_duro        = $sub === 'Computadora' ? ($data['disco_duro'] ?? null) : null;
-//            $sistema_operativo = $sub === 'Computadora' ? ($data['sistema_operativo'] ?? null) : null;
-//            $numero_inventario = $sub === 'Computadora' ? ($data['numero_inventario'] ?? null) : null;
-//            $numero_serie      = $sub === 'Computadora' ? ($data['numero_serie'] ?? null) : null;
-//
-//            // =============================
-//            // INSERT FINAL
-//            // =============================
-//            $insertData = [
-//                'id_servicio' => $idServicio,
-//                'subtipo' => $sub,
-//
-//                'descripcion_servicio' => $data['descripcion_servicio'] ?? null,
-//
-//                // CAMPOS DEPENDIENTES DEL SUBTIPO
-//                'equipo' => $equipo,
-//                'marca'  => $marca,
-//                'modelo' => $modelo,
-//
-//                'procesador' => $procesador,
-//                'ram' => $ram,
-//                'disco_duro' => $disco_duro,
-//                'sistema_operativo' => $sistema_operativo,
-//
-//                'numero_inventario' => $numero_inventario,
-//                'numero_serie'      => $numero_serie,
-//
-//                'tipo_servicio' => $data['tipo_servicio'] ?? null,
-//                'diagnostico' => $data['diagnostico'] ?? null,
-//                'origen_falla' => $data['origen_falla'] ?? null,
-//                'trabajo_realizado' => $data['trabajo_realizado'] ?? null,
-//                'conclusion_servicio' => $data['conclusion_servicio'] ?? null,
-//
-//                'detalle_realizado' => $data['detalle_realizado'] ?? null,
-//                'observaciones' => $data['observaciones'] ?? null,
-//
-//                'firma_usuario' => $data['firma_usuario'] ?? null,
-//                'firma_tecnico' => $data['firma_tecnico'] ?? (Auth::user()->usuario->nombre ?? Auth::user()->name),
-//                'firma_jefe_area' => $data['firma_jefe_area'] ?? 'Jefe de Área',
-//            ];
-//
-//            DB::table('formato_b')->insert($insertData);
-//
-//            // =============================
-//            // GUARDAR MATERIALES (opcionales)
-//            // =============================
-//            if (!empty($data['materiales'])) {
-//                foreach ($data['materiales'] as $mat) {
-//                    if (!empty($mat['id_material'])) {
-//                        DB::table('materiales_utilizados')->insert([
-//                            'id_servicio' => $idServicio,
-//                            'id_material' => $mat['id_material'],
-//                            'cantidad'    => $mat['cantidad'] ?? 1,
-//                        ]);
-//                    }
-//                }
-//            }
-//
-//            return redirect()->route('admin.formatos.index')
-//                ->with('success', 'Formato B guardado correctamente ✅');
-//
-//        } catch (\Throwable $e) {
-//            \Log::error('Error en storeB: ' . $e->getMessage());
-//            dd('Error en storeB:', $e->getMessage());
-//        }
-//    }
-
 
 
 // =============================
@@ -409,52 +334,69 @@ public function storeC(Request $request)
         'firma_tecnico' => 'nullable|string',
         'firma_jefe_area' => 'nullable|string',
         'observaciones' => 'nullable|string',
+
         'materiales' => 'nullable|array',
         'materiales.*.id_material' => 'nullable|integer|exists:catalogo_materiales,id_material',
         'materiales.*.cantidad' => 'nullable|numeric|min:1',
     ]);
 
-    $idServicio = DB::table('servicios')->insertGetId([
-        'folio' => 'C-' . time(),
-        'fecha' => now()->format('Y-m-d'),
-     //   'id_usuario' => Auth::id(), // 👈 Nuevo campo
-'id_usuario' => Auth::user()->id_usuario,
-    'id_departamento' => $data['id_departamento'],
+    return DB::transaction(function () use ($data) {
 
-        'tipo_formato' => 'C',
-        'created_at' => now(),
-    ]);
+        $tipoFormato = 'C';
 
-    DB::table('formato_c')->insert([
-        'id_servicio' => $idServicio,
-        'descripcion_servicio' => $data['descripcion_servicio'] ?? null,
-        'tipo_red' => $data['tipo_red'],
-        'tipo_servicio' => $data['tipo_servicio'],
-        'diagnostico' => $data['diagnostico'] ?? null,
-        'origen_falla' => $data['origen_falla'] ?? null,
-        'trabajo_realizado' => $data['trabajo_realizado'] ?? null,
-        'detalle_realizado' => $data['detalle_realizado'] ?? null,
-        'firma_usuario' => $data['firma_usuario'] ?? null,
-        'firma_tecnico' => $data['firma_tecnico'] ?? (Auth::user()->usuario->nombre ?? Auth::user()->name),
-        'firma_jefe_area' => $data['firma_jefe_area'] ?? 'Jefe de Área',
-        'observaciones' => $data['observaciones'] ?? null,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
+        $folio = $this->generarFolioGlobal($tipoFormato);
 
-    if (!empty($data['materiales'])) {
-        foreach ($data['materiales'] as $mat) {
-            if (!empty($mat['id_material'])) {
-                DB::table('materiales_utilizados')->insert([
-                    'id_servicio' => $idServicio,
-                    'id_material' => $mat['id_material'],
-                    'cantidad' => $mat['cantidad'] ?? 1,
-                ]);
+        $idServicio = DB::table('servicios')->insertGetId([
+            'folio' => $folio,
+            'fecha' => now()->format('Y-m-d'),
+            'id_usuario' => Auth::user()->id_usuario,
+            'id_departamento' => $data['id_departamento'],
+            'tipo_formato' => $tipoFormato,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('formato_c')->insert([
+            'id_servicio' => $idServicio,
+            'descripcion_servicio' => $data['descripcion_servicio'] ?? null,
+            'tipo_red' => $data['tipo_red'],
+            'tipo_servicio' => $data['tipo_servicio'],
+            'diagnostico' => $data['diagnostico'] ?? null,
+            'origen_falla' => $data['origen_falla'] ?? null,
+            'trabajo_realizado' => $data['trabajo_realizado'] ?? null,
+            'detalle_realizado' => $data['detalle_realizado'] ?? null,
+            'firma_usuario' => $data['firma_usuario'] ?? null,
+            'firma_tecnico' => $data['firma_tecnico'] ?? (Auth::user()->usuario->nombre ?? Auth::user()->name),
+            'firma_jefe_area' => $data['firma_jefe_area'] ?? 'Jefe de Área',
+            'observaciones' => $data['observaciones'] ?? null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        
+        if (!empty($data['materiales'])) {
+            foreach ($data['materiales'] as $mat) {
+                if (!empty($mat['id_material'])) {
+                    DB::table('materiales_utilizados')->insert([
+                        'id_servicio' => $idServicio,
+                        'id_material' => $mat['id_material'],
+                        'cantidad' => $mat['cantidad'] ?? 1,
+                    ]);
+                }
             }
         }
-    }
 
-    return redirect()->route('admin.formatos.index')->with('success', 'Formato C guardado correctamente ✅');
+        // si este servicio pertenece a un ticket, marcar como completado
+        DB::table('tickets')
+            ->where('id_servicio', $idServicio)
+            ->update([
+                'estado' => 'completado',
+                'updated_at' => now(),
+            ]);
+
+        return redirect()->route('admin.formatos.index')
+            ->with('success', 'Formato C guardado correctamente ✅');
+    });
 }
 
 // =============================
@@ -477,22 +419,37 @@ public function storeD(Request $request)
         'firma_jefe_area' => 'nullable|string',
     ]);
 
-    $idServicio = DB::table('servicios')->insertGetId([
-        'folio' => 'D-' . time(),
-        'fecha' => $data['fecha'] ?? now()->format('Y-m-d'),
-     //   'id_usuario' => Auth::id(), // 👈 Nuevo campo
-'id_usuario' => Auth::user()->id_usuario,
-    'id_departamento' => $data['id_departamento'],
+    return DB::transaction(function () use ($data) {
 
-        'tipo_formato' => 'D',
-        'created_at' => now(),
-    ]);
+        $tipoFormato = 'D';
+        $folio = $this->generarFolioGlobal($tipoFormato);
 
-    DB::table('formato_d')->insert(array_merge($data, ['id_servicio' => $idServicio]));
+        $idServicio = DB::table('servicios')->insertGetId([
+            'folio' => $folio,
+            'fecha' => $data['fecha'] ?? now()->format('Y-m-d'),
+            'id_usuario' => Auth::user()->id_usuario,
+            'id_departamento' => $data['id_departamento'],
+            'tipo_formato' => $tipoFormato,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
-    return redirect()->route('admin.formatos.index')->with('success', 'Formato D guardado correctamente ✅');
+        DB::table('formato_d')->insert(array_merge($data, [
+            'id_servicio' => $idServicio
+        ]));
+
+        // ✅ HOOK: si este servicio pertenece a un ticket, marcar como completado
+        DB::table('tickets')
+            ->where('id_servicio', $idServicio)
+            ->update([
+                'estado' => 'completado',
+                'updated_at' => now(),
+            ]);
+
+        return redirect()->route('admin.formatos.index')
+            ->with('success', 'Formato D guardado correctamente ✅');
+    });
 }
-
 
 // =============================
 // PREVIEW FORMATO A
@@ -849,133 +806,153 @@ public function update(Request $request, $tipo, $id)
 
     switch (strtoupper($tipo)) {
 
+        case 'A':
 
-case 'A':
+            // 1. ACTUALIZAR DEPARTAMENTO (tabla servicios)
+            if (isset($data['id_departamento'])) {
+                DB::table('servicios')
+                    ->where('id_servicio', $id)
+                    ->update([
+                        'id_departamento' => $data['id_departamento'],
+                        'updated_at' => now(),
+                    ]);
 
-    // 1. ACTUALIZAR DEPARTAMENTO (tabla servicios)
-    if (isset($data['id_departamento'])) {
-        DB::table('servicios')
-            ->where('id_servicio', $id)
-            ->update([
-                'id_departamento' => $data['id_departamento']
-            ]);
-
-        unset($data['id_departamento']); // 🔥 CLAVE
-    }
-
-    // 2. ACTUALIZAR FORMATO A
-    DB::table('formato_a')
-        ->where('id_servicio', $id)
-        ->update($data);
-
-    break;
-
-case 'B':
-
-    // =============================
-  
-    // =============================
-    if (isset($data['id_departamento'])) {
-        DB::table('servicios')
-            ->where('id_servicio', $id)
-            ->update([
-                'id_departamento' => $data['id_departamento']
-            ]);
-
-        unset($data['id_departamento']); // 👈 MUY IMPORTANTE
-    }
-
-    // =============================
-    // 2. QUITAR MATERIALES DEL UPDATE
-    // =============================
-    if (isset($data['materiales'])) {
-        unset($data['materiales']);
-    }
-
-    // =============================
-    // 3. ACTUALIZAR FORMATO B
-    // =============================
-    DB::table('formato_b')
-        ->where('id_servicio', $id)
-        ->update($data);
-
-    // =============================
-    // 4. ACTUALIZAR MATERIALES
-    // =============================
-    if ($request->has('materiales')) {
-
-        DB::table('materiales_utilizados')
-            ->where('id_servicio', $id)
-            ->delete();
-
-        foreach ($request->materiales as $m) {
-            if (!empty($m['id_material'])) {
-                DB::table('materiales_utilizados')->insert([
-                    'id_servicio' => $id,
-                    'id_material' => $m['id_material'],
-                    'cantidad'    => $m['cantidad'] ?? 1,
-                ]);
+                unset($data['id_departamento']); // 🔥 CLAVE
             }
-        }
-    }
 
+            // 2. ACTUALIZAR FORMATO A
+            DB::table('formato_a')
+                ->where('id_servicio', $id)
+                ->update($data);
 
-
-    break;
-
-case 'C':
-
-    // =============================
-    // 1. ACTUALIZAR DEPARTAMENTO (SERVICIOS)
-    // =============================
-    if (isset($data['id_departamento'])) {
-        DB::table('servicios')
-            ->where('id_servicio', $id)
-            ->update([
-                'id_departamento' => $data['id_departamento']
-            ]);
-
-        unset($data['id_departamento']);
-    }
-
-    // =============================
-    // 2. QUITAR MATERIALES
-    // =============================
-    if (isset($data['materiales'])) {
-        unset($data['materiales']);
-    }
-
-    // =============================
-    // 3. ACTUALIZAR FORMATO C
-    // =============================
-    DB::table('formato_c')
-        ->where('id_servicio', $id)
-        ->update($data);
-
-    // =============================
-    // 4. ACTUALIZAR MATERIALES
-    // =============================
-    if ($request->has('materiales')) {
-
-        DB::table('materiales_utilizados')
-            ->where('id_servicio', $id)
-            ->delete();
-
-        foreach ($request->materiales as $m) {
-            if (!empty($m['id_material'])) {
-                DB::table('materiales_utilizados')->insert([
-                    'id_servicio' => $id,
-                    'id_material' => $m['id_material'],
-                    'cantidad'    => $m['cantidad'] ?? 1
+            // ✅ HOOK: si este servicio pertenece a un ticket, marcar como completado
+            DB::table('tickets')
+                ->where('id_servicio', $id)
+                ->update([
+                    'estado' => 'completado',
+                    'updated_at' => now(),
                 ]);
-            }
-        }
-    }
 
-    break;
+            break;
+
+        case 'B':
+
+            // 1. ACTUALIZAR DEPARTAMENTO (SERVICIOS)
+            if (isset($data['id_departamento'])) {
+                DB::table('servicios')
+                    ->where('id_servicio', $id)
+                    ->update([
+                        'id_departamento' => $data['id_departamento'],
+                        'updated_at' => now(),
+                    ]);
+
+                unset($data['id_departamento']); // 👈 MUY IMPORTANTE
+            }
+
+            // 2. QUITAR MATERIALES DEL UPDATE
+            if (isset($data['materiales'])) {
+                unset($data['materiales']);
+            }
+
+            // 3. ACTUALIZAR FORMATO B
+            DB::table('formato_b')
+                ->where('id_servicio', $id)
+                ->update($data);
+
+            // 4. ACTUALIZAR MATERIALES (NO SE TOCA TU LÓGICA)
+            if ($request->has('materiales')) {
+
+                DB::table('materiales_utilizados')
+                    ->where('id_servicio', $id)
+                    ->delete();
+
+                foreach ($request->materiales as $m) {
+                    if (!empty($m['id_material'])) {
+                        DB::table('materiales_utilizados')->insert([
+                            'id_servicio' => $id,
+                            'id_material' => $m['id_material'],
+                            'cantidad'    => $m['cantidad'] ?? 1,
+                        ]);
+                    }
+                }
+            }
+
+            // ✅ HOOK: si este servicio pertenece a un ticket, marcar como completado
+            DB::table('tickets')
+                ->where('id_servicio', $id)
+                ->update([
+                    'estado' => 'completado',
+                    'updated_at' => now(),
+                ]);
+
+            break;
+
+        case 'C':
+
+            // 1. ACTUALIZAR DEPARTAMENTO (SERVICIOS)
+            if (isset($data['id_departamento'])) {
+                DB::table('servicios')
+                    ->where('id_servicio', $id)
+                    ->update([
+                        'id_departamento' => $data['id_departamento'],
+                        'updated_at' => now(),
+                    ]);
+
+                unset($data['id_departamento']);
+            }
+
+            // 2. QUITAR MATERIALES
+            if (isset($data['materiales'])) {
+                unset($data['materiales']);
+            }
+
+            // 3. ACTUALIZAR FORMATO C
+            DB::table('formato_c')
+                ->where('id_servicio', $id)
+                ->update($data);
+
+            // 4. ACTUALIZAR MATERIALES (NO SE TOCA TU LÓGICA)
+            if ($request->has('materiales')) {
+
+                DB::table('materiales_utilizados')
+                    ->where('id_servicio', $id)
+                    ->delete();
+
+                foreach ($request->materiales as $m) {
+                    if (!empty($m['id_material'])) {
+                        DB::table('materiales_utilizados')->insert([
+                            'id_servicio' => $id,
+                            'id_material' => $m['id_material'],
+                            'cantidad'    => $m['cantidad'] ?? 1
+                        ]);
+                    }
+                }
+            }
+
+            // ✅ HOOK: si este servicio pertenece a un ticket, marcar como completado
+            DB::table('tickets')
+                ->where('id_servicio', $id)
+                ->update([
+                    'estado' => 'completado',
+                    'updated_at' => now(),
+                ]);
+
+            break;
 
         case 'D':
-            DB::table('formato_d')->where('id_servicio', $id)->update($data);
+
+            DB::table('formato_d')
+                ->where('id_servicio', $id)
+                ->update($data);
+
+            // ✅ HOOK: si este servicio pertenece a un ticket, marcar como completado
+            DB::table('tickets')
+                ->where('id_servicio', $id)
+                ->update([
+                    'estado' => 'completado',
+                    'updated_at' => now(),
+                ]);
+
             break;
 
         default:

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\DepartamentoController;
 use App\Http\Controllers\DeptoViewController;
+use App\Http\Controllers\TicketController;
 
 /*
 |--------------------------------------------------------------------------
@@ -187,4 +188,59 @@ Route::prefix('admin')
             ->names('admin.departamentos')
             ->except(['show', 'destroy']);
     });
+
+
+    // ==========================
+//  TICKETS - ADMIN
+// ==========================
+Route::prefix('admin/tickets')
+    ->name('admin.tickets.')
+    ->middleware(['auth', 'rol:Administrador'])
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\AdminTicketController::class, 'index'])->name('index');
+        Route::post('/{ticket}/asignar', [\App\Http\Controllers\AdminTicketController::class, 'asignar'])->name('asignar');
+
+        Route::get('/{ticket}/completar', [\App\Http\Controllers\AdminTicketController::class, 'completar'])
+    ->name('completar');
+
+        Route::post('/{ticket}/cancelar', [\App\Http\Controllers\AdminTicketController::class, 'cancelar'])->name('cancelar');
+
+                Route::post('/', [\App\Http\Controllers\AdminTicketController::class, 'store'])->name('store');
+
+
+    });
+
+
+// ==========================
+// TICKETS - USUARIO (TECNICO)
+// ==========================
+Route::prefix('user/tickets')
+    ->name('user.tickets.')
+    ->middleware(['auth', 'rol:Usuario'])
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\UserTicketController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\UserTicketController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\UserTicketController::class, 'store'])->name('store');
+
+        Route::post('/{ticket}/tomar', [\App\Http\Controllers\UserTicketController::class, 'tomar'])->name('tomar');
+        Route::get('/{ticket}/completar', [\App\Http\Controllers\UserTicketController::class, 'completar'])->name('completar');
+    });
+
+
+// ==========================
+// TICKETS - DEPARTAMENTO
+// ==========================
+Route::prefix('departamento/tickets')
+    ->name('departamento.tickets.')
+    ->middleware(['auth', 'rol:Departamento'])
+    ->group(function () {
+        Route::get('/', [\App\Http\Controllers\DeptTicketController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\DeptTicketController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\DeptTicketController::class, 'store'])->name('store');
+        Route::post('/{ticket}/cancelar', [\App\Http\Controllers\DeptTicketController::class, 'cancelar'])->name('cancelar');
+
+
+
+    });
+
 

@@ -69,7 +69,7 @@
 
                         @if(Auth::user()->isAdmin() || Auth::user()->tienePermiso('gestion_formatos'))
             <li class="nav-item">
-                <a class="nav-link @if(request()->routeIs('')) active @endif" href="}">
+                <a class="nav-link @if(request()->routeIs('admin.tickets.*')) active @endif" href="{{ route('admin.tickets.index') }}">
                     <i class="fas fa-ticket-alt"></i> <span>Gestión de Tickets</span>
                 </a>
             </li>

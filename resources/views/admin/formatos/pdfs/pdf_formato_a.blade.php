@@ -111,8 +111,8 @@
 
     <table>
         <tr>
-            <th>Número de Formato</th>
-            <td>{{ $servicio->id_servicio }}</td>
+            <th>Folio</th>
+            <td>{{ $servicio->folio }}</td>
             <th>Fecha</th>
             <td>{{ \Carbon\Carbon::parse($servicio->fecha)->format('d/m/Y') }}</td>
         </tr>

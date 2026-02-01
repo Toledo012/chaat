@@ -51,8 +51,8 @@
 <div class="section-title">Datos del Servicio</div>
 <table class="table table-bordered">
     <tr>
-                <th width="25%">Número de Formato</th>
-                <td>{{ $servicio->id_servicio }}</td>
+                <th width="25%">Folio</th>
+                <td>{{ $servicio->folio }}</td>
         <th>Fecha</th>
         <td>{{ \Carbon\Carbon::parse($servicio->fecha)->format('d/m/Y') }}</td>
     </tr>
