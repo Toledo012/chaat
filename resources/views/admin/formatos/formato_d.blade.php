@@ -26,6 +26,15 @@
     <form method="POST" action="{{ route('admin.formatos.d.store') }}">
       @csrf
 
+
+      @if(!empty($id_servicio))
+  <input type="hidden" name="id_servicio" value="{{ $id_servicio }}">
+@endif
+
+@if(!empty($id_ticket))
+  <input type="hidden" name="id_ticket" value="{{ $id_ticket }}">
+@endif
+
       <div class="row mb-3">
         <div class="col-md-4">
           <label>Equipo</label>

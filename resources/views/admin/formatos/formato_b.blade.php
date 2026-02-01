@@ -25,6 +25,9 @@
         <div class="card-header"><i class="fas fa-desktop me-2"></i>Formulario de Formato B</div>
         <div class="card-body">
 
+
+
+
             <form method="POST" action="{{ route('admin.formatos.b.store') }}">
                 @csrf
 
@@ -39,9 +42,9 @@
                         </select>
                     </div>
 
-                    <!-- 🔥 DEPARTAMENTO DESDE CATÁLOGO -->
+                    <!--  DEPARTAMENTO DESDE CATÁLOGO -->
                      
-                {{-- 🔥 DEPARTAMENTO DESDE CATÁLOGO --}}
+                {{-- DEPARTAMENTO DESDE CATÁLOGO --}}
                 <div class="col-md-4">
                     <label class="form-label">Departamento <span class="text-danger">*</span></label>
                     <select name="id_departamento"
@@ -255,11 +258,16 @@
                     <textarea name="observaciones" class="form-control" rows="2"></textarea>
                 </div>
 
+                <input type="hidden" name="id_servicio" value="{{ request('id_servicio') }}">
+<input type="hidden" name="id_ticket" value="{{ request('id_ticket') }}">
+
                 <div class="text-end">
                     <button class="btn btn-primary"><i class="fas fa-save me-1"></i>Guardar</button>
                     <a href="{{ route('admin.formatos.create') }}" class="btn btn-outline-secondary">Cancelar</a>
                 </div>
 
+
+                
             </form>
         </div>
     </div>

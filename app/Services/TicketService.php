@@ -143,7 +143,7 @@ return DB::transaction(function () use ($cuenta, $ticket) {
     }
 
     /**
-     * COMPLETAR (en tu caso) = crear/obtener Servicio y mandar al formulario.
+     * COMPLETAR = crear/obtener Servicio y mandar al formulario.
      * - Crea servicio si el ticket no tiene id_servicio
      * - Usa Cuenta->id_usuario para servicios.id_usuario (tabla usuarios)
      * - Usa usuarios.id_departamento para servicios.id_departamento

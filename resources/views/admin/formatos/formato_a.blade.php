@@ -41,6 +41,7 @@
         <i class="fas fa-laptop-code me-2"></i> Formulario de Registro
     </div>
 
+
     <div class="card-body">
         <form method="POST" action="{{ route('admin.formatos.a.store') }}">
             @csrf
@@ -178,6 +179,9 @@
                 <label class="form-label">Observaciones</label>
                 <textarea name="observaciones" class="form-control" rows="2"></textarea>
             </div>
+
+            <input type="hidden" name="id_servicio" value="{{ request('id_servicio') }}">
+<input type="hidden" name="id_ticket" value="{{ request('id_ticket') }}">
 
             {{-- BOTONES --}}
             <div class="text-end">

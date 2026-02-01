@@ -25,6 +25,8 @@
         <i class="fas fa-network-wired me-2"></i> Formulario de Formato C
     </div>
 
+
+
     <div class="card-body">
         <form method="POST" action="{{ route('admin.formatos.c.store') }}">
             @csrf
@@ -170,6 +172,10 @@
                 <label class="form-label">Observaciones</label>
                 <textarea name="observaciones" class="form-control" rows="2"></textarea>
             </div>
+
+
+            <input type="hidden" name="id_servicio" value="{{ request('id_servicio') }}">
+<input type="hidden" name="id_ticket" value="{{ request('id_ticket') }}">
 
             {{-- ================= BOTONES ================= --}}
             <div class="text-end">

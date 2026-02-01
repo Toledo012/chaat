@@ -110,26 +110,25 @@ class AdminTicketController extends Controller
 
     return back()->with('Creado', 'Ticket creado correctamente.');
 }
-public function completar(\App\Models\Ticket $ticket)
+
+public function completar(Ticket $ticket)
 {
-    // Evitar acciones en estados finales
-    if (in_array($ticket->estado, ['cancelado', 'completado'])) {
+    if (in_array($ticket->estado, ['cancelado','completado'])) {
         return back()->with('error', 'Este ticket no puede completarse.');
     }
 
-    // Si no existe servicio, crearlo y ligarlo
+    // 1️⃣ Crear servicio si no existe
     if (!$ticket->id_servicio) {
         DB::transaction(function () use ($ticket) {
 
-            // 🔹 Generar folio institucional GLOBAL para SERVICIOS
-            $tipo = strtoupper($ticket->tipo_formato); // a->A
+            $tipo = strtoupper($ticket->tipo_formato); // a → A
             $folio = $this->tickets->generarFolioGlobal($tipo);
 
             $idServicio = DB::table('servicios')->insertGetId([
                 'folio' => $folio,
                 'fecha' => now()->format('Y-m-d'),
-                'id_usuario' => auth()->user()->id_usuario, // quien lo está atendiendo
-                'id_departamento' => null, // si luego quieres amarrarlo al depto, lo hacemos
+                'id_usuario' => auth()->user()->id_usuario,
+                'id_departamento' => null,
                 'tipo_formato' => $tipo,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -143,16 +142,21 @@ public function completar(\App\Models\Ticket $ticket)
                     'updated_at' => now(),
                 ]);
 
-            // refrescar objeto en memoria
             $ticket->id_servicio = $idServicio;
-            $ticket->estado = 'en_proceso';
         });
     }
 
-    // 🔹 Redirigir al editor del formato correspondiente
-    return redirect()->route('admin.formatos.edit', [
-        'tipo' => strtoupper($ticket->tipo_formato),
-        'id' => $ticket->id_servicio,
+    //  Redirigir al FORMATO NORMAL
+    $map = [
+        'a' => 'admin.formatos.a',
+        'b' => 'admin.formatos.b',
+        'c' => 'admin.formatos.c',
+        'd' => 'admin.formatos.d',
+    ];
+
+    return redirect()->route($map[$ticket->tipo_formato], [
+        'id_servicio' => $ticket->id_servicio,
+        'id_ticket' => $ticket->id_ticket,
     ]);
 }
 

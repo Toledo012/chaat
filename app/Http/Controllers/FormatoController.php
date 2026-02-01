@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use \Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Departamento;
+use App\Services\ServicioService;
+use App\Services\MaterialesService;
+
+
 
 
 class FormatoController extends Controller
@@ -62,12 +66,22 @@ class FormatoController extends Controller
         return view('admin.formatos.create');
     }
 
+public function __construct(
+    private ServicioService $servicios,
+    private MaterialesService $materiales
+) {}
 
-public function formatoA()
+public function formatoA(Request $request)
 {
     $departamentos = Departamento::where('activo', 1)->get();
+    $id_servicio = $request->query('id_servicio');
+    $id_ticket = $request->query('id_ticket');
 
-    return view('admin.formatos.formato_a', compact('departamentos'));
+    return view('admin.formatos.formato_a', compact(
+        'departamentos',
+        'id_servicio',
+        'id_ticket'
+    ));
 }
 
     public function formatoB()
@@ -98,29 +112,29 @@ public function formatoA()
 
     // 
 
-private function generarFolioGlobal(string $tipoFormato): string
-{
-    $lastFolio = DB::table('servicios')
-        ->orderByDesc('id_servicio')
-        ->lockForUpdate()
-        ->value('folio');
+// private function generarFolioGlobal(string $tipoFormato): string
+// {
+//     $lastFolio = DB::table('servicios')
+//         ->orderByDesc('id_servicio')
+//         ->lockForUpdate()
+//         ->value('folio');
 
-    $lastNum = 0;
-    if ($lastFolio && preg_match('/SEMAHN-[A-D]-(\d+)/', $lastFolio, $m)) {
-        $lastNum = (int) $m[1];
-    }
+//     $lastNum = 0;
+//     if ($lastFolio && preg_match('/SEMAHN-[A-D]-(\d+)/', $lastFolio, $m)) {
+//         $lastNum = (int) $m[1];
+//     }
 
-    $nextNum = $lastNum + 1;
+//     $nextNum = $lastNum + 1;
 
-    return 'SEMAHN-' . $tipoFormato . '-' . str_pad((string)$nextNum, 5, '0', STR_PAD_LEFT);
-}
+//     return 'SEMAHN-' . $tipoFormato . '-' . str_pad((string)$nextNum, 5, '0', STR_PAD_LEFT);
+// }
 
 
 
 
 
     //logica para guardar formatos A, B, C, D
- public function storeA(Request $request)
+public function storeA(Request $request)
 {
     $data = $request->validate([
         'id_departamento' => 'required|exists:departamentos,id_departamento',
@@ -142,6 +156,10 @@ private function generarFolioGlobal(string $tipoFormato): string
         'firma_jefe_area' => 'nullable|string',
 
         'observaciones' => 'nullable|string',
+
+        // vienen desde tickets (hidden)
+        'id_servicio' => 'nullable|integer',
+        'id_ticket'   => 'nullable|integer',
     ]);
 
     // Normalizar "otro"
@@ -149,25 +167,20 @@ private function generarFolioGlobal(string $tipoFormato): string
         ? ($data['tipo_servicio_otro'] ?? null)
         : ($data['tipo_servicio'] ?? null);
 
-    return DB::transaction(function () use ($data, $tipoServicioFinal) {
+    //  sacar antes del transaction
+    $idServicioFromRequest = $data['id_servicio'] ?? null;
+    $idTicketFromRequest   = $data['id_ticket'] ?? null;
 
-        $tipoFormato = 'A';
+    return DB::transaction(function () use ($data, $tipoServicioFinal, $idServicioFromRequest, $idTicketFromRequest) {
 
-        $folio = $this->generarFolioGlobal($tipoFormato);
+        //  Obtener o crear servicio (si viene de ticket ya debería venir)
+        $idServicio = $this->servicios->obtenerOCrearServicio(
+            $idServicioFromRequest,
+            'A',
+            (int) $data['id_departamento']
+        );
 
-
-        // Crear servicio
-        $idServicio = DB::table('servicios')->insertGetId([
-            'folio' => $folio,
-            'fecha' => now()->format('Y-m-d'),
-            'id_usuario' => Auth::user()->id_usuario,
-            'id_departamento' => $data['id_departamento'],
-            'tipo_formato' => $tipoFormato,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        // Insertar Formato A
+        //  Insertar Formato A
         DB::table('formato_a')->insert([
             'id_servicio' => $idServicio,
             'subtipo' => $data['subtipo'],
@@ -181,26 +194,25 @@ private function generarFolioGlobal(string $tipoFormato): string
             'firma_tecnico' => $data['firma_tecnico'] ?? null,
             'firma_jefe_area' => $data['firma_jefe_area'] ?? null,
             'observaciones' => $data['observaciones'] ?? null,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
-        /**
-         * ✅ HOOK: si este servicio pertenece a un ticket, márcalo completado.
-         * (Solo afectará si existe un ticket con ese id_servicio)
-         */
-        DB::table('tickets')
-            ->where('id_servicio', $idServicio)
-            ->update([
-                'estado' => 'completado',
-                'updated_at' => now(),
-            ]);
+        // 
+        if ($idTicketFromRequest) {
+            $this->servicios->completarTicketPorId((int)$idTicketFromRequest, (int)$idServicio);
 
-        return redirect()
-            ->route('admin.formatos.index')
-            ->with('success', 'Formato A guardado correctamente ✅');
+            return redirect()->route('admin.tickets.index')
+                ->with('success', 'Ticket completado y Formato A guardado 🫡');
+        }
+
+        return redirect()->route('admin.formatos.index')
+            ->with('success', 'Formato A guardado correctamente 🫡');
     });
 }
 
-public function storeB(Request $request)
+
+ public function storeB(Request $request)
 {
     try {
         $data = $request->validate([
@@ -234,25 +246,24 @@ public function storeB(Request $request)
             'materiales' => 'nullable|array',
             'materiales.*.id_material' => 'nullable|integer|exists:catalogo_materiales,id_material',
             'materiales.*.cantidad' => 'nullable|numeric|min:1',
+
+            // ✅ vienen desde tickets (hidden)
+            'id_servicio' => 'nullable|integer',
+            'id_ticket'   => 'nullable|integer',
         ]);
 
-        return DB::transaction(function () use ($data) {
+        $idServicioFromRequest = $data['id_servicio'] ?? null;
+        $idTicketFromRequest   = $data['id_ticket'] ?? null;
 
-            $tipoFormato = 'B';
+        return DB::transaction(function () use ($data, $idServicioFromRequest, $idTicketFromRequest) {
 
-        $folio = $this->generarFolioGlobal($tipoFormato);
+            $idServicio = $this->servicios->obtenerOCrearServicio(
+                $idServicioFromRequest,
+                'B',
+                (int) $data['id_departamento']
+            );
 
-            $idServicio = DB::table('servicios')->insertGetId([
-                'folio' => $folio,
-                'fecha' => now()->format('Y-m-d'),
-                'id_usuario' => Auth::user()->id_usuario,
-                'id_departamento' => $data['id_departamento'],
-                'tipo_formato' => $tipoFormato,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            $insertData = [
+            DB::table('formato_b')->insert([
                 'id_servicio'          => $idServicio,
                 'subtipo'              => $data['subtipo'],
                 'descripcion_servicio' => $data['descripcion_servicio'] ?? null,
@@ -279,33 +290,21 @@ public function storeB(Request $request)
                 'firma_jefe_area'      => $data['firma_jefe_area'] ?? 'Jefe de Área',
                 'created_at'           => now(),
                 'updated_at'           => now(),
-            ];
+            ]);
 
-            DB::table('formato_b')->insert($insertData);
+            //  Materiales (tu lógica, encapsulada)
+            $this->materiales->guardarMaterialesUtilizados($idServicio, $data['materiales'] ?? null);
 
-            // 
-            if (!empty($data['materiales'])) {
-                foreach ($data['materiales'] as $mat) {
-                    if (!empty($mat['id_material'])) {
-                        DB::table('materiales_utilizados')->insert([
-                            'id_servicio' => $idServicio,
-                            'id_material' => $mat['id_material'],
-                            'cantidad'    => $mat['cantidad'] ?? 1,
-                        ]);
-                    }
-                }
+            // Completar ticket por id_ticket
+            if ($idTicketFromRequest) {
+                $this->servicios->completarTicketPorId((int)$idTicketFromRequest, (int)$idServicio);
+
+                return redirect()->route('admin.tickets.index')
+                    ->with('success', 'Ticket completado y Formato B guardado 🫡');
             }
 
-            //  si este servicio pertenece a un ticket, marcar como completado
-            DB::table('tickets')
-                ->where('id_servicio', $idServicio)
-                ->update([
-                    'estado' => 'completado',
-                    'updated_at' => now(),
-                ]);
-
             return redirect()->route('admin.formatos.index')
-                ->with('success', 'Formato B guardado correctamente ✅');
+                ->with('success', 'Formato B guardado correctamente 🫡');
         });
 
     } catch (\Throwable $e) {
@@ -313,6 +312,7 @@ public function storeB(Request $request)
         dd('Error en storeB:', $e->getMessage());
     }
 }
+
 
 
 // =============================
@@ -338,23 +338,22 @@ public function storeC(Request $request)
         'materiales' => 'nullable|array',
         'materiales.*.id_material' => 'nullable|integer|exists:catalogo_materiales,id_material',
         'materiales.*.cantidad' => 'nullable|numeric|min:1',
+
+        // ✅ tickets
+        'id_servicio' => 'nullable|integer',
+        'id_ticket'   => 'nullable|integer',
     ]);
 
-    return DB::transaction(function () use ($data) {
+    $idServicioFromRequest = $data['id_servicio'] ?? null;
+    $idTicketFromRequest   = $data['id_ticket'] ?? null;
 
-        $tipoFormato = 'C';
+    return DB::transaction(function () use ($data, $idServicioFromRequest, $idTicketFromRequest) {
 
-        $folio = $this->generarFolioGlobal($tipoFormato);
-
-        $idServicio = DB::table('servicios')->insertGetId([
-            'folio' => $folio,
-            'fecha' => now()->format('Y-m-d'),
-            'id_usuario' => Auth::user()->id_usuario,
-            'id_departamento' => $data['id_departamento'],
-            'tipo_formato' => $tipoFormato,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $idServicio = $this->servicios->obtenerOCrearServicio(
+            $idServicioFromRequest,
+            'C',
+            (int) $data['id_departamento']
+        );
 
         DB::table('formato_c')->insert([
             'id_servicio' => $idServicio,
@@ -373,29 +372,17 @@ public function storeC(Request $request)
             'updated_at' => now(),
         ]);
 
-        
-        if (!empty($data['materiales'])) {
-            foreach ($data['materiales'] as $mat) {
-                if (!empty($mat['id_material'])) {
-                    DB::table('materiales_utilizados')->insert([
-                        'id_servicio' => $idServicio,
-                        'id_material' => $mat['id_material'],
-                        'cantidad' => $mat['cantidad'] ?? 1,
-                    ]);
-                }
-            }
+        $this->materiales->guardarMaterialesUtilizados($idServicio, $data['materiales'] ?? null);
+
+        if ($idTicketFromRequest) {
+            $this->servicios->completarTicketPorId((int)$idTicketFromRequest, (int)$idServicio);
+
+            return redirect()->route('admin.tickets.index')
+                ->with('success', 'Ticket completado y Formato C guardado 🫡');
         }
 
-        // si este servicio pertenece a un ticket, marcar como completado
-        DB::table('tickets')
-            ->where('id_servicio', $idServicio)
-            ->update([
-                'estado' => 'completado',
-                'updated_at' => now(),
-            ]);
-
         return redirect()->route('admin.formatos.index')
-            ->with('success', 'Formato C guardado correctamente ✅');
+            ->with('success', 'Formato C guardado correctamente 🫡');
     });
 }
 
@@ -417,37 +404,49 @@ public function storeD(Request $request)
         'firma_usuario' => 'nullable|string',
         'firma_tecnico' => 'nullable|string',
         'firma_jefe_area' => 'nullable|string',
+
+        // ✅ tickets
+        'id_servicio' => 'nullable|integer',
+        'id_ticket'   => 'nullable|integer',
     ]);
 
-    return DB::transaction(function () use ($data) {
+    $idServicioFromRequest = $data['id_servicio'] ?? null;
+    $idTicketFromRequest   = $data['id_ticket'] ?? null;
 
-        $tipoFormato = 'D';
-        $folio = $this->generarFolioGlobal($tipoFormato);
+    return DB::transaction(function () use ($data, $idServicioFromRequest, $idTicketFromRequest) {
 
-        $idServicio = DB::table('servicios')->insertGetId([
-            'folio' => $folio,
+        $idServicio = $this->servicios->obtenerOCrearServicio(
+            $idServicioFromRequest,
+            'D',
+            (int) $data['id_departamento']
+        );
+
+        DB::table('formato_d')->insert([
+            'id_servicio' => $idServicio,
             'fecha' => $data['fecha'] ?? now()->format('Y-m-d'),
-            'id_usuario' => Auth::user()->id_usuario,
-            'id_departamento' => $data['id_departamento'],
-            'tipo_formato' => $tipoFormato,
+            'equipo' => $data['equipo'] ?? null,
+            'marca' => $data['marca'] ?? null,
+            'modelo' => $data['modelo'] ?? null,
+            'serie' => $data['serie'] ?? null,
+            'diagnostico' => $data['diagnostico'] ?? null,
+            'mantenimiento_realizado' => $data['mantenimiento_realizado'] ?? null,
+            'observaciones' => $data['observaciones'] ?? null,
+            'firma_usuario' => $data['firma_usuario'] ?? null,
+            'firma_tecnico' => $data['firma_tecnico'] ?? (Auth::user()->usuario->nombre ?? Auth::user()->name),
+            'firma_jefe_area' => $data['firma_jefe_area'] ?? 'Jefe de Área',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        DB::table('formato_d')->insert(array_merge($data, [
-            'id_servicio' => $idServicio
-        ]));
+        if ($idTicketFromRequest) {
+            $this->servicios->completarTicketPorId((int)$idTicketFromRequest, (int)$idServicio);
 
-        // ✅ HOOK: si este servicio pertenece a un ticket, marcar como completado
-        DB::table('tickets')
-            ->where('id_servicio', $idServicio)
-            ->update([
-                'estado' => 'completado',
-                'updated_at' => now(),
-            ]);
+            return redirect()->route('admin.tickets.index')
+                ->with('success', 'Ticket completado y Formato D guardado ✅');
+        }
 
         return redirect()->route('admin.formatos.index')
-            ->with('success', 'Formato D guardado correctamente ✅');
+            ->with('success', 'Formato D guardado correctamente 🫡');
     });
 }
 
