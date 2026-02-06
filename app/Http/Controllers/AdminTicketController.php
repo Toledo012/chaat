@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\mail;
+use App\Mail\TicketCreadoMail;
 use App\Models\Cuenta;
 use App\Models\Ticket;
 use App\Services\TicketService;
 use Illuminate\Http\Request;
+
 
 class AdminTicketController extends Controller
 {
@@ -92,23 +95,35 @@ class AdminTicketController extends Controller
     // Folio simple institucional para ticket (si luego lo haces consecutivo global, lo movemos a servicio)
     $folio = 'TCK-' . now()->format('YmdHis') . '-' . strtoupper($data['tipo_formato']);
 
-    \App\Models\Ticket::create([
-        'folio' => $folio,
-        'titulo' => $data['titulo'],
-        'solicitante' => $data ['solicitante'] ,
-        'descripcion' => $data['descripcion'] ?? null,
-        'prioridad' => $data['prioridad'],
-        'tipo_formato' => $data['tipo_formato'],
-        'estado' => 'nuevo',
-        'creado_por' => $cuenta->id_cuenta,
-        'asignado_a' => null,
-        'asignado_por' => null,
-        'id_servicio' => null,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
+$ticket = \App\Models\Ticket::create([
+    'folio' => $folio,
+    'titulo' => $data['titulo'],
+    'solicitante' => $data['solicitante'],
+    'descripcion' => $data['descripcion'] ?? null,
+    'prioridad' => $data['prioridad'],
+    'tipo_formato' => $data['tipo_formato'],
+    'estado' => 'nuevo',
+    'creado_por' => $cuenta->id_cuenta,
+    'asignado_a' => null,
+    'asignado_por' => null,
+    'id_servicio' => null,
+]);
 
-    return back()->with('Creado', 'Ticket creado correctamente.');
+// ✅ DESTINATARIOS: Admin + técnicos (id_rol 1 y 2)
+$emails = \App\Models\Cuenta::with('usuario:id_usuario,email')
+    ->whereIn('id_rol', [1,2])
+    ->get()
+    ->pluck('usuario.email')
+    ->filter()
+    ->unique()
+    ->values()
+    ->all();
+
+    if (!empty($emails)) {
+    Mail::to($emails)->send(new TicketCreadoMail($ticket));
+}
+
+return back()->with('Creado', 'Ticket creado correctamente. 📥');
 }
 
 public function completar(Ticket $ticket)
@@ -117,7 +132,7 @@ public function completar(Ticket $ticket)
         return back()->with('error', 'Este ticket no puede completarse.');
     }
 
-    // 1️⃣ Crear servicio si no existe
+    // se Crea servicio si no existe
     if (!$ticket->id_servicio) {
         DB::transaction(function () use ($ticket) {
 
@@ -159,5 +174,6 @@ public function completar(Ticket $ticket)
         'id_ticket' => $ticket->id_ticket,
     ]);
 }
+
 
 }

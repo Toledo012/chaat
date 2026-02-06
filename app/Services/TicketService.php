@@ -7,6 +7,8 @@ use App\Models\Servicio;
 use App\Models\Ticket;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TicketAsignadoMail;            
 
 class TicketService
 {
@@ -70,6 +72,14 @@ class TicketService
                 'asignado_por' => $admin->id_cuenta,
                 'estado'       => 'asignado',
             ]);
+
+        $email = $ticket->asignadoA?->usuario?->email;
+
+
+        if ($email) {
+    Mail::to($email)->send(new TicketAsignadoMail($ticket));
+}
+             
 
             return $ticket->fresh();
         });

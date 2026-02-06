@@ -11,6 +11,8 @@ use App\Http\Controllers\DepartamentoController;
 use App\Http\Controllers\DeptoViewController;
 use App\Http\Controllers\TicketController;
 
+use Illuminate\Support\Facades\Mail;
+
 /*
 |--------------------------------------------------------------------------
 | LOGIN
@@ -242,5 +244,17 @@ Route::prefix('departamento/tickets')
 
 
     });
+
+
+
+Route::get('/test-mail', function () {
+    Mail::raw('Hola, este es un correo de prueba desde Laravel SEMAHN', function ($msg) {
+        $msg->to('TU_CORREO_DESTINO@gmail.com')
+            ->subject('Prueba de correo - SEMAHN Tickets');
+    });
+
+    return 'Correo enviado (si no llegó, revisa logs).';
+});
+
 
 

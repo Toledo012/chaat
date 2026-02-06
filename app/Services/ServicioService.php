@@ -4,6 +4,10 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TicketCompletadoMail;
+use App\Models\Ticket;
+
 
 class ServicioService
 {
@@ -38,8 +42,7 @@ class ServicioService
             'updated_at' => now(),
         ]);
     }
-
-    public function completarTicketPorId(int $idTicket, int $idServicio): void
+public function completarTicketPorId(int $idTicket, int $idServicio): void
 {
     DB::table('tickets')
         ->where('id_ticket', $idTicket)
@@ -48,16 +51,48 @@ class ServicioService
             'estado' => 'completado',
             'updated_at' => now(),
         ]);
+
+    $ticket = Ticket::with(['creadoPor.usuario'])
+        ->where('id_ticket', $idTicket)
+        ->first();
+
+    $email = $ticket?->creadoPor?->usuario?->email;
+
+    if ($email) {
+        Mail::to($email)->send(new TicketCompletadoMail($ticket));
+    }
 }
 
 
-    public function completarTicketSiExiste(int $idServicio): void
-    {
-        DB::table('tickets')
-            ->where('id_servicio', $idServicio)
-            ->update([
-                'estado' => 'completado',
-                'updated_at' => now(),
-            ]);
+
+public function completarTicketSiExiste(int $idServicio): void
+{
+    // Traer tickets ligados a este servicio (por si existiera más de uno)
+    $tickets = Ticket::with(['creadoPor.usuario'])
+        ->where('id_servicio', $idServicio)
+        ->where('estado', '!=', 'completado')
+        ->get();
+
+    if ($tickets->isEmpty()) {
+        return;
     }
+
+    // Completar todos los que correspondan
+    DB::table('tickets')
+        ->where('id_servicio', $idServicio)
+        ->where('estado', '!=', 'completado')
+        ->update([
+            'estado' => 'completado',
+            'updated_at' => now(),
+        ]);
+
+    // Mandar correo a cada creador
+    foreach ($tickets as $ticket) {
+        $email = $ticket?->creadoPor?->usuario?->email;
+
+        if ($email) {
+            Mail::to($email)->send(new TicketCompletadoMail($ticket));
+        }
+    }
+}
 }
