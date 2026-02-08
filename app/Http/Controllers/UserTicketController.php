@@ -3,86 +3,187 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
-use App\Services\TicketService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Services\TicketService;
+use App\Models\Cuenta;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TicketCreadoMail;
+
 
 class UserTicketController extends Controller
 {
-    public function __construct(private TicketService $tickets) {}
+    public function __construct(
+        private TicketService $tickets
+    ) {}
 
     /**
-     * Usuario ve:
-     * - tickets creados por él (los tome o no)
-     * - tickets asignados por admin (asignado_a = él)
+     * Bandeja del técnico
+     * - Tickets disponibles (sin asignar)
+     * - Mis tickets
      */
-   public function index()
+    public function index()
+    {
+        $cuentaId = auth()->user()->id_cuenta;
+
+        // Tickets disponibles (nadie los ha tomado)
+        $disponibles = Ticket::with('creadoPor.usuario')
+            ->whereNull('asignado_a')
+            ->where('estado', 'nuevo')
+            ->orderByDesc('id_ticket')
+            ->get();
+
+        // Tickets asignados al técnico
+        $misTickets = Ticket::with('creadoPor.usuario')
+            ->where('asignado_a', $cuentaId)
+            ->orderByDesc('id_ticket')
+            ->get();
+
+        return view('user.tickets.index', compact('disponibles', 'misTickets'));
+    }
+
+    /**
+     * Tomar un ticket (auto-asignarse)
+     */
+    public function tomar(Ticket $ticket)
+    {
+        if ($ticket->asignado_a || $ticket->estado !== 'nuevo') {
+            return back()->with('error', 'Este ticket ya no está disponible.');
+        }
+
+        DB::table('tickets')
+            ->where('id_ticket', $ticket->id_ticket)
+            ->update([
+                'asignado_a' => auth()->user()->id_cuenta,
+                'estado' => 'asignado',
+                'updated_at' => now(),
+            ]);
+
+        return back()->with('success', 'Ticket tomado correctamente 🫡');
+    }
+
+
+    public function store(Request $request)
 {
+    $data = $request->validate([
+        'titulo' => 'required|string|max:255',
+        'solicitante' => 'required|string|max:100',
+        'descripcion' => 'nullable|string',
+        'tipo_formato' => 'required|in:a,b,c,d',
+    ]);
+
     $cuenta = auth()->user();
 
-    $misAsignados = Ticket::where('asignado_a', $cuenta->id_cuenta)
-        ->orderByDesc('id_ticket')
-        ->paginate(10, ['*'], 'asignados');
+    // Folio simple institucional para ticket (si luego lo haces consecutivo global, lo movemos a servicio)
+    $folio = 'TCK-' . now()->format('YmdHis') . '-' . strtoupper($data['tipo_formato']);
 
-    $disponibles = $this->tickets->queryPoolParaUsuarios()
-        ->orderByDesc('id_ticket')
-        ->paginate(10, ['*'], 'pool');
+$ticket = \App\Models\Ticket::create([
+    'folio' => $folio,
+    'titulo' => $data['titulo'],
+    'solicitante' => $data['solicitante'],
+    'descripcion' => $data['descripcion'] ?? null,
+    'tipo_formato' => $data['tipo_formato'],
+    'estado' => 'nuevo',
+    'creado_por' => $cuenta->id_cuenta,
+    'asignado_a' => null,
+    'asignado_por' => null,
+    'id_servicio' => null,
+]);
 
-    $misCreados = Ticket::where('creado_por', $cuenta->id_cuenta)
-        ->orderByDesc('id_ticket')
-        ->paginate(10, ['*'], 'mios');
+// ✅ DESTINATARIOS: Admin + técnicos (id_rol 1 y 2)
+$emails = \App\Models\Cuenta::with('usuario:id_usuario,email')
+    ->whereIn('id_rol', [1,2])
+    ->get()
+    ->pluck('usuario.email')
+    ->filter()
+    ->unique()
+    ->values()
+    ->all();
 
-    return view('user.tickets.index', compact('misAsignados', 'disponibles', 'misCreados'));
+    if (!empty($emails)) {
+    Mail::to($emails)->send(new TicketCreadoMail($ticket));
+}
+
+return back()->with('Creado', 'Ticket creado correctamente. 📥');
 }
 
 
-    public function create()
-    {
-        return view('user.tickets.create');
-    }
 
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'titulo'       => ['required', 'string', 'max:150'],
-            'descripcion'  => ['nullable', 'string'],
-            'prioridad'    => ['required', 'in:baja,media,alta'],
-            'tipo_formato' => ['required', 'in:a,b,c,d'],
-            'auto_tomar'   => ['nullable', 'boolean'],
-        ]);
-
-        $autoTomar = (bool)($data['auto_tomar'] ?? false);
-
-        $this->tickets->crearComoUsuario(auth()->user(), $data, $autoTomar);
-
-        return redirect()->route('user.tickets.index')
-            ->with('success', $autoTomar ? 'Ticket creado y tomado.' : 'Ticket creado y enviado a Admin.');
-    }
-
-    public function tomar(Ticket $ticket)
-    {
-        $this->tickets->tomarComoUsuario(auth()->user(), $ticket);
-        return back()->with('success', 'Ticket tomado correctamente.');
-    }
 
     /**
-     * COMPLETAR = arrancar atención y redirigir al formulario.
-     * (Aquí NO marcamos completado; eso pasa cuando el formato se guarda.)
+     * Completar ticket → redirige al formato correspondiente
      */
     public function completar(Ticket $ticket)
     {
-        $cuenta = auth()->user();
-
-        // Solo el asignado puede completar
-        if ((int)$ticket->asignado_a !== (int)$cuenta->id_cuenta) {
-            abort(403);
+        if (in_array($ticket->estado, ['cancelado', 'completado'])) {
+            return back()->with('error', 'Este ticket no puede completarse.');
         }
 
-        $servicio = $this->tickets->iniciarAtencionYCrearServicioSiFalta($cuenta, $ticket);
+        // Crear servicio si no existe (MISMO FLUJO QUE ADMIN)
+        if (!$ticket->id_servicio) {
+            DB::transaction(function () use ($ticket) {
 
-        // Reusar tu ruta existente: /admin/formatos/editar/{tipo}/{id}
-        return redirect()->route('admin.formatos.edit', [
-            'tipo' => $ticket->tipo_formato,
-            'id'   => $servicio->id_servicio,
+                $tipo = strtoupper($ticket->tipo_formato);
+                $folio = $this->tickets->generarFolioGlobal($tipo);
+
+                $idServicio = DB::table('servicios')->insertGetId([
+                    'folio' => $folio,
+                    'fecha' => now()->format('Y-m-d'),
+                    'id_usuario' => auth()->user()->id_usuario,
+                    'id_departamento' => null,
+                    'tipo_formato' => $tipo,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                DB::table('tickets')
+                    ->where('id_ticket', $ticket->id_ticket)
+                    ->update([
+                        'id_servicio' => $idServicio,
+                        'estado' => 'en_proceso',
+                        'updated_at' => now(),
+                    ]);
+
+                $ticket->id_servicio = $idServicio;
+            });
+        }
+
+        // Redirección al formato
+        $map = [
+            'a' => 'admin.formatos.a',
+            'b' => 'admin.formatos.b',
+            'c' => 'admin.formatos.c',
+            'd' => 'admin.formatos.d',
+        ];
+
+        return redirect()->route($map[$ticket->tipo_formato], [
+            'id_servicio' => $ticket->id_servicio,
+            'id_ticket'   => $ticket->id_ticket,
         ]);
-    }
+        
+
+    
+}
+
+public function edit(Ticket $ticket)
+{
+    return view('user.tickets.edit', compact('ticket'));
+}
+
+public function update(Request $request, Ticket $ticket)
+{
+    // 1. Validación de los campos, incluyendo el tipo de formato
+    $data = $request->validate([
+        'titulo'       => 'required|string|max:255',
+        'solicitante'  => 'required|string|max:150',
+        'descripcion'  => 'nullable|string|max:200', // Límite de 200 caracteres
+        'tipo_formato' => 'required|in:a,b,c,d',    // Permitimos los formatos A, B, C y D
+    ]);
+
+    // 2. Ejecutar la actualización según tu lógica de propietario
+    $this->tickets->actualizarComoPropietario(auth()->user(), $ticket, $data);
+
+    // 3. Redirección con mensaje de éxito
+    return redirect()->route('user.tickets.index')->with('success', 'Ticket actualizado correctamente ✅');
+}
 }

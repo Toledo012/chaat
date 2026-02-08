@@ -48,7 +48,7 @@ class Cuenta extends Authenticatable
 
     public function isDepartamento()
     {
-        return (int) $this->id_rol === 3;
+        return (int) $this->id_rol === 4;
     }
 
     public function getAuthPassword()

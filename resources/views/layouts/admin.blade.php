@@ -63,17 +63,27 @@
                 </a>
             </li>
             @endif
+{{-- GESTIÓN DE TICKETS --}}
+@php
+    $u = Auth::user();
 
+    // Ajusta estas rutas si tu depto usa otro nombre
+    $ticketRoute = $u->isAdmin()
+        ? route('admin.tickets.index')
+        : ($u->isUser()
+            ? route('user.tickets.index')
+            : route('departamento.tickets.index')); // <-- si aún no existe, luego lo creamos
+@endphp
 
-            {{-- GESTIÓN DE TICKETS --}}
+@if($u->isAdmin() || $u->isUser() || (method_exists($u,'isDepartamento') && $u->isDepartamento()))
+<li class="nav-item">
+    <a class="nav-link @if(request()->routeIs('admin.tickets.*') || request()->routeIs('user.tickets.*') || request()->routeIs('departamento.tickets.*')) active @endif"
+       href="{{ $ticketRoute }}">
+        <i class="fas fa-ticket-alt"></i> <span>Gestión de Tickets</span>
+    </a>
+</li>
+@endif
 
-                        @if(Auth::user()->isAdmin() || Auth::user()->tienePermiso('gestion_formatos'))
-            <li class="nav-item">
-                <a class="nav-link @if(request()->routeIs('admin.tickets.*')) active @endif" href="{{ route('admin.tickets.index') }}">
-                    <i class="fas fa-ticket-alt"></i> <span>Gestión de Tickets</span>
-                </a>
-            </li>
-            @endif
 
             {{-- MOVIMIENTOS (solo admin) --}}
             @if(Auth::user()->isAdmin())

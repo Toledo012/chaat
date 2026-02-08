@@ -1,17 +1,16 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
+
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\MovimientoController;
 use App\Http\Controllers\FormatoController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\DepartamentoController;
 use App\Http\Controllers\DeptoViewController;
-use App\Http\Controllers\TicketController;
-
-use Illuminate\Support\Facades\Mail;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,7 +23,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 /*
 |--------------------------------------------------------------------------
-| DASHBOARDS (protegidos por ROL)
+| DASHBOARDS (por ROL)
 |--------------------------------------------------------------------------
 */
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])
@@ -34,7 +33,6 @@ Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])
 Route::get('/user/dashboard', [UserController::class, 'dashboard'])
     ->middleware(['auth', 'rol:Usuario'])
     ->name('user.dashboard');
-
 
 Route::get('/departamento/dashboard', [DeptoViewController::class, 'dashboard'])
     ->middleware(['auth', 'rol:Departamento'])
@@ -49,15 +47,15 @@ Route::put('/user/update-password', [UserController::class, 'updatePassword'])
     ->middleware(['auth', 'rol:Usuario'])
     ->name('user.update-password');
 
-
 /*
 |--------------------------------------------------------------------------
 | ADMIN: USUARIOS + AUDITORÍA
+| -> NO por rol, SOLO por permisos (para no chocar)
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')
     ->name('admin.')
-    ->middleware(['auth', 'rol:Administrador'])
+    ->middleware(['auth'])
     ->group(function () {
 
         // Usuarios
@@ -97,26 +95,51 @@ Route::prefix('admin')
             ->middleware('perm:eliminar_usuarios')
             ->name('users.destroy');
 
-        // Auditoría
+        // Auditoría / Movimientos
         Route::get('/movimientos', [MovimientoController::class, 'index'])
             ->middleware('perm:any,gestion_usuarios')
             ->name('movimientos.index');
     });
 
+Route::post('/admin/users/{id}/reset-password', [AdminController::class, 'resetPassword'])
+    ->middleware(['auth', 'perm:cambiar_roles'])
+    ->name('admin.users.reset-password');
+
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN: FORMATOS
+| ADMIN: FORMATOS (DIVIDIDOS)
 |--------------------------------------------------------------------------
 */
+
+/**
+ * 1) GESTIÓN DE FORMATOS (index, reporte, editar)
+ * Solo quien tiene gestion_formatos
+ */
 Route::prefix('admin/formatos')
     ->name('admin.formatos.')
-    ->middleware(['auth', 'rol:Administrador', 'perm:gestion_formatos'])
+    ->middleware(['auth', 'perm:gestion_formatos'])
     ->group(function () {
 
-        // Listado y creación
         Route::get('/', [FormatoController::class, 'index'])->name('index');
         Route::get('/create', [FormatoController::class, 'create'])->name('create');
+
+        Route::get('/reporte/general', [FormatoController::class, 'reporteGeneral'])->name('reporte.general');
+
+        Route::get('/editar/{tipo}/{id}', [FormatoController::class, 'edit'])->name('edit');
+        Route::post('/editar/{tipo}/{id}', [FormatoController::class, 'update'])->name('update');
+    });
+
+/**
+ * 2) EJECUCIÓN DESDE TICKETS (A–D + store + preview/pdf)
+ * Permite:
+ * - admin con gestion_formatos
+ * - técnico con tickets.completar
+ */
+Route::prefix('admin/formatos')
+    ->name('admin.formatos.')
+    ->middleware(['auth', 'perm:any,gestion_formatos,tickets.completar'])
+    ->group(function () {
 
         // Formularios A–D
         Route::get('/a', [FormatoController::class, 'formatoA'])->name('a');
@@ -131,7 +154,7 @@ Route::prefix('admin/formatos')
         Route::get('/d', [FormatoController::class, 'formatoD'])->name('d');
         Route::post('/d', [FormatoController::class, 'storeD'])->name('d.store');
 
-        // Previsualizaciones y PDFs
+        // Preview / PDF (para que al completar desde tickets puedan ver)
         Route::get('/a/{id}/preview', [FormatoController::class, 'previewA'])->name('a.preview');
         Route::get('/a/{id}/pdf', [FormatoController::class, 'generarPDFA'])->name('a.pdf');
 
@@ -143,24 +166,16 @@ Route::prefix('admin/formatos')
 
         Route::get('/d/{id}/preview', [FormatoController::class, 'previewD'])->name('d.preview');
         Route::get('/d/{id}/pdf', [FormatoController::class, 'generarPDFD'])->name('d.pdf');
-
-        // Reporte general
-        Route::get('/reporte/general', [FormatoController::class, 'reporteGeneral'])->name('reporte.general');
-
-        // Editar formatos
-        Route::get('/editar/{tipo}/{id}', [FormatoController::class, 'edit'])->name('edit');
-        Route::post('/editar/{tipo}/{id}', [FormatoController::class, 'update'])->name('update');
     });
-
 
 /*
 |--------------------------------------------------------------------------
 | ADMIN: MATERIALES
+| Sin permisos, pero bloqueado solo para Departamento
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin/materiales')
     ->name('admin.materiales.')
-    ->middleware(['auth', 'rol:Administrador', 'perm:gestion_formatos'])
     ->group(function () {
 
         Route::get('/', [MaterialController::class, 'index'])->name('index');
@@ -176,77 +191,111 @@ Route::prefix('admin/materiales')
             ->name('destroy.multiple');
     });
 
-
 /*
 |--------------------------------------------------------------------------
-| ADMIN: DEPARTAMENTOS (catálogo)
+| ADMIN: DEPARTAMENTOS (catálogo) -> SOLO ADMIN REAL
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')
     ->middleware(['auth', 'rol:Administrador'])
     ->group(function () {
-
         Route::resource('departamentos', DepartamentoController::class)
             ->names('admin.departamentos')
             ->except(['show', 'destroy']);
     });
 
-
-    // ==========================
-//  TICKETS - ADMIN
-// ==========================
+/*
+|--------------------------------------------------------------------------
+| TICKETS - ADMIN (solo Admin real)
+|--------------------------------------------------------------------------
+*/
 Route::prefix('admin/tickets')
     ->name('admin.tickets.')
     ->middleware(['auth', 'rol:Administrador'])
     ->group(function () {
+
         Route::get('/', [\App\Http\Controllers\AdminTicketController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\AdminTicketController::class, 'store'])->name('store');
+
         Route::post('/{ticket}/asignar', [\App\Http\Controllers\AdminTicketController::class, 'asignar'])->name('asignar');
 
         Route::get('/{ticket}/completar', [\App\Http\Controllers\AdminTicketController::class, 'completar'])
-    ->name('completar');
+            ->name('completar');
 
         Route::post('/{ticket}/cancelar', [\App\Http\Controllers\AdminTicketController::class, 'cancelar'])->name('cancelar');
 
-                Route::post('/', [\App\Http\Controllers\AdminTicketController::class, 'store'])->name('store');
+                Route::get('/{ticket}/edit', [\App\Http\Controllers\AdminTicketController::class, 'edit'])
+            ->middleware('perm:any,tickets.editar_propios,tickets.cambiar_prioridad,tickets.cambiar_estado_cualquiera')
+            ->name('edit');
 
+        Route::put('/{ticket}', [\App\Http\Controllers\AdminTicketController::class, 'update'])
+            ->middleware('perm:any,tickets.editar_propios,tickets.cambiar_prioridad,tickets.cambiar_estado_cualquiera')
+            ->name('update');
 
     });
 
 
-// ==========================
-// TICKETS - USUARIO (TECNICO)
-// ==========================
-Route::prefix('user/tickets')
-    ->name('user.tickets.')
+
+/*
+|--------------------------------------------------------------------------
+| TICKETS - USUARIO (TECNICO)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('user')
+    ->name('user.')
     ->middleware(['auth', 'rol:Usuario'])
     ->group(function () {
-        Route::get('/', [\App\Http\Controllers\UserTicketController::class, 'index'])->name('index');
-        Route::get('/create', [\App\Http\Controllers\UserTicketController::class, 'create'])->name('create');
-        Route::post('/', [\App\Http\Controllers\UserTicketController::class, 'store'])->name('store');
 
-        Route::post('/{ticket}/tomar', [\App\Http\Controllers\UserTicketController::class, 'tomar'])->name('tomar');
-        Route::get('/{ticket}/completar', [\App\Http\Controllers\UserTicketController::class, 'completar'])->name('completar');
+        Route::get('/tickets', [\App\Http\Controllers\UserTicketController::class, 'index'])
+            ->name('tickets.index');
+
+            Route::post('/tickets', [\App\Http\Controllers\UserTicketController::class, 'store'])
+    ->name('tickets.store');
+
+
+        Route::post('/tickets/{ticket}/tomar', [\App\Http\Controllers\UserTicketController::class, 'tomar'])
+            ->name('tickets.tomar');
+
+        Route::get('/tickets/{ticket}/completar', [\App\Http\Controllers\UserTicketController::class, 'completar'])
+            ->name('tickets.completar');
+
+
+
+                    Route::get('/tickets/{ticket}/edit', [\App\Http\Controllers\UserTicketController::class, 'edit'])
+            ->middleware('perm:tickets.editar_propios')
+            ->name('tickets.edit');
+
+        Route::put('/tickets/{ticket}', [\App\Http\Controllers\UserTicketController::class, 'update'])
+            ->middleware('perm:tickets.editar_propios')
+            ->name('tickets.update');
     });
 
-
-// ==========================
-// TICKETS - DEPARTAMENTO
-// ==========================
+/*
+|--------------------------------------------------------------------------
+| TICKETS - DEPARTAMENTO
+|--------------------------------------------------------------------------
+*/
 Route::prefix('departamento/tickets')
     ->name('departamento.tickets.')
     ->middleware(['auth', 'rol:Departamento'])
     ->group(function () {
         Route::get('/', [\App\Http\Controllers\DeptTicketController::class, 'index'])->name('index');
-        Route::get('/create', [\App\Http\Controllers\DeptTicketController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\DeptTicketController::class, 'store'])->name('store');
         Route::post('/{ticket}/cancelar', [\App\Http\Controllers\DeptTicketController::class, 'cancelar'])->name('cancelar');
+            Route::get('/{ticket}/edit', [\App\Http\Controllers\DeptTicketController::class, 'edit'])
+            ->name('edit');
+
+        Route::put('/{ticket}', [\App\Http\Controllers\DeptTicketController::class, 'update'])
+            ->name('update');
+
+        });
 
 
-
-    });
-
-
-
+/*
+|--------------------------------------------------------------------------
+| TEST MAIL (DEV)
+|--------------------------------------------------------------------------
+*/
 Route::get('/test-mail', function () {
     Mail::raw('Hola, este es un correo de prueba desde Laravel SEMAHN', function ($msg) {
         $msg->to('TU_CORREO_DESTINO@gmail.com')
@@ -255,6 +304,4 @@ Route::get('/test-mail', function () {
 
     return 'Correo enviado (si no llegó, revisa logs).';
 });
-
-
-
+ 

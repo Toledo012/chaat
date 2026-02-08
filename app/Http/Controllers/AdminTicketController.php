@@ -176,4 +176,27 @@ public function completar(Ticket $ticket)
 }
 
 
+
+public function edit(Ticket $ticket)
+{
+    return view('admin.tickets.edit', compact('ticket'));
+}
+
+public function update(Request $request, Ticket $ticket)
+{
+    $data = $request->validate([
+        'titulo'       => 'required|string|max:255',
+        'solicitante'  => 'required|string|max:150',
+        'descripcion'  => 'nullable|string',
+        'prioridad'    => 'required|in:baja,media,alta',
+        'tipo_formato' => 'required|in:a,b,c,d',
+        'estado'       => 'required|in:nuevo,asignado,en_proceso,en_espera,completado,cancelado',
+        'asignado_a'   => 'nullable|integer|exists:cuentas,id_cuenta',
+    ]);
+
+    $this->tickets->actualizarComoAdmin(auth()->user(), $ticket, $data);
+    return redirect()->route('admin.tickets.index')->with('success', 'Ticket actualizado ✅');
+}
+
+
 }

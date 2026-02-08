@@ -37,7 +37,7 @@
             {{--  --}}
             <li class="nav-item">
                 <a class="nav-link @if(request()->routeIs('departamento.tickets.*')) active @endif"
-                   href="{{ route('departamento.dashboard') }}">
+                   href="{{ route('departamento.tickets.index') }}">
                     <i class="fas fa-plus-circle"></i> <span>Crear Ticket</span>
                 </a>
             </li>

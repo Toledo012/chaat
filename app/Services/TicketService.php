@@ -241,6 +241,73 @@ return DB::transaction(function () use ($cuenta, $ticket) {
 
         return 'SEMAHN-' . strtoupper($tipoFormato) . '-' . str_pad((string)$nextNum, 5, '0', STR_PAD_LEFT);
     }
+
+
+
+    public function actualizarComoAdmin(Cuenta $actor, Ticket $ticket, array $data): Ticket
+    {
+        return DB::transaction(function () use ($ticket, $data) {
+            $ticket->fill([
+                'titulo'       => $data['titulo']       ?? $ticket->titulo,
+                'solicitante'  => $data['solicitante']  ?? $ticket->solicitante,
+                'descripcion'  => $data['descripcion']  ?? $ticket->descripcion,
+                'prioridad'    => $data['prioridad']    ?? $ticket->prioridad,
+                'tipo_formato' => $data['tipo_formato'] ?? $ticket->tipo_formato,
+                'estado'       => $data['estado']       ?? $ticket->estado,
+                'asignado_a'   => array_key_exists('asignado_a', $data) ? $data['asignado_a'] : $ticket->asignado_a,
+            ]);
+            $ticket->save();
+            return $ticket;
+        });
+    }
+
+    public function actualizarComoPropietario(Cuenta $actor, Ticket $ticket, array $data): Ticket
+    {
+        // Debe ser quien lo creó
+        if ((int)$ticket->creado_por !== (int)$actor->id_cuenta) {
+            abort(403, 'No puedes editar un ticket que no es tuyo.');
+        }
+
+        // Solo editable mientras sea nuevo y sin asignar
+        if ($ticket->estado !== 'nuevo' || $ticket->asignado_a) {
+            abort(403, 'Este ticket ya no puede editarse.');
+        }
+
+        return DB::transaction(function () use ($ticket, $data) {
+            $ticket->fill([
+                'titulo'      => $data['titulo'],
+                'solicitante' => $data['solicitante'],
+                'descripcion' => $data['descripcion'] ?? null,
+            ]);
+            $ticket->save();
+            return $ticket;
+        });
+    }
+
+    public function actualizarComoDepto(Cuenta $actor, Ticket $ticket, array $data): Ticket
+    {
+        // (si quieres: validar que el actor sea depto)
+        // if (!$actor->isDepartamento()) abort(403);
+
+        if ((int)$ticket->creado_por !== (int)$actor->id_cuenta) {
+            abort(403, 'No puedes editar un ticket que no es tuyo.');
+        }
+
+        if ($ticket->estado !== 'nuevo') {
+            abort(403, 'Solo puedes editar tickets en estado "nuevo".');
+        }
+
+        return DB::transaction(function () use ($ticket, $data) {
+            $ticket->fill([
+                'titulo'      => $data['titulo'],
+                'solicitante' => $data['solicitante'],
+                'descripcion' => $data['descripcion'] ?? null,
+            ]);
+            $ticket->save();
+            return $ticket;
+        });
+
+        }
 }
 
 

@@ -50,123 +50,96 @@ class AdminController extends Controller
             return redirect()->route('user.dashboard');
         }
         $usuarios = Usuario::with(['cuenta', 'departamentos'])->get();
-     $departamentos = Departamento::orderBy('nombre')->get();
+        $departamentos = Departamento::orderBy('nombre')->get();
 
         return view('admin.users.index', compact('usuarios', 'departamentos'));
     }
-public function updateUserRole(Request $request, $id)
-{
-    if (!auth()->check() || (!auth()->user()->isAdmin() && !auth()->user()->puedeCambiarRoles())) {
-        return redirect()->route('user.dashboard');
+
+    public function updateUserRole(Request $request, $id)
+    {
+        if (!auth()->check() || (!auth()->user()->isAdmin() && !auth()->user()->puedeCambiarRoles())) {
+            return redirect()->route('user.dashboard');
+        }
+
+        $usuario = Usuario::find($id);
+        
+        if ($usuario && $usuario->cuenta) {
+            if ($usuario->id_usuario == 1) {
+                return redirect()->route('admin.users.index')->with('error', 'El Super Admin no puede ser modificado.');
+            }
+
+            if ($usuario->cuenta->id_rol == 1 && auth()->user()->id_usuario != 1) {
+                return redirect()->route('admin.users.index')->with('error', 'Solo el Super Admin puede cambiar el rol de un Administrador.');
+            }
+
+            if ($usuario->id_usuario == auth()->user()->id_usuario) {
+                return redirect()->route('admin.users.index')->with('error', 'No puedes cambiar tu propio rol.');
+            }
+
+            if ($request->rol == 1 && auth()->user()->id_usuario != 1) {
+                return redirect()->route('admin.users.index')->with('error', 'Solo el Super Admin puede asignar el rol de Administrador.');
+            }
+
+            $usuario->cuenta->update(['id_rol' => $request->rol]);
+        }
+
+        return redirect()->route('admin.users.index')->with('success', 'Rol actualizado correctamente');
     }
 
-    $usuario = Usuario::find($id);
-    
-    if ($usuario && $usuario->cuenta) {
-
-        // Nadie puede cambiar el rol del Super Admin (id_usuario = 1)
-        if ($usuario->id_usuario == 1) {
-            return redirect()->route('admin.users.index')
-                ->with('error', 'El Super Admin no puede ser modificado.');
+    public function updateUserPermissions(Request $request, $id)
+    {
+        if (!auth()->check() || (!auth()->user()->isAdmin() && !auth()->user()->puedeCambiarRoles())) {
+            return redirect()->route('user.dashboard');
         }
 
-        // Solo el Super Admin puede cambiar roles de Administradores
-        if ($usuario->cuenta->id_rol == 1 && auth()->user()->id_usuario != 1) {
-            return redirect()->route('admin.users.index')
-                ->with('error', 'Solo el Super Admin puede cambiar el rol de un Administrador.');
+        $usuario = Usuario::find($id);
+
+        if ($usuario && $usuario->cuenta) {
+            if ($usuario->cuenta->id_rol == 1 && auth()->user()->id_usuario != 1) {
+                return redirect()->route('admin.users.index')->with('error', 'Solo el Super Admin puede editar a un Administrador.');
+            }
+
+            if ($usuario->id_usuario == auth()->user()->id_usuario) {
+                return redirect()->route('admin.users.index')->with('error', 'No puedes cambiar tu propio permiso.');
+            }
+
+            $permisos = $request->input('permisos', []);
+            $usuario->cuenta->actualizarPermisos($permisos);
+
+            if (auth()->user()->id_cuenta == $usuario->cuenta->id_cuenta) {
+                $nuevosPermisos = $usuario->cuenta->permisosArray();
+                session(['permisos_usuario' => $nuevosPermisos]);
+            }
+
+            return redirect()->route('admin.users.index')->with('success', 'Permisos actualizados correctamente');
         }
 
-        // Un usuario NO puede cambiarse a sí mismo el rol
-        if ($usuario->id_usuario == auth()->user()->id_usuario) {
-            return redirect()->route('admin.users.index')
-                ->with('error', 'No puedes cambiar tu propio rol.');
-        }
-
-        // Solo el Super Admin puede ascender usuarios a Administradores
-        if ($request->rol == 1 && auth()->user()->id_usuario != 1) {
-            return redirect()->route('admin.users.index')
-                ->with('error', 'Solo el Super Admin puede asignar el rol de Administrador.');
-        }
-
-        // permitir cambio de rol
-        $usuario->cuenta->update([
-            'id_rol' => $request->rol
-        ]);
+        return redirect()->route('admin.users.index')->with('error', 'Error al actualizar permisos');
     }
 
-    return redirect()->route('admin.users.index')->with('success', 'Rol actualizado correctamente');
-}
+    public function toggleUserStatus(Request $request, $id)
+    {
+        if (!auth()->check() || (!auth()->user()->isAdmin() && !auth()->user()->puedeActivarCuentas())) {
+            return redirect()->route('user.dashboard');
+        }
 
-public function updateUserPermissions(Request $request, $id)
-{
-    if (!auth()->check() || (!auth()->user()->isAdmin() && !auth()->user()->puedeCambiarRoles())) {
-        return redirect()->route('user.dashboard');
+        $usuario = Usuario::find($id);
+        
+        if ($usuario && $usuario->cuenta) {
+            if ($usuario->id_usuario == auth()->user()->id_usuario) {
+                return redirect()->route('admin.users.index')->with('error', 'No puedes desactivar tu propia cuenta.');
+            }
+
+            if ($usuario->cuenta->id_rol == 1 && auth()->user()->id_usuario != 1) {
+                return redirect()->route('admin.users.index')->with('error', 'Solo el Super Admin puede activar o desactivar Administradores.');
+            }
+
+            $nuevoEstado = $usuario->cuenta->estado == 'activo' ? 'inactivo' : 'activo';
+            $usuario->cuenta->update(['estado' => $nuevoEstado]);
+        }
+
+        return redirect()->route('admin.users.index')->with('success', 'Estado de cuenta actualizado');
     }
-
-    $usuario = Usuario::find($id);
-
-    if ($usuario && $usuario->cuenta) {
-
-        // solo Super Admin puede editar permisos de un Administrador
-        if ($usuario->cuenta->id_rol == 1 && auth()->user()->id_usuario != 1) {
-            return redirect()->route('admin.users.index')
-                ->with('error', 'Solo el Super Admin puede editar a un Administrador.');
-        }
-
-                if ($usuario->id_usuario == auth()->user()->id_usuario) {
-            return redirect()->route('admin.users.index')
-                ->with('error', 'No puedes cambiar tu propio permiso.');
-        }
-
-        $permisos = $request->input('permisos', []);
-
-        // Actualizar permisos del rol
-        $usuario->cuenta->actualizarPermisos($permisos);
-
-        // Si el usuario modificado es el mismo que está logueado, actualizar su sesión
-        if (auth()->user()->id_cuenta == $usuario->cuenta->id_cuenta) {
-            $nuevosPermisos = $usuario->cuenta->permisosArray();
-            session(['permisos_usuario' => $nuevosPermisos]);
-        }
-
-        return redirect()->route('admin.users.index')->with('success', 'Permisos actualizados correctamente');
-    }
-
-    return redirect()->route('admin.users.index')->with('error', 'Error al actualizar permisos');
-}
-public function toggleUserStatus(Request $request, $id)
-{
-    if (!auth()->check() || (!auth()->user()->isAdmin() && !auth()->user()->puedeActivarCuentas())) {
-        return redirect()->route('user.dashboard');
-    }
-
-    $usuario = Usuario::find($id);
-    
-    if ($usuario && $usuario->cuenta) {
-
-
-            
-                if ($usuario->id_usuario == auth()->user()->id_usuario) {
-            return redirect()->route('admin.users.index')
-                ->with('error', 'No puedes desactivar al Super Admin.');
-        }
-
-
-        // solo Super Admin puede activar/desactivar un Administrador
-        if ($usuario->cuenta->id_rol == 1 && auth()->user()->id_usuario != 1) {
-            return redirect()->route('admin.users.index')
-                ->with('error', 'Solo el Super Admin puede activar o desactivar Administradores.');
-        }
-
-        $nuevoEstado = $usuario->cuenta->estado == 'activo' ? 'inactivo' : 'activo';
-
-        $usuario->cuenta->update([
-            'estado' => $nuevoEstado
-        ]);
-    }
-
-    return redirect()->route('admin.users.index')->with('success', 'Estado de cuenta actualizado');
-}
 
     public function updateUser(Request $request, $id)
     {
@@ -176,13 +149,10 @@ public function toggleUserStatus(Request $request, $id)
 
         $usuario = Usuario::find($id);
 
-
-
-        // solo el Super Admin puede editar a un Administrador
         if ($usuario->cuenta && $usuario->cuenta->id_rol == 1 && auth()->user()->id_usuario != 1) {
-            return redirect()->route('admin.users.index')
-                ->with('error', 'Solo el Super Admin puede editar Administradores.');
+            return redirect()->route('admin.users.index')->with('error', 'Solo el Super Admin puede editar Administradores.');
         }
+
         if ($usuario) {
             $usernameRule = 'nullable|string|max:30|unique:cuentas,username';
             if ($usuario->cuenta) {
@@ -190,12 +160,11 @@ public function toggleUserStatus(Request $request, $id)
             }
 
             $request->validate([
-                'nombre' => 'required|string|max:30',
+                'nombre' => 'required|string|max:50',
                 'id_departamento' => 'required|exists:departamentos,id_departamento',
                 'puesto' => 'nullable|string|max:50',
                 'email' => 'nullable|email|max:50|unique:usuarios,email,' . $id . ',id_usuario',
                 'username' => $usernameRule,
-                'password' => 'nullable|string|min:6|confirmed',
             ]);
 
             $usuario->update([
@@ -203,26 +172,36 @@ public function toggleUserStatus(Request $request, $id)
                 'id_departamento' => $request->id_departamento,
                 'puesto' => $request->puesto,
                 'email' => $request->email,
-                'password' => $request->password ? Hash::make($request->password) : $usuario->password,
             ]);
 
             if ($usuario->cuenta && $request->username) {
-                $usuario->cuenta->update([
-                    'username' => $request->username
-                    
-                ]);
-
-            if ($request->password) {
-                    $usuario->cuenta->update([
-                        'password' => Hash::make($request->password)
-                    ]);
-                }
+                $usuario->cuenta->update(['username' => $request->username]);
             }
 
             return redirect()->route('admin.users.index')->with('success', 'Usuario actualizado correctamente');
         }
 
         return redirect()->route('admin.users.index')->with('error', 'Usuario no encontrado');
+    }
+
+    public function resetPassword(Request $request, $id)
+    {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
+            return redirect()->route('user.dashboard');
+        }
+
+        $usuario = Usuario::findOrFail($id);
+        if ($usuario->cuenta) {
+            if ($usuario->id_usuario == 1 && auth()->user()->id_usuario != 1) {
+                return redirect()->back()->with('error', 'No puedes resetear la clave del Super Admin.');
+            }
+
+            $passwordPredeterminada = '$EMAHN2026';
+            $usuario->cuenta->update(['password' => Hash::make($passwordPredeterminada)]);
+
+            return redirect()->back()->with('success', "Contraseña de {$usuario->nombre} restablecida a: {$passwordPredeterminada}");
+        }
+        return redirect()->back()->with('error', 'El usuario no tiene cuenta vinculada.');
     }
 
     public function createUserAccount(Request $request, $id)
@@ -234,16 +213,15 @@ public function toggleUserStatus(Request $request, $id)
         $usuario = Usuario::find($id);
         
         if ($usuario) {
-            $tempPassword = Str::random(16);
             Cuenta::create([
                 'username' => strtolower(str_replace(' ', '.', $usuario->nombre)),
-                'password' => Hash::make($tempPassword),
+                'password' => Hash::make('$EMAHN2026'),
                 'estado' => 'activo',
                 'id_usuario' => $usuario->id_usuario,
                 'id_rol' => 2
             ]);
 
-            return redirect()->route('admin.users.index')->with('success', 'Cuenta creada. Password temporal: ' . $tempPassword);
+            return redirect()->route('admin.users.index')->with('success', 'Cuenta creada. Password por defecto: $EMAHN2026');
         }
 
         return redirect()->route('admin.users.index')->with('error', 'No se pudo crear la cuenta');
@@ -256,17 +234,16 @@ public function toggleUserStatus(Request $request, $id)
         }
 
         $request->validate([
-            'nombre' => 'required|string|max:30',
+            'nombre' => 'required|string|max:50',
             'username' => 'required|string|unique:cuentas,username',
             'password' => 'required|string|min:6',
             'id_departamento' => 'required|exists:departamentos,id_departamento',
-
-            'rol' => 'required|in:1,2'
+            'rol' => 'required|in:1,2,4' // 4 es Departamento
         ]);
 
         $usuario = Usuario::create([
             'nombre' => $request->nombre,
-            'id_departamento' => $request->id_departamento, //se relaciona con departamentos
+            'id_departamento' => $request->id_departamento,
             'puesto' => $request->puesto,
             'extension' => $request->extension,
             'email' => $request->email
@@ -283,45 +260,31 @@ public function toggleUserStatus(Request $request, $id)
         return redirect()->route('admin.users.index')->with('success', 'Usuario y cuenta creados exitosamente');
     }
 
-public function destroyUser(Request $request, $id)
-{
-    if (!auth()->check() || (!auth()->user()->isAdmin() && !auth()->user()->puedeEliminarUsuarios())) {
-        return redirect()->route('user.dashboard');
-    }
-
-    $usuario = Usuario::find($id);
-    
-    if ($usuario) {
-
-        // condicion para no poder eliminarse a si mismo
-        if (auth()->user()->id_usuario == $usuario->id_usuario) {
-            return redirect()->route('admin.users.index')->with('error', 'No puedes eliminar tu propia cuenta');
+    public function destroyUser(Request $request, $id)
+    {
+        if (!auth()->check() || (!auth()->user()->isAdmin() && !auth()->user()->puedeEliminarUsuarios())) {
+            return redirect()->route('user.dashboard');
         }
 
-        // solo el admin puede eliminar a otro admin
-        if ($usuario->cuenta && $usuario->cuenta->id_rol == 1) {
-            
-            // si el que intenta eliminar NO es el super admin
-            if (auth()->user()->id_usuario != 1) { 
-                return redirect()->route('admin.users.index')
-                    ->with('error', 'Solo el Super Admin puede eliminar a un Administrador.');
+        $usuario = Usuario::find($id);
+        
+        if ($usuario) {
+            if (auth()->user()->id_usuario == $usuario->id_usuario) {
+                return redirect()->route('admin.users.index')->with('error', 'No puedes eliminar tu propia cuenta');
             }
+
+            if ($usuario->cuenta && $usuario->cuenta->id_rol == 1 && auth()->user()->id_usuario != 1) { 
+                return redirect()->route('admin.users.index')->with('error', 'Solo el Super Admin puede eliminar a un Administrador.');
+            }
+
+            if ($usuario->cuenta) { $usuario->cuenta->delete(); }
+            $usuario->delete();
+            
+            return redirect()->route('admin.users.index')->with('success', 'Usuario eliminado exitosamente');
         }
 
-        //  Si tiene cuenta, eliminar cuenta primero
-        if ($usuario->cuenta) {
-            $usuario->cuenta->delete();
-        }
-        
-        //  Eliminar usuario
-        $usuario->delete();
-        
-        return redirect()->route('admin.users.index')->with('success', 'Usuario eliminado exitosamente');
+        return redirect()->route('admin.users.index')->with('error', 'Usuario no encontrado');
     }
-
-    return redirect()->route('admin.users.index')->with('error', 'Usuario no encontrado');
-}
-
 
     public function redirectUserPermissions(Request $request, $id)
     {
