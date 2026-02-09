@@ -161,10 +161,9 @@
                                                 @if($t->estado === 'completado' && !empty($t->id_servicio))
                                                     <p class="small fw-bold text-primary mb-2 text-uppercase text-center">Formato Finalizado</p>
                                                     <div class="d-flex gap-2 justify-content-center mb-3">
-                                                        <a href="{{ route('departamento.formatos.'.strtolower($t->tipo_formato).'.preview', $t->id_servicio) }}" target="_blank" class="btn btn-sm btn-primary px-4 fw-bold shadow-sm">
-                                                            <i class="fas fa-eye me-1"></i> Ver Online
-                                                        </a>
-                                                        <a href="{{ route('departamento.formatos.'.strtolower($t->tipo_formato).'.pdf', $t->id_servicio) }}" target="_blank" class="btn btn-sm btn-danger px-4 fw-bold shadow-sm">
+                                
+                                                       
+                                                        <a href="{{ route('admin.formatos.'.strtolower($t->tipo_formato).'.pdf', $t->id_servicio) }}" target="_blank" class="btn btn-sm btn-danger px-4 fw-bold shadow-sm">
                                                             <i class="fas fa-file-pdf me-1"></i> PDF
                                                         </a>
                                                     </div>

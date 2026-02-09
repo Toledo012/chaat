@@ -36,7 +36,7 @@
 
 <div class="container-fluid px-2">
     
-    {{-- 🏷️ BIENVENIDA Y ACCIÓN RÁPIDA --}}
+    {{--  BIENVENIDA Y ACCIÓN RÁPIDA --}}
     <div class="card welcome-card border-0 shadow-sm mb-4">
         <div class="card-body p-4">
             <div class="row align-items-center">
@@ -97,7 +97,7 @@
     </div>
 
     <div class="row">
-        {{-- 🔷 COLUMNA IZQUIERDA: ÚLTIMAS SOLICITUDES --}}
+        {{--  ÚLTIMAS SOLICITUDES --}}
         <div class="col-lg-8 mb-4">
             <div class="card border-0 shadow-sm h-100 rounded-4">
                 <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
@@ -147,7 +147,7 @@
             </div>
         </div>
 
-        {{-- 🔷 COLUMNA DERECHA: PERFIL Y SEGURIDAD --}}
+        {{-- PERFIL Y SEGURIDAD --}}
         <div class="col-lg-4 mb-4">
             <div class="card border-0 shadow-sm rounded-4 h-100 p-4">
                 <h6 class="fw-bold mb-3 text-muted text-uppercase small" style="letter-spacing: 1px;">Mi Perfil</h6>

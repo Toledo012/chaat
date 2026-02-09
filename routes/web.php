@@ -138,7 +138,7 @@ Route::prefix('admin/formatos')
  */
 Route::prefix('admin/formatos')
     ->name('admin.formatos.')
-    ->middleware(['auth', 'perm:any,gestion_formatos,tickets.completar'])
+
     ->group(function () {
 
         // Formularios A–D

@@ -208,7 +208,7 @@
             </div>
         </div>
 
-        {{-- 🔷 COLUMNA DERECHA: TICKETS RECIENTES --}}
+        {{--  TICKETS RECIENTES --}}
         <div class="col-lg-8 mb-4">
             <div class="card h-100 border-0 shadow-sm">
                 <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
@@ -250,7 +250,7 @@
         </div>
     </div>
 
-    {{-- 🔷 ABAJO: MIS PERMISOS --}}
+    {{--MIS PERMISOS --}}
     <div class="row mt-2">
         <div class="col-12">
             <div class="card p-4 border-0 shadow-sm">
