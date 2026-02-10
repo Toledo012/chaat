@@ -48,7 +48,7 @@ class Cuenta extends Authenticatable
 
     public function isDepartamento()
     {
-        return (int) $this->id_rol === 4;
+        return (int) $this->id_rol === 3;
     }
 
     public function getAuthPassword()
@@ -177,7 +177,7 @@ class Cuenta extends Authenticatable
     }
 
     /**
-     * ✅ NUEVO: Actualizar permisos del rol
+     * Actualizar permisos del rol
      */
     public function actualizarPermisos($nuevosPermisos)
     {
