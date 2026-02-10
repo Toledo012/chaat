@@ -126,7 +126,7 @@
                                                         <select name="rol" class="form-select">
                                                             <option value="1" @selected($usuario->cuenta->id_rol == 1)>Administrador</option>
                                                             <option value="2" @selected($usuario->cuenta->id_rol == 2)>Usuario</option>
-                                                            <option value="4" @selected($usuario->cuenta->id_rol == 3)>Departamento</option>
+                                                            <option value="3" @selected($usuario->cuenta->id_rol == 3)>Departamento</option>
                                                         </select>
                                                         <button class="btn btn-primary px-3 shadow-sm">Cambiar</button>
                                                     </div>
@@ -189,7 +189,7 @@
                     
                     <div class="row g-2 mb-3">
                         <div class="col-6"><label class="modal-label-header">Departamento</label><select name="id_departamento" class="form-select shadow-sm" required><option value="">Seleccionar...</option>@foreach($departamentos as $dep)<option value="{{ $dep->id_departamento }}">{{ $dep->nombre }}</option>@endforeach</select></div>
-                        <div class="col-6"><label class="modal-label-header">Puesto / Cargo</label><select name="puesto" class="form-select shadow-sm"><option value="">Seleccionar...</option><option>Jefe de Area</option><option>Técnico</option><option>Programador</option></select></div>
+                        <div class="col-6"><label class="modal-label-header">Puesto / Cargo</label><select name="puesto" class="form-select shadow-sm"><option value="">Seleccionar...</option><option>Jefe de Area</option><option>Técnico</option><option>Programador</option>><option>Enlace</option></select></div>
                     </div>
 
                     <div class="row g-2 mb-3">
