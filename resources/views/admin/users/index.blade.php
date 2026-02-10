@@ -92,7 +92,7 @@
                         <td>
                             @if($usuario->cuenta)
                                 <span class="badge bg-white text-primary border border-primary-subtle px-2">{{ $usuario->cuenta->username }}</span><br>
-                                @php $r = match($usuario->cuenta->id_rol) { 1 => ['Admin', 'bg-danger'], 4 => ['Depto', 'bg-dark text-white'], default => ['Usuario', 'bg-secondary text-white'] }; @endphp
+                                @php $r = match($usuario->cuenta->id_rol) { 1 => ['Admin', 'bg-danger'], 3 => ['Depto', 'bg-dark text-white'], default => ['Usuario', 'bg-secondary text-white'] }; @endphp
                                 <span class="badge {{ $r[1] }} rounded-pill mt-1" style="font-size: 0.6rem;">{{ $r[0] }}</span>
                             @else <span class="badge bg-light text-muted border small fw-normal">Sin cuenta activa</span> @endif
                         </td>
