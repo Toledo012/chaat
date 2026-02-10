@@ -7,6 +7,7 @@ use App\Models\Cuenta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\TicketCreadoMail;
+use App\Services\TicketService;
 
 class DeptTicketController extends Controller
 {
@@ -14,6 +15,14 @@ class DeptTicketController extends Controller
      * Bandeja de Departamento:
      * - Solo tickets creados por este depto (creado_por = id_cuenta actual)
      */
+
+
+        protected TicketService $tickets;
+
+    public function __construct(TicketService $tickets)
+    {
+        $this->tickets = $tickets;
+    }
     public function index(Request $request)
     {
         $cuentaId = auth()->user()->id_cuenta;
