@@ -73,8 +73,7 @@ class DeptTicketController extends Controller
     'descripcion'  => 'nullable|string',
 ]);
 
-$folio = 'TCK-' . now()->format('YmdHis'); // ✅ ya no depende del formato
-
+$folio = 'TCK-' . now()->format('YmdHis'); //
 $ticket = Ticket::create([
     'folio'        => $folio,
     'titulo'       => $data['titulo'],
@@ -93,9 +92,9 @@ $ticket = Ticket::create([
 ]);
 
 
-        // ✅ Avisar por correo a ADMIN (y si quieres también a técnicos, aquí lo defines)
+        // Enviar email a todos los administradores
         $emails = Cuenta::with('usuario:id_usuario,email')
-            ->whereIn('id_rol', [1]) // 1 = Administrador
+            ->whereIn('id_rol', [1,2]) // 1 = Administrador
             ->get()
             ->pluck('usuario.email')
             ->filter()
