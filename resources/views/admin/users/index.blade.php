@@ -208,7 +208,7 @@
                         <div class="col-6"><label class="modal-label-header">Confirmar Email *</label><input type="email" class="form-control shadow-sm" name="email" required placeholder="correo@ejemplo.com"></div>
                     </div>
 
-                    <div class="mb-0"><label class="modal-label-header text-primary">Asignación de Rol Inicial</label><select name="rol" class="form-select border-primary shadow-sm" required><option value="2">Usuario</option><option value="1">Administrador</option><option value="4">Departamento</option></select></div>
+                    <div class="mb-0"><label class="modal-label-header text-primary">Asignación de Rol Inicial</label><select name="rol" class="form-select border-primary shadow-sm" required><option value="2">Usuario</option><option value="1">Administrador</option><option value="3">Departamento</option></select></div>
                 </div>
                 <div class="modal-footer bg-light border-0"><button type="submit" class="btn btn-primary btn-sm fw-bold px-4 rounded-pill shadow-sm">Guardar Registro</button></div>
             </form>

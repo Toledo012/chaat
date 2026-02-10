@@ -171,6 +171,7 @@ class AdminController extends Controller
                 'nombre' => $request->nombre,
                 'id_departamento' => $request->id_departamento,
                 'puesto' => $request->puesto,
+                'extension' => $request->extension ?: null,
                 'email' => $request->email,
             ]);
 
@@ -238,16 +239,16 @@ class AdminController extends Controller
             'username' => 'required|string|unique:cuentas,username',
             'password' => 'required|string|min:6',
             'id_departamento' => 'required|exists:departamentos,id_departamento',
-            'rol' => 'required|in:1,2,4' // 4 es Departamento
+            'rol' => 'required|in:1,2,3' // 4 es Departamento
         ]);
 
-        $usuario = Usuario::create([
-            'nombre' => $request->nombre,
-            'id_departamento' => $request->id_departamento,
-            'puesto' => $request->puesto,
-            'extension' => $request->extension,
-            'email' => $request->email
-        ]);
+            $usuario = Usuario::create([
+                'nombre' => $request->nombre,
+                'id_departamento' => $request->id_departamento,
+                'puesto' => $request->puesto    ,
+'extension' => $request->extension ?: null,
+                'email' => $request->email
+            ]);
 
         Cuenta::create([
             'username' => $request->username,
