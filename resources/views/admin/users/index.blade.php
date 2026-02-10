@@ -126,7 +126,7 @@
                                                         <select name="rol" class="form-select">
                                                             <option value="1" @selected($usuario->cuenta->id_rol == 1)>Administrador</option>
                                                             <option value="2" @selected($usuario->cuenta->id_rol == 2)>Usuario</option>
-                                                            <option value="4" @selected($usuario->cuenta->id_rol == 4)>Departamento</option>
+                                                            <option value="4" @selected($usuario->cuenta->id_rol == 3)>Departamento</option>
                                                         </select>
                                                         <button class="btn btn-primary px-3 shadow-sm">Cambiar</button>
                                                     </div>
