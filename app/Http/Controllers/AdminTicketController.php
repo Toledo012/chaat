@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\mail;
+use Illuminate\Support\Facades\Mail;
 use App\Mail\TicketCreadoMail;
 use App\Models\Cuenta;
 use App\Models\Ticket;
 use App\Services\TicketService;
 use Illuminate\Http\Request;
+
 
 
 class AdminTicketController extends Controller
