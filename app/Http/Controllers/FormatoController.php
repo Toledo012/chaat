@@ -212,13 +212,15 @@ public function storeA(Request $request)
 }
 
 
- public function storeB(Request $request)
+public function storeB(Request $request)
 {
     try {
         $data = $request->validate([
             'id_departamento' => 'required|exists:departamentos,id_departamento',
 
             'subtipo' => 'required|string',
+            'subtipo_otro' => 'nullable|required_if:subtipo,otro|string', // Validación condicional
+            
             'descripcion_servicio' => 'nullable|string',
             'equipo' => 'nullable|string',
             'marca' => 'nullable|string',
@@ -247,15 +249,18 @@ public function storeA(Request $request)
             'materiales.*.id_material' => 'nullable|integer|exists:catalogo_materiales,id_material',
             'materiales.*.cantidad' => 'nullable|numeric|min:1',
 
-            // ✅ vienen desde tickets (hidden)
+            // vienen desde tickets (hidden)
             'id_servicio' => 'nullable|integer',
             'id_ticket'   => 'nullable|integer',
         ]);
 
+        // Lógica para asignar el subtipo real
+        $subtipoFinal = ($data['subtipo'] === 'otro') ? $data['subtipo_otro'] : $data['subtipo'];
+
         $idServicioFromRequest = $data['id_servicio'] ?? null;
         $idTicketFromRequest   = $data['id_ticket'] ?? null;
 
-        return DB::transaction(function () use ($data, $idServicioFromRequest, $idTicketFromRequest) {
+        return DB::transaction(function () use ($data, $idServicioFromRequest, $idTicketFromRequest, $subtipoFinal) {
 
             $idServicio = $this->servicios->obtenerOCrearServicio(
                 $idServicioFromRequest,
@@ -265,7 +270,7 @@ public function storeA(Request $request)
 
             DB::table('formato_b')->insert([
                 'id_servicio'          => $idServicio,
-                'subtipo'              => $data['subtipo'],
+                'subtipo'              => $subtipoFinal, // Usamos el valor procesado
                 'descripcion_servicio' => $data['descripcion_servicio'] ?? null,
                 'equipo'               => $data['equipo'] ?? null,
                 'marca'                => $data['marca'] ?? null,
@@ -292,7 +297,7 @@ public function storeA(Request $request)
                 'updated_at'           => now(),
             ]);
 
-            //  Materiales (tu lógica, encapsulada)
+            // Materiales
             $this->materiales->guardarMaterialesUtilizados($idServicio, $data['materiales'] ?? null);
 
             // Completar ticket por id_ticket
