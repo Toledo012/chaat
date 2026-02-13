@@ -821,7 +821,7 @@ public function update(Request $request, $tipo, $id)
                         'updated_at' => now(),
                     ]);
 
-                unset($data['id_departamento']); // 🔥 CLAVE
+                unset($data['id_departamento']); 
             }
 
             // 2. ACTUALIZAR FORMATO A
@@ -829,7 +829,7 @@ public function update(Request $request, $tipo, $id)
                 ->where('id_servicio', $id)
                 ->update($data);
 
-            // ✅ HOOK: si este servicio pertenece a un ticket, marcar como completado
+            //si este servicio pertenece a un ticket, marcar como completado
             DB::table('tickets')
                 ->where('id_servicio', $id)
                 ->update([
@@ -850,7 +850,7 @@ public function update(Request $request, $tipo, $id)
                         'updated_at' => now(),
                     ]);
 
-                unset($data['id_departamento']); // 👈 MUY IMPORTANTE
+                unset($data['id_departamento']); 
             }
 
             // 2. QUITAR MATERIALES DEL UPDATE
@@ -881,7 +881,7 @@ public function update(Request $request, $tipo, $id)
                 }
             }
 
-            // ✅ HOOK: si este servicio pertenece a un ticket, marcar como completado
+            // si este servicio pertenece a un ticket, marcar como completado
             DB::table('tickets')
                 ->where('id_servicio', $id)
                 ->update([
@@ -933,7 +933,7 @@ public function update(Request $request, $tipo, $id)
                 }
             }
 
-            // ✅ HOOK: si este servicio pertenece a un ticket, marcar como completado
+            // si este servicio pertenece a un ticket, marcar como completado
             DB::table('tickets')
                 ->where('id_servicio', $id)
                 ->update([
@@ -949,7 +949,7 @@ public function update(Request $request, $tipo, $id)
                 ->where('id_servicio', $id)
                 ->update($data);
 
-            // ✅ HOOK: si este servicio pertenece a un ticket, marcar como completado
+            // si este servicio pertenece a un ticket, marcar como completado
             DB::table('tickets')
                 ->where('id_servicio', $id)
                 ->update([

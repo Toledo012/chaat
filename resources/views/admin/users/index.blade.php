@@ -31,12 +31,17 @@
     <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
         <i class="fas fa-exclamation-triangle me-2"></i>
         @if(session('error')) {{ session('error') }} @else Revisa los campos resaltados. @endif
+        <ul class="mb-0 small mt-1">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     @endif
 </div>
 
-{{-- ENCABEZADO ESTILO TICKETS --}}
+{{-- ENCABEZADO --}}
 <div class="d-flex align-items-center gap-3 mb-4 px-2">
     <i class="fas fa-users-cog text-primary fa-2x"></i>
     <div>
@@ -74,7 +79,7 @@
                         data-extension="{{ $usuario->extension }}"
                         data-email="{{ $usuario->email }}" 
                         data-username="{{ optional($usuario->cuenta)->username }}" 
-                        data-permisos='@json($usuario->cuenta->permisosArray() ?? [])'
+                        data-permisos='@json($usuario->cuenta ? ($usuario->cuenta->permisosArray() ?? []) : [])'
                     >
                         <td class="ps-4">
                             <div class="d-flex align-items-center gap-3">
@@ -109,7 +114,7 @@
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content border-0 shadow-lg">
                                 <div class="modal-header bg-light border-bottom">
-                                    <h6 class="modal-title fw-bold">Administrar Perfil: {{ $usuario->nombre }}</h6>
+                                    <h6 class="modal-title fw-bold">Administrar Perfil</h6>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
                                 <div class="modal-body p-4 text-center">
@@ -139,7 +144,7 @@
                                                 <div class="col-12">
                                                     <form action="{{ route('admin.users.reset-password', $usuario->id_usuario) }}" method="POST">
                                                         @csrf
-                                                        <button class="btn btn-sm btn-warning w-100 fw-bold shadow-sm mb-2" onclick="return confirm('¿Restablecer a contraseña predeterminada del sistema?')">
+                                                        <button class="btn btn-sm btn-warning w-100 fw-bold shadow-sm mb-2" onclick="return confirm('¿Restablecer a contraseña predeterminada?')">
                                                             <i class="fas fa-key me-2"></i> Resetear Contraseña
                                                         </button>
                                                     </form>
@@ -177,109 +182,74 @@
 <div class="modal fade" id="globalPermisosModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content border-0 shadow-lg" id="permisosModalContent"></div></div></div>
 <div class="modal fade" id="globalDeleteModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0 shadow-lg" id="deleteModalContent"></div></div></div>
 
-{{-- MODAL CREAR USUARIO --}}
-<div class="modal fade" id="createUserModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered shadow">
-        <div class="modal-content border-0">
-            <form action="{{ route('admin.users.store') }}" method="POST">
-                @csrf
-                <div class="modal-header bg-primary text-white border-0"><h5 class="modal-title fw-bold">Registrar Personal</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-                <div class="modal-body p-4">
-                    <div class="mb-3"><label class="modal-label-header">Nombre Completo *</label><input type="text" class="form-control shadow-sm" name="nombre" required placeholder="Nombre y Apellidos"></div>
-                    
-                    <div class="row g-2 mb-3">
-                        <div class="col-6"><label class="modal-label-header">Departamento</label><select name="id_departamento" class="form-select shadow-sm" required><option value="">Seleccionar...</option>@foreach($departamentos as $dep)<option value="{{ $dep->id_departamento }}">{{ $dep->nombre }}</option>@endforeach</select></div>
-                        <div class="col-6"><label class="modal-label-header">Puesto / Cargo</label><select name="puesto" class="form-select shadow-sm"><option value="">Seleccionar...</option><option>Jefe de Area</option><option>Técnico</option><option>Programador</option>><option>Enlace</option></select></div>
-                    </div>
-
-                    <div class="row g-2 mb-3">
-                        <div class="col-6"><label class="modal-label-header">Email (Login) *</label><input type="text" class="form-control shadow-sm" name="username" required placeholder="juan.perez"></div>
-                        <div class="col-6">
-                            <label class="modal-label-header">Contraseña *</label>
-                            <div class="input-group input-group-sm">
-                                <input type="password" class="form-control shadow-sm" name="password" id="passInput" required>
-                                <span class="input-group-text bg-white" onclick="togglePass('passInput')"><i class="fas fa-eye" id="passIcon"></i></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row g-2 mb-3">
-                        <div class="col-6"><label class="modal-label-header">Extensión Telefónica</label><input type="text" class="form-control shadow-sm" name="extension" placeholder="Ej. 102"></div>
-                        <div class="col-6"><label class="modal-label-header">Confirmar Email *</label><input type="email" class="form-control shadow-sm" name="email" required placeholder="correo@ejemplo.com"></div>
-                    </div>
-
-                    <div class="mb-0"><label class="modal-label-header text-primary">Asignación de Rol Inicial</label><select name="rol" class="form-select border-primary shadow-sm" required><option value="2">Usuario</option><option value="1">Administrador</option><option value="3">Departamento</option></select></div>
-                </div>
-                <div class="modal-footer bg-light border-0"><button type="submit" class="btn btn-primary btn-sm fw-bold px-4 rounded-pill shadow-sm">Guardar Registro</button></div>
-            </form>
-        </div>
-    </div>
+{{-- TEMPLATE PARA SELECT DE DEPARTAMENTOS --}}
+<div id="departamentoSelectTemplate" class="d-none">
+    @foreach($departamentos as $dep)
+        <option value="{{ $dep->id_departamento }}">{{ $dep->nombre }}</option>
+    @endforeach
 </div>
-
-<select id="departamentoSelectTemplate" class="d-none">@foreach($departamentos as $dep)<option value="{{ $dep->id_departamento }}">{{ $dep->nombre }}</option>@endforeach</select>
 
 @endsection
 
 @section('scripts')
 <script>
-// Función ver/ocultar password
-function togglePass(id) {
-    const input = document.getElementById(id);
-    const icon = input.nextElementSibling.querySelector('i');
-    if (input.type === "password") {
-        input.type = "text";
-        icon.classList.replace('fa-eye', 'fa-eye-slash');
-    } else {
-        input.type = "password";
-        icon.classList.replace('fa-eye-slash', 'fa-eye');
-    }
-}
-
 document.addEventListener('DOMContentLoaded', function () {
     const baseUrl = '{{ url("admin/users") }}';
 
     function closeManagerModal(userId) {
         const modalEl = document.getElementById('modalGestionUsuario' + userId);
-        const modalInstance = bootstrap.Modal.getInstance(modalEl);
-        if (modalInstance) modalInstance.hide();
+        if (modalEl) {
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) modalInstance.hide();
+        }
     }
 
-    // EDITAR PERFIL (Con extensión)
+    // EDITAR PERFIL
     document.querySelectorAll('.btn-trigger-edit').forEach(btn => {
         btn.addEventListener('click', function() {
             const userId = this.dataset.userId;
             const tr = document.querySelector(`tr[data-id="${userId}"]`);
+            if(!tr) return;
+
             closeManagerModal(userId);
-            const selectTemplate = document.getElementById('departamentoSelectTemplate').innerHTML;
+
+            const options = document.getElementById('departamentoSelectTemplate').innerHTML;
             const html = `
-                <form action="${baseUrl}/${tr.dataset.id}" method="POST">
+                <form action="${baseUrl}/${userId}" method="POST">
                     @csrf @method('PUT')
                     <div class="modal-header border-0 pb-0"><h6 class="modal-title fw-bold">Actualizar Datos de Perfil</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                     <div class="modal-body p-4">
-                        <div class="mb-3"><label class="modal-label-header">Nombre Completo</label><input type="text" name="nombre" class="form-control shadow-sm" value="${tr.dataset.nombre}" required></div>
-                        <div class="mb-3"><label class="modal-label-header">Adscripción / Departamento</label><select name="id_departamento" class="form-select shadow-sm" required>${selectTemplate}</select></div>
+                        <div class="mb-3"><label class="modal-label-header">Nombre Completo</label><input type="text" name="nombre" class="form-control shadow-sm" value="${tr.dataset.nombre || ''}" required></div>
+                        <div class="mb-3"><label class="modal-label-header">Adscripción / Departamento</label>
+                            <select name="id_departamento" class="form-select shadow-sm" required>
+                                ${options}
+                            </select>
+                        </div>
                         <div class="row g-2 mb-3">
-                            <div class="col-6"><label class="modal-label-header">Cargo / Puesto</label><input type="text" name="puesto" class="form-control shadow-sm" value="${tr.dataset.puesto}"></div>
+                            <div class="col-6"><label class="modal-label-header">Cargo / Puesto</label><input type="text" name="puesto" class="form-control shadow-sm" value="${tr.dataset.puesto || ''}" required></div>
                             <div class="col-6"><label class="modal-label-header">Extensión</label><input type="text" name="extension" class="form-control shadow-sm" value="${tr.dataset.extension || ''}"></div>
                         </div>
                         <div class="row g-2">
-                            <div class="col-6"><label class="modal-label-header">Email</label><input type="email" name="email" class="form-control shadow-sm" value="${tr.dataset.email}"></div>
-                            <div class="col-6"><label class="modal-label-header text-primary">Login de Usuario</label><input type="text" name="username" class="form-control border-primary shadow-sm" value="${tr.dataset.username}"></div>
+                            <div class="col-6"><label class="modal-label-header">Email</label><input type="email" name="email" class="form-control shadow-sm" value="${tr.dataset.email || ''}" required></div>
+                            <div class="col-6"><label class="modal-label-header text-primary">Login de Usuario</label><input type="text" name="username" class="form-control border-primary shadow-sm" value="${tr.dataset.username || ''}" required></div>
                         </div>
                     </div>
                     <div class="modal-footer border-0 bg-light"><button type="submit" class="btn btn-primary btn-sm fw-bold px-3 shadow-sm">Guardar Cambios</button></div>
                 </form>
             `;
+            
             document.getElementById('editModalContent').innerHTML = html;
-            setTimeout(() => {
-                const select = document.querySelector('#globalEditModal select[name="id_departamento"]');
-                if (select) select.value = tr.dataset.departamentoId;
-                new bootstrap.Modal(document.getElementById('globalEditModal')).show();
-            }, 300);
+            
+            // Forzamos la selección del departamento antes de mostrar
+            const select = document.querySelector('#editModalContent select[name="id_departamento"]');
+            if (select) select.value = tr.dataset.departamentoId;
+
+            const editModal = new bootstrap.Modal(document.getElementById('globalEditModal'));
+            editModal.show();
         });
     });
 
-    // PERMISOS (CON LOS 25 IDS ORGANIZADOS)
+    // Lógica de Permisos, Eliminar, etc. (Se mantiene igual pero con prevención de errores)
     document.querySelectorAll('.btn-trigger-permisos').forEach(btn => {
         btn.addEventListener('click', function() {
             const userId = this.dataset.userId;
@@ -289,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const p = JSON.parse(tr.dataset.permisos || "[]");
             const ck = v => p.includes(v) ? "checked" : "";
             const html = `
-                <form action="${baseUrl}/${tr.dataset.id}/update-permissions" method="POST">
+                <form action="${baseUrl}/${userId}/update-permissions" method="POST">
                     @csrf @method('PUT')
                     <div class="modal-header border-0 pb-0"><h6 class="modal-title fw-bold">Privilegios: ${tr.dataset.nombre}</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                     <div class="modal-body p-4">
@@ -326,7 +296,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 </form>
             `;
             document.getElementById('permisosModalContent').innerHTML = html;
-            setTimeout(() => { new bootstrap.Modal(document.getElementById('globalPermisosModal')).show(); }, 300);
+            new bootstrap.Modal(document.getElementById('globalPermisosModal')).show();
         });
     });
 
@@ -342,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="modal-body p-4 text-center"><i class="fas fa-user-times text-danger fa-3x mb-3 opacity-75"></i><p class="fw-bold mb-1">¿Deseas eliminar a ${tr.dataset.nombre}?</p><p class="text-muted small">Esta operación borrará su cuenta y perfil permanentemente.</p></div>
                 <div class="modal-footer border-0 bg-light"><form action="${baseUrl}/${userId}" method="POST">@csrf @method('DELETE')<button class="btn btn-danger btn-sm fw-bold shadow-sm px-4">Eliminar Ahora</button></form></div>
             `;
-            setTimeout(() => { new bootstrap.Modal(document.getElementById('globalDeleteModal')).show(); }, 300);
+            new bootstrap.Modal(document.getElementById('globalDeleteModal')).show();
         });
     });
 });

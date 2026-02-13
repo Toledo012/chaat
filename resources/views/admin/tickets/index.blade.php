@@ -7,7 +7,6 @@
 @section('content')
 <div class="container-fluid">
 
-    {{-- HEADER SEGÚN TU IMAGEN --}}
     <div class="d-flex align-items-center gap-2 mb-4">
         <i class="fas fa-ticket-alt text-primary fa-2x"></i>
         <div>
@@ -16,7 +15,7 @@
         </div>
     </div>
 
-    {{-- FILTROS OPTIMIZADOS --}}
+    {{-- FILTROS  --}}
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body p-3">
             <form method="GET" class="row g-2 align-items-center">
