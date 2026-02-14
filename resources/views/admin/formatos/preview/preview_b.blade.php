@@ -76,10 +76,14 @@
 {{-- SUBTIPO --}}
 <div class="section-title">Tipo de Equipo</div>
 <p class="vista">{{ $servicio->subtipo }}</p>
-<select name="subtipo" class="form-select edicion">
-    <option value="Computadora" {{ $servicio->subtipo=='Computadora'?'selected':'' }}>Computadora</option>
-    <option value="Impresora" {{ $servicio->subtipo=='Impresora'?'selected':'' }}>Impresora</option>
-</select>
+<textarea name="descripcion_servicio" class="form-control edicion">{{ $servicio->subtipo }}</textarea>
+
+
+
+<div class="section-title">Descripción del Servicio</div>
+<p class="vista">{{ $servicio->descripcion_servicio }}</p>
+<textarea name="descripcion_servicio" class="form-control edicion">{{ $servicio->descripcion_servicio }}</textarea>
+
 
 {{-- DESCRIPCIÓN --}}
 <div class="section-title">Descripción del Servicio</div>
