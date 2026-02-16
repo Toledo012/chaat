@@ -2,16 +2,11 @@
 
 namespace App\Http\Controllers;
 
-
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\TicketCreadoMail;
 use App\Models\Cuenta;
 use App\Models\Ticket;
 use App\Services\TicketService;
 use Illuminate\Http\Request;
-
-
+use Illuminate\Support\Facades\DB;
 
 class AdminTicketController extends Controller
 {
@@ -23,12 +18,10 @@ class AdminTicketController extends Controller
         $qTipo      = $request->get('tipo_formato');
         $qPrioridad = $request->get('prioridad');
         $qBuscar    = $request->get('buscar');
-    
-    
-        $query = Ticket::with(['asignadoA', 'creadoPor'])
-        ->orderByDesc('id_ticket');
 
-        // Filtros
+        $query = Ticket::with(['asignadoA', 'creadoPor'])
+            ->orderByDesc('id_ticket');
+
         if ($qEstado) {
             $query->where('estado', $qEstado);
         }
@@ -41,13 +34,12 @@ class AdminTicketController extends Controller
         if ($qBuscar) {
             $query->where(function ($qq) use ($qBuscar) {
                 $qq->where('folio', 'like', "%{$qBuscar}%")
-                   ->orWhere('titulo', 'like', "%{$qBuscar}%");
+                    ->orWhere('titulo', 'like', "%{$qBuscar}%");
             });
         }
 
         $tickets = $query->paginate(12)->withQueryString();
 
-        // Técnicos (rol usuario = 2 en tu Cuenta)
         $tecnicos = Cuenta::where('id_rol', 2)
             ->orderBy('username')
             ->get(['id_cuenta', 'username', 'id_usuario']);
@@ -68,7 +60,7 @@ class AdminTicketController extends Controller
             'asignado_a' => ['required', 'integer', 'exists:cuentas,id_cuenta'],
         ]);
 
-        $this->tickets->asignarComoAdmin(auth()->user(), $ticket, (int)$data['asignado_a']);
+        $this->tickets->asignarComoAdmin(auth()->user(), $ticket, (int) $data['asignado_a']);
 
         return back()->with('Asignado', 'Ticket asignado correctamente gg');
     }
@@ -77,127 +69,115 @@ class AdminTicketController extends Controller
     {
         $this->tickets->cancelar(auth()->user(), $ticket);
 
-        return back()->with('Cancelado', 'Ticket cancelado correctamente ');
+        return back()->with('Cancelado', 'Ticket cancelado correctamente');
     }
-
 
     public function store(Request $request)
-{
-    $data = $request->validate([
-        'titulo' => 'required|string|max:255',
-        'solicitante' => 'required|string|max:100',
-        'descripcion' => 'nullable|string',
-        'prioridad' => 'required|in:baja,media,alta',
-        'tipo_formato' => 'required|in:a,b,c,d',
-    ]);
+    {
+        $data = $request->validate([
+            'titulo'       => 'required|string|max:255',
+            'solicitante'  => 'required|string|max:100',
+            'descripcion'  => 'nullable|string',
+            'prioridad'    => 'required|in:baja,media,alta',
+            'tipo_formato' => 'required|in:a,b,c,d',
+        ]);
 
-    $cuenta = auth()->user();
+        $cuenta = auth()->user();
 
-    // Folio simple institucional para ticket (si luego lo haces consecutivo global, lo movemos a servicio)
-    $folio = 'TCK-' . now()->format('YmdHis') . '-' . strtoupper($data['tipo_formato']);
+        $ticket = DB::transaction(function () use ($data, $cuenta) {
 
-$ticket = \App\Models\Ticket::create([
-    'folio' => $folio,
-    'titulo' => $data['titulo'],
-    'solicitante' => $data['solicitante'],
-    'descripcion' => $data['descripcion'] ?? null,
-    'prioridad' => $data['prioridad'],
-    'tipo_formato' => $data['tipo_formato'],
-    'estado' => 'nuevo',
-    'creado_por' => $cuenta->id_cuenta,
-    'asignado_a' => null,
-    'asignado_por' => null,
-    'id_servicio' => null,
-]);
+            $folio = 'TCK-' . now()->format('YmdHis') . '-' . strtoupper($data['tipo_formato']);
 
-// ✅ DESTINATARIOS: Admin + técnicos (id_rol 1 y 2)
-$emails = \App\Models\Cuenta::with('usuario:id_usuario,email')
-    ->whereIn('id_rol', [1,2])
-    ->get()
-    ->pluck('usuario.email')
-    ->filter()
-    ->unique()
-    ->values()
-    ->all();
-
-    if (!empty($emails)) {
-    Mail::to($emails)->send(new TicketCreadoMail($ticket));
-}
-
-return back()->with('Creado', 'Ticket creado correctamente. 📥');
-}
-
-public function completar(Ticket $ticket)
-{
-    if (in_array($ticket->estado, ['cancelado','completado'])) {
-        return back()->with('error', 'Este ticket no puede completarse.');
-    }
-
-    // se Crea servicio si no existe
-    if (!$ticket->id_servicio) {
-        DB::transaction(function () use ($ticket) {
-
-            $tipo = strtoupper($ticket->tipo_formato); // a → A
-            $folio = $this->tickets->generarFolioGlobal($tipo);
-
-            $idServicio = DB::table('servicios')->insertGetId([
-                'folio' => $folio,
-                'fecha' => now()->format('Y-m-d'),
-                'id_usuario' => auth()->user()->id_usuario,
-                'id_departamento' => null,
-                'tipo_formato' => $tipo,
-                'created_at' => now(),
-                'updated_at' => now(),
+            $ticket = Ticket::create([
+                'folio'        => $folio,
+                'titulo'       => $data['titulo'],
+                'solicitante'  => $data['solicitante'],
+                'descripcion'  => $data['descripcion'] ?? null,
+                'prioridad'    => $data['prioridad'],
+                'tipo_formato' => $data['tipo_formato'],
+                'estado'       => 'nuevo',
+                'creado_por'   => $cuenta->id_cuenta,
+                'asignado_a'   => null,
+                'asignado_por' => null,
+                'id_servicio'  => null,
             ]);
 
-            DB::table('tickets')
-                ->where('id_ticket', $ticket->id_ticket)
-                ->update([
-                    'id_servicio' => $idServicio,
-                    'estado' => 'en_proceso',
-                    'updated_at' => now(),
-                ]);
+            // Mail centralizado en el Service
+            $this->tickets->notificarTicketCreado($ticket);
 
-            $ticket->id_servicio = $idServicio;
+            return $ticket;
         });
+
+        return back()->with('Creado', 'Ticket creado correctamente. 📥');
     }
 
-    //  Redirigir al FORMATO NORMAL
-    $map = [
-        'a' => 'admin.formatos.a',
-        'b' => 'admin.formatos.b',
-        'c' => 'admin.formatos.c',
-        'd' => 'admin.formatos.d',
-    ];
+    public function completar(Ticket $ticket)
+    {
+        if (in_array($ticket->estado, ['cancelado', 'completado'], true)) {
+            return back()->with('error', 'Este ticket no puede completarse.');
+        }
 
-    return redirect()->route($map[$ticket->tipo_formato], [
-        'id_servicio' => $ticket->id_servicio,
-        'id_ticket' => $ticket->id_ticket,
-    ]);
-}
+        // Admin: mantiene tu flujo actual (crear servicio si no existe)
+        if (!$ticket->id_servicio) {
+            DB::transaction(function () use ($ticket) {
 
+                $tipo = strtoupper($ticket->tipo_formato);
+                $folio = $this->tickets->generarFolioGlobal($tipo);
 
+                $idServicio = DB::table('servicios')->insertGetId([
+                    'folio'           => $folio,
+                    'fecha'           => now()->format('Y-m-d'),
+                    'id_usuario'      => auth()->user()->id_usuario,
+                    'id_departamento' => null,
+                    'tipo_formato'    => $tipo,
+                    'created_at'      => now(),
+                    'updated_at'      => now(),
+                ]);
 
-public function edit(Ticket $ticket)
-{
-    return view('admin.tickets.edit', compact('ticket'));
-}
+                DB::table('tickets')
+                    ->where('id_ticket', $ticket->id_ticket)
+                    ->update([
+                        'id_servicio' => $idServicio,
+                        'estado'      => 'en_proceso',
+                        'updated_at'  => now(),
+                    ]);
 
-public function update(Request $request, Ticket $ticket)
-{
-    $data = $request->validate([
-        'titulo'       => 'required|string|max:255',
-        'solicitante'  => 'required|string|max:150',
-        'descripcion'  => 'nullable|string',
-        'prioridad'    => 'required|in:baja,media,alta',
-        'tipo_formato' => 'required|in:a,b,c,d',
-        'estado'       => 'required|in:nuevo,asignado,en_proceso,en_espera,completado,cancelado',
-        'asignado_a'   => 'nullable|integer|exists:cuentas,id_cuenta',
-    ]);
+                $ticket->id_servicio = $idServicio;
+            });
+        }
 
-    $this->tickets->actualizarComoAdmin(auth()->user(), $ticket, $data);
-    return redirect()->route('admin.tickets.index')->with('success', 'Ticket actualizado ✅');
-}
+        $map = [
+            'a' => 'admin.formatos.a',
+            'b' => 'admin.formatos.b',
+            'c' => 'admin.formatos.c',
+            'd' => 'admin.formatos.d',
+        ];
 
+        return redirect()->route($map[$ticket->tipo_formato], [
+            'id_servicio' => $ticket->id_servicio,
+            'id_ticket'   => $ticket->id_ticket,
+        ]);
+    }
 
+    public function edit(Ticket $ticket)
+    {
+        return view('admin.tickets.edit', compact('ticket'));
+    }
+
+    public function update(Request $request, Ticket $ticket)
+    {
+        $data = $request->validate([
+            'titulo'       => 'required|string|max:255',
+            'solicitante'  => 'required|string|max:150',
+            'descripcion'  => 'nullable|string',
+            'prioridad'    => 'required|in:baja,media,alta',
+            'tipo_formato' => 'required|in:a,b,c,d',
+            'estado'       => 'required|in:nuevo,asignado,en_proceso,en_espera,completado,cancelado',
+            'asignado_a'   => 'nullable|integer|exists:cuentas,id_cuenta',
+        ]);
+
+        $this->tickets->actualizarComoAdmin(auth()->user(), $ticket, $data);
+
+        return redirect()->route('admin.tickets.index')->with('success', 'Ticket actualizado');
+    }
 }

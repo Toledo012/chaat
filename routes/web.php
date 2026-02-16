@@ -304,4 +304,17 @@ Route::get('/test-mail', function () {
 
     return 'Correo enviado (si no llegó, revisa logs).';
 });
- 
+
+
+Route::get('/test-mail2', function () {
+    Mail::raw('PRUEBA DIRECTA', function ($message) {
+        $message->to([
+            'semahn.test.2026@gmail.com',
+            'kevinsanchezalvarez23@gmail.com',
+            'masacregamer23@gmail.com',
+        ])->subject('PRUEBA DIRECTA LARAVEL');
+        });
+        return 'Correo enviado (si no llegó, revisa logs).';
+
+});
+
