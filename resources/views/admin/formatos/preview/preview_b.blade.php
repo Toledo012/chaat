@@ -76,7 +76,7 @@
 {{-- SUBTIPO --}}
 <div class="section-title">Tipo de Equipo</div>
 <p class="vista">{{ $servicio->subtipo }}</p>
-<textarea name="descripcion_servicio" class="form-control edicion">{{ $servicio->subtipo }}</textarea>
+<textarea name="subtipo" class="form-control edicion">{{ $servicio->subtipo }}</textarea>
 
 
 
