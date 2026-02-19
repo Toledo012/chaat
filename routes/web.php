@@ -289,6 +289,8 @@ Route::prefix('departamento/tickets')
             ->name('update');
 
         });
+Route::post('/admin/departamentos/quick-store', [\App\Http\Controllers\DepartamentoController::class, 'quickStore'])
+    ->name('admin.departamentos.quickStore');
 
 
 /*
@@ -304,6 +306,8 @@ Route::get('/test-mail', function () {
 
     return 'Correo enviado (si no llegó, revisa logs).';
 });
+
+
 
 
 Route::get('/test-mail2', function () {

@@ -4,7 +4,14 @@
 @section('header_title', 'Departamentos')
 @section('header_subtitle', 'Administración de áreas y usuarios')
 
-@section('content')
+
+
+
+
+    @section('content')
+
+
+
 <div class="container-fluid">
 
     {{-- CARD CONTENEDORA --}}
@@ -36,8 +43,7 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead>
                         <tr>
-                            <th width="80">ID</th>
-                            <th>Departamento</th>
+                            <th with="80">Departamento</th>
                             <th>Estado</th>
                             <th>Usuarios</th>
                             <th width="140" class="text-center">Acciones</th>
@@ -46,10 +52,7 @@
 
                     <tbody>
                     @forelse($departamentos as $dep)
-                        <tr>
-                            <td class="fw-semibold">
-                                {{ $dep->id_departamento }}
-                            </td>
+
 
                             <td>
                                 <div class="fw-semibold">{{ $dep->nombre }}</div>

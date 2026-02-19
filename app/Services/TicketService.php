@@ -13,6 +13,10 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class TicketService
 {
+    public function __construct(
+        private ServicioService $servicios
+    ) {}
+
     public function crearComoDepartamento(Cuenta $cuenta, array $data): Ticket
     {
         if (!method_exists($cuenta, 'isDepartamento') || !$cuenta->isDepartamento()) {
@@ -25,7 +29,7 @@ class TicketService
                 'titulo'       => $data['titulo'],
                 'descripcion'  => $data['descripcion'] ?? null,
                 'prioridad'    => $data['prioridad'] ?? 'media',
-                'tipo_formato' => $data['tipo_formato'], // a|b|c|d
+                'tipo_formato' => $data['tipo_formato'],
                 'estado'       => 'nuevo',
                 'creado_por'   => $cuenta->id_cuenta,
                 'asignado_a'   => null,
@@ -46,13 +50,14 @@ class TicketService
         }
 
         return DB::transaction(function () use ($cuenta, $data, $autoTomar) {
+
             $estado = $autoTomar ? 'asignado' : 'nuevo';
 
             $ticket = Ticket::create([
                 'titulo'       => $data['titulo'],
                 'descripcion'  => $data['descripcion'] ?? null,
                 'prioridad'    => $data['prioridad'] ?? 'media',
-                'tipo_formato' => $data['tipo_formato'], // a|b|c|d
+                'tipo_formato' => $data['tipo_formato'],
                 'estado'       => $estado,
                 'creado_por'   => $cuenta->id_cuenta,
                 'asignado_a'   => $autoTomar ? $cuenta->id_cuenta : null,
@@ -61,9 +66,6 @@ class TicketService
             ]);
 
             $this->notificarTicketCreado($ticket);
-
-            // Si auto-tomar cuenta como "asignación", opcional:
-            // $this->notificarTicketAsignado($ticket->fresh(['asignadoA.usuario']));
 
             return $ticket;
         });
@@ -87,7 +89,6 @@ class TicketService
                 'estado'       => 'asignado',
             ]);
 
-            // refrescar y cargar relación necesaria para el email
             $ticket = $ticket->fresh(['asignadoA.usuario']);
 
             $this->notificarTicketAsignado($ticket);
@@ -126,11 +127,7 @@ class TicketService
                 throw new HttpException(422, 'Este ticket ya fue tomado por otro usuario.');
             }
 
-            // opcional: notificar al que tomó (o admins). Si quieres, lo activamos.
-            $ticketActualizado = Ticket::with(['asignadoA.usuario'])->findOrFail($ticket->id_ticket);
-            // $this->notificarTicketAsignado($ticketActualizado);
-
-            return $ticketActualizado;
+            return Ticket::with(['asignadoA.usuario'])->findOrFail($ticket->id_ticket);
         });
     }
 
@@ -166,6 +163,11 @@ class TicketService
             });
     }
 
+    /**
+     * ESTE ERA EL BUG.
+     * Aquí antes se creaba servicio con SRV-random.
+     * Ahora siempre se crea vía ServicioService (folio institucional).
+     */
     public function iniciarAtencionYCrearServicioSiFalta(Cuenta $tecnicoCuenta, Ticket $ticket): Servicio
     {
         if (!method_exists($tecnicoCuenta, 'isUser') || !$tecnicoCuenta->isUser()) {
@@ -187,44 +189,38 @@ class TicketService
                 throw new HttpException(422, 'La cuenta del técnico no tiene id_usuario asociado.');
             }
 
-            // Si ya existe servicio, forzar id_usuario del que está atendiendo
+            // Si ya existe servicio: forzar id_usuario del que atiende y poner en proceso
             if (!empty($ticket->id_servicio)) {
 
                 Servicio::where('id_servicio', $ticket->id_servicio)
                     ->update(['id_usuario' => $idUsuario]);
 
-                if (in_array($ticket->estado, ['asignado','nuevo'], true)) {
+                if (in_array($ticket->estado, ['asignado', 'nuevo'], true)) {
                     $ticket->update(['estado' => 'en_proceso']);
                 }
 
                 return Servicio::findOrFail($ticket->id_servicio);
             }
 
+            // Obtener departamento del técnico (si tu tabla usuarios lo maneja)
             $idDepartamento = DB::table('usuarios')
                 ->where('id_usuario', $idUsuario)
                 ->value('id_departamento');
 
-            $servicio = Servicio::create([
-                'folio'           => $this->generarFolioServicio(),
-                'fecha'           => now(),
-                'id_usuario'      => $idUsuario,
-                'id_departamento' => $idDepartamento,
-                'tipo_formato'    => $ticket->tipo_formato,
-            ]);
+            // Crear servicio vía ServicioService (folio institucional)
+            $idServicio = $this->servicios->obtenerOCrearServicio(
+                null,
+                $ticket->tipo_formato,
+                $idDepartamento ? (int) $idDepartamento : null
+            );
 
             $ticket->update([
-                'id_servicio' => $servicio->id_servicio,
+                'id_servicio' => $idServicio,
                 'estado'      => 'en_proceso',
             ]);
 
-            return $servicio;
+            return Servicio::findOrFail($idServicio);
         });
-    }
-
-    private function generarFolioServicio(): string
-    {
-        $rand = strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
-        return 'SRV-' . now()->format('Ymd') . '-' . $rand;
     }
 
     public function queryPoolParaUsuarios()
@@ -245,6 +241,8 @@ class TicketService
                 'tipo_formato' => $data['tipo_formato'] ?? $ticket->tipo_formato,
                 'estado'       => $data['estado']       ?? $ticket->estado,
                 'asignado_a'   => array_key_exists('asignado_a', $data) ? $data['asignado_a'] : $ticket->asignado_a,
+                'id_departamento' => $data['id_departamento'] ?? $ticket->id_departamento,
+
             ]);
             $ticket->save();
             return $ticket;
@@ -272,31 +270,6 @@ class TicketService
         });
     }
 
-    public function notificarTicketCreado(Ticket $ticket): void
-    {
-        $emails = Cuenta::query()
-            ->whereIn('id_rol', [1,2])
-            ->whereHas('usuario', fn($q) => $q->whereNotNull('email')->where('email','!=',''))
-            ->with('usuario:id_usuario,email')
-            ->get()
-            ->pluck('usuario.email')
-            ->unique()
-            ->values()
-            ->all();
-
-        if (empty($emails)) return;
-
-        $to = array_shift($emails); // primer correo
-        $m = Mail::to($to);
-
-        if (!empty($emails)) {
-            $m->bcc($emails);
-        }
-
-        $m->send(new \App\Mail\TicketCreadoMail($ticket));
-    }
-
-
     public function actualizarComoDepto(Cuenta $actor, Ticket $ticket, array $data): Ticket
     {
         if ((int) $ticket->creado_por !== (int) $actor->id_cuenta) {
@@ -318,6 +291,29 @@ class TicketService
         });
     }
 
+    public function notificarTicketCreado(Ticket $ticket): void
+    {
+        $emails = Cuenta::query()
+            ->whereIn('id_rol', [1, 2])
+            ->whereHas('usuario', fn($q) => $q->whereNotNull('email')->where('email', '!=', ''))
+            ->with('usuario:id_usuario,email')
+            ->get()
+            ->pluck('usuario.email')
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($emails)) return;
+
+        $to = array_shift($emails);
+        $m = Mail::to($to);
+
+        if (!empty($emails)) {
+            $m->bcc($emails);
+        }
+
+        $m->send(new TicketCreadoMail($ticket));
+    }
 
     private function notificarTicketAsignado(Ticket $ticket): void
     {

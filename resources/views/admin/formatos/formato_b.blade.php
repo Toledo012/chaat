@@ -39,8 +39,8 @@
                             <option value="Impresora">Impresora</option>
                             <option value="otro">Otro…</option>
                         </select>
-                        
-                        <input type="text" name="subtipo_otro" id="inputSubtipoOtro" 
+
+                        <input type="text" name="subtipo_otro" id="inputSubtipoOtro"
                                class="form-control mt-2" placeholder="Especifique el subtipo" style="display: none;">
                     </div>
 
@@ -48,12 +48,19 @@
                         <label class="form-label">Departamento <span class="text-danger">*</span></label>
                         <select name="id_departamento" class="form-select @error('id_departamento') is-invalid @enderror" required>
                             <option value="">Selecciona un departamento</option>
-                            @foreach($departamentos as $dep)
-                                <option value="{{ $dep->id_departamento }}">{{ $dep->nombre }}</option>
+
+                            {{-- Usamos sortBy con banderas para que ignore mayúsculas/minúsculas --}}
+                            @foreach($departamentos->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE) as $dep)
+                                <option value="{{ $dep->id_departamento }}" {{ old('id_departamento') == $dep->id_departamento ? 'selected' : '' }}>
+                                    {{ $dep->nombre }}
+                                </option>
                             @endforeach
+
                         </select>
+                        @error('id_departamento')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
-                </div>
 
                 <hr>
                 <h6 class="text-primary mb-3"><i class="fas fa-info-circle me-1"></i> Información del Equipo</h6>
@@ -167,7 +174,7 @@
                         <textarea name="conclusion_servicio" class="form-control" rows="2" required></textarea>
                     </div>
                 </div>
-                
+
                 <div class="mb-3">
                     <label class="form-label">Trabajo Específico Realizado <span class="text-danger">*</span></label>
                     <textarea name="detalle_realizado" class="form-control" rows="3" required></textarea>

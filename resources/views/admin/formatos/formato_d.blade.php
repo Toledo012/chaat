@@ -26,6 +26,24 @@
     <form method="POST" action="{{ route('admin.formatos.d.store') }}">
       @csrf
 
+
+        <div class="col-md-6">
+            <label class="form-label">Departamento <span class="text-danger">*</span></label>
+            <select name="id_departamento" class="form-select @error('id_departamento') is-invalid @enderror" required>
+                <option value="">Selecciona un departamento</option>
+
+                {{-- Usamos sortBy con banderas para que ignore mayúsculas/minúsculas --}}
+                @foreach($departamentos->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE) as $dep)
+                    <option value="{{ $dep->id_departamento }}" {{ old('id_departamento') == $dep->id_departamento ? 'selected' : '' }}>
+                        {{ $dep->nombre }}
+                    </option>
+                @endforeach
+
+            </select>
+            @error('id_departamento')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
       @if(!empty($id_servicio)) <input type="hidden" name="id_servicio" value="{{ $id_servicio }}"> @endif
       @if(!empty($id_ticket)) <input type="hidden" name="id_ticket" value="{{ $id_ticket }}"> @endif
 

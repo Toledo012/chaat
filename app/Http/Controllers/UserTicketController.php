@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Models\Departamento;
 use App\Services\TicketService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+
 
 class UserTicketController extends Controller
 {
@@ -14,6 +16,10 @@ class UserTicketController extends Controller
     public function index()
     {
         $cuentaId = auth()->user()->id_cuenta;
+
+        $departamentos = Departamento::orderBy('nombre')->get();
+
+
 
         $disponibles = Ticket::with('creadoPor.usuario')
             ->whereNull('asignado_a')
@@ -26,7 +32,7 @@ class UserTicketController extends Controller
             ->orderByDesc('id_ticket')
             ->get();
 
-        return view('user.tickets.index', compact('disponibles', 'misTickets'));
+        return view('user.tickets.index', compact('disponibles', 'misTickets', 'departamentos'));
     }
 
     public function tomar(Ticket $ticket)
@@ -43,6 +49,7 @@ class UserTicketController extends Controller
             'solicitante'  => 'required|string|max:100',
             'descripcion'  => 'nullable|string',
             'tipo_formato' => 'required|in:a,b,c,d',
+            'id_departamento' => 'required|integer|exists:departamentos,id_departamento',
         ]);
 
         $cuenta = auth()->user();
@@ -63,6 +70,7 @@ class UserTicketController extends Controller
                 'asignado_a'   => null,
                 'asignado_por' => null,
                 'id_servicio'  => null,
+                'id_departamento' => $data['id_departamento'],
             ]);
 
             //  Mail centralizado en el Service
@@ -108,6 +116,7 @@ class UserTicketController extends Controller
             'solicitante'  => 'required|string|max:150',
             'descripcion'  => 'nullable|string|max:200',
             'tipo_formato' => 'required|in:a,b,c,d',
+            'id_departamento' => 'required|integer|exists:departamentos,id_departamento',
         ]);
 
         $this->tickets->actualizarComoPropietario(auth()->user(), $ticket, $data);

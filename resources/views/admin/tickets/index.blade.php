@@ -5,72 +5,72 @@
 @section('header_subtitle', 'Solicitudes de departamentos y usuarios, asignación y seguimiento')
 
 @section('content')
-<div class="container-fluid">
+    <div class="container-fluid">
 
-    <div class="d-flex align-items-center gap-2 mb-4">
-        <i class="fas fa-ticket-alt text-primary fa-2x"></i>
-        <div>
-            <h4 class="mb-0 fw-bold">Tickets</h4>
-            <p class="text-muted mb-0 small">Bandeja principal del Admin</p>
+        <div class="d-flex align-items-center gap-2 mb-4">
+            <i class="fas fa-ticket-alt text-primary fa-2x"></i>
+            <div>
+                <h4 class="mb-0 fw-bold">Tickets</h4>
+                <p class="text-muted mb-0 small">Bandeja principal del Admin</p>
+            </div>
         </div>
-    </div>
 
-    {{-- FILTROS  --}}
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body p-3">
-            <form method="GET" class="row g-2 align-items-center">
-                <div class="col-md-3">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
-                        <input type="text" name="buscar" class="form-control border-start-0" 
-                               placeholder="Folio o título..." value="{{ $qBuscar ?? '' }}">
+        {{-- FILTROS  --}}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-3">
+                <form method="GET" class="row g-2 align-items-center">
+                    <div class="col-md-3">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                            <input type="text" name="buscar" class="form-control border-start-0"
+                                   placeholder="Folio o título..." value="{{ $qBuscar ?? '' }}">
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-2 text-center">
-                    <select name="estado" class="form-select form-select-sm">
-                        <option value="">Estado (todos)</option>
-                        @foreach(['nuevo','asignado','en_proceso','en_espera','completado','cancelado'] as $st)
-                            <option value="{{ $st }}" @selected(($qEstado ?? '') === $st)>{{ ucfirst(str_replace('_',' ',$st)) }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2 text-center">
-                    <select name="tipo_formato" class="form-select form-select-sm">
-                        <option value="">Formato (todos)</option>
-                        @foreach(['a'=>'A','b'=>'B','c'=>'C','d'=>'D'] as $k=>$v)
-                            <option value="{{ $k }}" @selected(($qTipo ?? '') === $k)>{{ $v }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2 text-center">
-                    <select name="prioridad" class="form-select form-select-sm">
-                        <option value="">Prioridad (todas)</option>
-                        @foreach(['baja'=>'Baja','media'=>'Media','alta'=>'Alta'] as $k=>$v)
-                            <option value="{{ $k }}" @selected(($qPrioridad ?? '') === $k)>{{ $v }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3 d-flex gap-2">
-                    <button class="btn btn-sm btn-primary flex-fill">
-                        <i class="fas fa-filter me-1"></i> Filtrar
-                    </button>
-                    <a href="{{ route('admin.tickets.index') }}" class="btn btn-sm btn-outline-secondary flex-fill">
-                        Limpiar
-                    </a>
-                    <button type="button" class="btn btn-sm btn-success px-3 d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalCrearTicket">
-                        <i class="fas fa-plus"></i> <span>Crear Ticket</span>
-                    </button>
-                </div>
-            </form>
+                    <div class="col-md-2 text-center">
+                        <select name="estado" class="form-select form-select-sm">
+                            <option value="">Estado (todos)</option>
+                            @foreach(['nuevo','asignado','en_proceso','en_espera','completado','cancelado'] as $st)
+                                <option value="{{ $st }}" @selected(($qEstado ?? '') === $st)>{{ ucfirst(str_replace('_',' ',$st)) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <select name="tipo_formato" class="form-select form-select-sm">
+                            <option value="">Formato (todos)</option>
+                            @foreach(['a'=>'A','b'=>'B','c'=>'C','d'=>'D'] as $k=>$v)
+                                <option value="{{ $k }}" @selected(($qTipo ?? '') === $k)>{{ $v }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <select name="prioridad" class="form-select form-select-sm">
+                            <option value="">Prioridad (todas)</option>
+                            @foreach(['baja'=>'Baja','media'=>'Media','alta'=>'Alta'] as $k=>$v)
+                                <option value="{{ $k }}" @selected(($qPrioridad ?? '') === $k)>{{ $v }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button class="btn btn-sm btn-primary flex-fill">
+                            <i class="fas fa-filter me-1"></i> Filtrar
+                        </button>
+                        <a href="{{ route('admin.tickets.index') }}" class="btn btn-sm btn-outline-secondary flex-fill">
+                            Limpiar
+                        </a>
+                        <button type="button" class="btn btn-sm btn-success px-3 d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalCrearTicket">
+                            <i class="fas fa-plus"></i> <span>Crear Ticket</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
 
-    {{-- BANDEJA DE TICKETS --}}
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light small text-uppercase text-muted">
+        {{-- BANDEJA DE TICKETS --}}
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light small text-uppercase text-muted">
                         <tr>
                             <th class="ps-4">Folio</th>
                             <th>Ticket / Registro</th>
@@ -80,8 +80,8 @@
                             <th>Responsable</th>
                             <th class="text-end pe-4">Acciones</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                        </thead>
+                        <tbody>
                         @forelse($tickets as $t)
                             <tr>
                                 <td class="ps-4 fw-bold text-primary">#{{ $t->folio }}</td>
@@ -173,7 +173,7 @@
 
                                             <hr class="my-4">
 
-                                            {{-- BLOQUE DE ASIGNACIÓN (INDEPENDIENTE) --}}
+                                            {{-- BLOQUE DE ASIGNACIÓN --}}
                                             <form method="POST" action="{{ route('admin.tickets.asignar', $t->id_ticket) }}" class="mb-4">
                                                 @csrf
                                                 <label class="form-label small fw-bold text-uppercase text-muted">Asignar Responsable</label>
@@ -191,22 +191,21 @@
                                             </form>
 
                                             <div class="d-grid gap-2">
-                                                {{-- BOTÓN EDITAR INFO (NUEVO) --}}
-                                                <button class="btn btn-warning py-2 shadow-sm fw-bold mb-1" 
+                                                <button class="btn btn-warning py-2 shadow-sm fw-bold mb-1"
                                                         data-bs-toggle="modal" data-bs-target="#modalEditarInfoAdmin{{ $t->id_ticket }}">
                                                     <i class="fas fa-edit me-1"></i> Editar Información del Ticket
                                                 </button>
 
-                                                <a href="{{ route('admin.tickets.completar', $t->id_ticket) }}" 
+                                                <a href="{{ route('admin.tickets.completar', $t->id_ticket) }}"
                                                    class="btn btn-success py-2 shadow-sm fw-bold @if(in_array($t->estado, ['cancelado','completado'])) disabled @endif">
                                                     <i class="fas fa-check-circle me-1"></i> Completar Ticket
                                                 </a>
 
                                                 <form method="POST" action="{{ route('admin.tickets.cancelar', $t->id_ticket) }}">
                                                     @csrf
-                                                    <button class="btn btn-outline-danger btn-sm w-100 fw-bold border-2" 
+                                                    <button class="btn btn-outline-danger btn-sm w-100 fw-bold border-2"
                                                             onclick="return confirm('¿Confirmar cancelación definitiva?')"
-                                                            @disabled(in_array($t->estado, ['completado','cancelado']))>
+                                                        @disabled(in_array($t->estado, ['completado','cancelado']))>
                                                         <i class="fas fa-ban me-1"></i> Cancelar Solicitud
                                                     </button>
                                                 </form>
@@ -235,7 +234,7 @@
                                 </div>
                             </div>
 
-                            {{-- MODAL EDITAR INFORMACIÓN (EXCLUSIVO ADMIN) --}}
+                            {{-- MODAL EDITAR INFORMACIÓN (ADMIN) --}}
                             <div class="modal fade" id="modalEditarInfoAdmin{{ $t->id_ticket }}" tabindex="-1" aria-hidden="true">
                                 <div class="modal-dialog modal-lg modal-dialog-centered">
                                     <div class="modal-content border-0 shadow-lg">
@@ -251,11 +250,26 @@
                                                         <label class="form-label small fw-bold text-muted text-uppercase">Título del Asunto *</label>
                                                         <input type="text" name="titulo" class="form-control shadow-sm" required maxlength="255" value="{{ $t->titulo }}">
                                                     </div>
+
                                                     <div class="col-md-4">
                                                         <label class="form-label small fw-bold text-muted text-uppercase">Solicitante *</label>
                                                         <input type="text" name="solicitante" class="form-control shadow-sm" required maxlength="150" value="{{ $t->solicitante }}">
                                                     </div>
-                                                    <div class="col-md-4">
+
+                                                    {{-- Departamento en EDIT --}}
+                                                    <div class="col-md-6">
+                                                        <label class="form-label small fw-bold text-muted text-uppercase">Departamento *</label>
+                                                        <select name="id_departamento" class="form-select shadow-sm" required>
+                                                            <option value="">Selecciona un departamento</option>
+                                                            @foreach($departamentos as $d)
+                                                                <option value="{{ $d->id_departamento }}" @selected($t->id_departamento == $d->id_departamento)>
+                                                                    {{ $d->nombre }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="col-md-3">
                                                         <label class="form-label small fw-bold text-muted text-uppercase">Prioridad</label>
                                                         <select name="prioridad" class="form-select shadow-sm" required>
                                                             <option value="baja" @selected($t->prioridad === 'baja')>🟢 Baja</option>
@@ -263,7 +277,8 @@
                                                             <option value="alta" @selected($t->prioridad === 'alta')>🔴 Alta</option>
                                                         </select>
                                                     </div>
-                                                    <div class="col-md-4">
+
+                                                    <div class="col-md-3">
                                                         <label class="form-label small fw-bold text-muted text-uppercase">Formato</label>
                                                         <select name="tipo_formato" class="form-select shadow-sm" required>
                                                             <option value="a" @selected($t->tipo_formato === 'a')>Formato A</option>
@@ -272,6 +287,7 @@
                                                             <option value="d" @selected($t->tipo_formato === 'd')>Formato D</option>
                                                         </select>
                                                     </div>
+
                                                     <div class="col-md-4">
                                                         <label class="form-label small fw-bold text-muted text-uppercase">Estado del Ticket</label>
                                                         <select name="estado" class="form-select shadow-sm" required>
@@ -280,9 +296,9 @@
                                                             @endforeach
                                                         </select>
                                                     </div>
-                                                    {{-- Mantenemos el asignado_a oculto o visible aquí también si quieres editarlo desde este form --}}
+
                                                     <input type="hidden" name="asignado_a" value="{{ $t->id_asignado }}">
-                                                    
+
                                                     <div class="col-12">
                                                         <label class="form-label small fw-bold text-muted text-uppercase">Descripción Detallada</label>
                                                         <textarea name="descripcion" class="form-control shadow-sm" rows="4">{{ $t->descripcion }}</textarea>
@@ -290,8 +306,12 @@
                                                 </div>
                                             </div>
                                             <div class="modal-footer bg-light border-0">
-                                                <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalDetalle{{ $t->id_ticket }}">Volver</button>
-                                                <button type="submit" class="btn btn-warning btn-sm fw-bold px-4 rounded-pill shadow-sm">Guardar Cambios</button>
+                                                <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">
+                                                    Cerrar
+                                                </button>
+                                                <button type="submit" class="btn btn-warning btn-sm fw-bold px-4 rounded-pill shadow-sm">
+                                                    Guardar Cambios
+                                                </button>
                                             </div>
                                         </form>
                                     </div>
@@ -305,76 +325,206 @@
                                 </td>
                             </tr>
                         @endforelse
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-        @if($tickets->hasPages())
-            <div class="card-footer bg-white py-3 border-top-0 d-flex justify-content-center">
-                {!! $tickets->appends(request()->query())->links('pagination::bootstrap-5') !!}
-            </div>
-        @endif
-    </div>
-</div>
 
-{{-- MODAL CREAR TICKET --}}
-<div class="modal fade" id="modalCrearTicket" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered shadow">
-        <div class="modal-content border-0">
-            <div class="modal-header bg-success text-white border-0">
-                <h5 class="modal-title fw-bold"><i class="fas fa-plus-circle me-2 text-white"></i>Registrar Nuevo Ticket</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="POST" action="{{ route('admin.tickets.store') }}">
-                @csrf
-                <div class="modal-body p-4">
-                    <div class="row g-3">
-                        <div class="col-md-8">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Título del Asunto *</label>
-                            <input type="text" name="titulo" class="form-control shadow-sm" required value="{{ old('titulo') }}">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Solicitante *</label>
-                            <input type="text" name="solicitante" class="form-control shadow-sm" required value="{{ old('solicitante') }}">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Prioridad Inicial</label>
-                            <select name="prioridad" class="form-select shadow-sm" required>
-                                <option value="baja" @selected(old('prioridad')==='baja')>🟢 Baja</option>
-                                <option value="media" @selected(old('prioridad')==='media')>🟡 Media</option>
-                                <option value="alta" @selected(old('prioridad')==='alta')>🔴 Alta</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Formato Requerido</label>
-                            <select name="tipo_formato" class="form-select shadow-sm" required>
-                                <option value="a">Formato A</option>
-                                <option value="b">Formato B</option>
-                                <option value="c">Formato C</option>
-                                <option value="d">Formato D</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Descripción de la Falla / Requerimiento</label>
-                            <textarea name="descripcion" class="form-control shadow-sm" rows="4">{{ old('descripcion') }}</textarea>
+            @if($tickets->hasPages())
+                <div class="card-footer bg-white py-3 border-top-0 d-flex justify-content-center">
+                    {!! $tickets->appends(request()->query())->links('pagination::bootstrap-5') !!}
+                </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- MODAL CREAR TICKET --}}
+    <div class="modal fade" id="modalCrearTicket" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered shadow">
+            <div class="modal-content border-0">
+                <div class="modal-header bg-success text-white border-0">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-plus-circle me-2 text-white"></i>Registrar Nuevo Ticket</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <form method="POST" action="{{ route('admin.tickets.store') }}">
+                    @csrf
+                    <div class="modal-body p-4">
+                        <div class="row g-3">
+
+                            <div class="col-md-8">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Título del Asunto *</label>
+                                <input type="text" name="titulo" class="form-control shadow-sm" required value="{{ old('titulo') }}">
+                            </div>
+
+                            {{--  Departamento en CREATE + botón Nuevo --}}
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Departamento *</label>
+                                <div class="input-group">
+                                    <select id="selectDepartamento" name="id_departamento" class="form-select shadow-sm" required>
+                                        <option value="">Selecciona un departamento</option>
+                                        @foreach($departamentos as $d)
+                                            <option value="{{ $d->id_departamento }}" @selected(old('id_departamento') == $d->id_departamento)>
+                                                {{ $d->nombre }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+
+                                    <button type="button" class="btn btn-outline-light fw-bold"
+                                            style="border-color:#fff; color:#fff; background:#2c7a70"
+                                            data-bs-toggle="modal" data-bs-target="#modalCrearDepartamento">
+                                        <i class="fas fa-plus me-1"></i> Nuevo
+                                    </button>
+                                </div>
+                                <small class="text-muted d-block mt-1">Si no existe, crea uno aquí mismo.</small>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Solicitante *</label>
+                                <input type="text" name="solicitante" class="form-control shadow-sm" required value="{{ old('solicitante') }}">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Prioridad Inicial</label>
+                                <select name="prioridad" class="form-select shadow-sm" required>
+                                    <option value="baja" @selected(old('prioridad')==='baja')>🟢 Baja</option>
+                                    <option value="media" @selected(old('prioridad','media')==='media')>🟡 Media</option>
+                                    <option value="alta" @selected(old('prioridad')==='alta')>🔴 Alta</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Formato Requerido</label>
+                                <select name="tipo_formato" class="form-select shadow-sm" required>
+                                    <option value="a" @selected(old('tipo_formato')==='a')>Formato A</option>
+                                    <option value="b" @selected(old('tipo_formato')==='b')>Formato B</option>
+                                    <option value="c" @selected(old('tipo_formato')==='c')>Formato C</option>
+                                    <option value="d" @selected(old('tipo_formato')==='d')>Formato D</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Descripción de la Falla / Requerimiento</label>
+                                <textarea name="descripcion" class="form-control shadow-sm" rows="4">{{ old('descripcion') }}</textarea>
+                            </div>
+
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer bg-light border-0 text-center">
-                    <button type="submit" class="btn btn-success btn-sm fw-bold px-5 rounded-pill shadow-sm mx-auto">Guardar Ticket</button>
-                </div>
-            </form>
+
+                    <div class="modal-footer bg-light border-0 text-center">
+                        <button type="submit" class="btn btn-success btn-sm fw-bold px-5 rounded-pill shadow-sm mx-auto">Guardar Ticket</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
-@if($errors->any())
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const modal = new bootstrap.Modal(document.getElementById('modalCrearTicket'));
-        modal.show();
-    });
-</script>
-@endif
+    {{-- MODAL CREAR DEPARTAMENTO (solo 1 vez) --}}
+    <div class="modal fade" id="modalCrearDepartamento" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-md modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-success text-white border-0">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fas fa-building me-2"></i> Registrar Departamento
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <form id="formCrearDepartamento">
+                    @csrf
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Nombre *</label>
+                            <input type="text" name="nombre" class="form-control shadow-sm" required maxlength="50">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Descripción</label>
+                            <textarea name="descripcion" class="form-control shadow-sm" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" id="activoDepto" name="activo" checked>
+                            <label class="form-check-label" for="activoDepto">Activo</label>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer bg-light border-0">
+                        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success btn-sm fw-bold px-4 rounded-pill shadow-sm">
+                            Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- Abrir modal crear ticket si hay errores --}}
+    @if($errors->any())
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const modal = new bootstrap.Modal(document.getElementById('modalCrearTicket'));
+                modal.show();
+            });
+        </script>
+    @endif
+
+    {{-- JS: crear departamento meterlo al select --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('formCrearDepartamento');
+            if (!form) return;
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const btn = form.querySelector('button[type="submit"]');
+                btn.disabled = true;
+
+                try {
+                    const fd = new FormData(form);
+
+                    const res = await fetch("{{ route('admin.departamentos.quickStore') }}", {
+                        method: "POST",
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest",
+                            "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                            "Accept": "application/json"
+                        },
+                        body: fd
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        alert(data?.message || 'Error al crear departamento');
+                        return;
+                    }
+
+                    const sel = document.getElementById('selectDepartamento');
+                    const opt = document.createElement('option');
+                    opt.value = data.id_departamento;
+                    opt.textContent = data.nombre;
+                    opt.selected = true;
+                    sel.appendChild(opt);
+
+                    const modalEl = document.getElementById('modalCrearDepartamento');
+                    bootstrap.Modal.getInstance(modalEl)?.hide();
+
+                    form.reset();
+                    document.getElementById('activoDepto').checked = true;
+
+                } catch (err) {
+                    console.error(err);
+                    alert('No se pudo crear el departamento.');
+                } finally {
+                    btn.disabled = false;
+                }
+            });
+        });
+    </script>
 
 @endsection

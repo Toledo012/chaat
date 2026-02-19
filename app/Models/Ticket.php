@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Ticket extends Model
 {
@@ -21,6 +22,7 @@ class Ticket extends Model
         'asignado_a',
         'asignado_por',
         'id_servicio',
+        'id_departamento'
     ];
 
     // Relaciones
@@ -49,4 +51,10 @@ public function asignadoPor()
     {
         return $this->belongsTo(Servicio::class, 'id_servicio', 'id_servicio');
     }
+
+    public function departamento (){
+    return $this->belongsTo(Departamento::class, 'id_departamento', 'id_departamento');
+}
+
+
 }

@@ -54,7 +54,10 @@ class DeptTicketController extends Controller
             'tipo_formato'=> 'nullable|in:a,b,c,d',
         ]);
 
-        $ticket = DB::transaction(function () use ($data) {
+        $idUsuario = auth()->id();
+        $idDepartamento = DB::table('usuarios')->where('id_usuario', $idUsuario)->value('id_departamento');
+
+        $ticket = DB::transaction(function () use ($data, $idDepartamento) {
 
             $folio = 'TCK-' . now()->format('YmdHis');
 
@@ -72,6 +75,8 @@ class DeptTicketController extends Controller
                 'asignado_a'   => null,
                 'asignado_por' => null,
                 'id_servicio'  => null,
+
+                'id_departamento' => $idDepartamento,
             ]);
 
             $this->tickets->notificarTicketCreado($ticket);

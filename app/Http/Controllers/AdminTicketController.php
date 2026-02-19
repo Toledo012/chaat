@@ -5,12 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Cuenta;
 use App\Models\Ticket;
 use App\Services\TicketService;
+use App\Services\ServicioService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AdminTicketController extends Controller
 {
-    public function __construct(private TicketService $tickets) {}
+    public function __construct(
+        private TicketService $tickets,
+        private ServicioService $servicios
+    ) {}
 
     public function index(Request $request)
     {
@@ -19,24 +23,22 @@ class AdminTicketController extends Controller
         $qPrioridad = $request->get('prioridad');
         $qBuscar    = $request->get('buscar');
 
+
         $query = Ticket::with(['asignadoA', 'creadoPor'])
             ->orderByDesc('id_ticket');
 
-        if ($qEstado) {
-            $query->where('estado', $qEstado);
-        }
-        if ($qTipo) {
-            $query->where('tipo_formato', $qTipo);
-        }
-        if ($qPrioridad) {
-            $query->where('prioridad', $qPrioridad);
-        }
+        if ($qEstado) $query->where('estado', $qEstado);
+        if ($qTipo) $query->where('tipo_formato', $qTipo);
+        if ($qPrioridad) $query->where('prioridad', $qPrioridad);
+
         if ($qBuscar) {
             $query->where(function ($qq) use ($qBuscar) {
                 $qq->where('folio', 'like', "%{$qBuscar}%")
                     ->orWhere('titulo', 'like', "%{$qBuscar}%");
             });
         }
+
+        $departamentos = \App\Models\Departamento::orderBy('nombre')->get();
 
         $tickets = $query->paginate(12)->withQueryString();
 
@@ -50,7 +52,9 @@ class AdminTicketController extends Controller
             'qEstado',
             'qTipo',
             'qPrioridad',
+            'departamentos',
             'qBuscar'
+
         ));
     }
 
@@ -80,6 +84,7 @@ class AdminTicketController extends Controller
             'descripcion'  => 'nullable|string',
             'prioridad'    => 'required|in:baja,media,alta',
             'tipo_formato' => 'required|in:a,b,c,d',
+            'id_departamento' => 'required|integer|exists:departamentos,id_departamento',
         ]);
 
         $cuenta = auth()->user();
@@ -100,9 +105,9 @@ class AdminTicketController extends Controller
                 'asignado_a'   => null,
                 'asignado_por' => null,
                 'id_servicio'  => null,
+                'id_departamento' => $data['id_departamento'],
             ]);
 
-            // Mail centralizado en el Service
             $this->tickets->notificarTicketCreado($ticket);
 
             return $ticket;
@@ -117,33 +122,28 @@ class AdminTicketController extends Controller
             return back()->with('error', 'Este ticket no puede completarse.');
         }
 
-        // Admin: mantiene tu flujo actual (crear servicio si no existe)
         if (!$ticket->id_servicio) {
             DB::transaction(function () use ($ticket) {
 
-                $tipo = strtoupper($ticket->tipo_formato);
-                $folio = $this->tickets->generarFolioGlobal($tipo);
+                // se jala el id_departamento relacionado a la cuenta .
 
-                $idServicio = DB::table('servicios')->insertGetId([
-                    'folio'           => $folio,
-                    'fecha'           => now()->format('Y-m-d'),
-                    'id_usuario'      => auth()->user()->id_usuario,
-                    'id_departamento' => null,
-                    'tipo_formato'    => $tipo,
-                    'created_at'      => now(),
-                    'updated_at'      => now(),
+                $idDepartamento = auth()->user()->id_departamento ?? null;
+
+                $idServicio = $this->servicios->obtenerOCrearServicio(
+                    null,
+                    $ticket->tipo_formato,
+                    $idDepartamento
+                );
+
+                $ticket->update([
+                    'id_servicio' => $idServicio,
+                    'estado'      => 'en_proceso',
+                    'updated_at'  => now(),
+
                 ]);
-
-                DB::table('tickets')
-                    ->where('id_ticket', $ticket->id_ticket)
-                    ->update([
-                        'id_servicio' => $idServicio,
-                        'estado'      => 'en_proceso',
-                        'updated_at'  => now(),
-                    ]);
-
-                $ticket->id_servicio = $idServicio;
             });
+
+            $ticket->refresh();
         }
 
         $map = [
@@ -174,6 +174,7 @@ class AdminTicketController extends Controller
             'tipo_formato' => 'required|in:a,b,c,d',
             'estado'       => 'required|in:nuevo,asignado,en_proceso,en_espera,completado,cancelado',
             'asignado_a'   => 'nullable|integer|exists:cuentas,id_cuenta',
+            'id_departamento' => 'required|integer|exists:departamentos,id_departamento',
         ]);
 
         $this->tickets->actualizarComoAdmin(auth()->user(), $ticket, $data);
@@ -181,3 +182,4 @@ class AdminTicketController extends Controller
         return redirect()->route('admin.tickets.index')->with('success', 'Ticket actualizado');
     }
 }
+

@@ -39,14 +39,22 @@
                     </select>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label class="form-label">Departamento <span class="text-danger">*</span></label>
                     <select name="id_departamento" class="form-select @error('id_departamento') is-invalid @enderror" required>
                         <option value="">Selecciona un departamento</option>
-                        @foreach($departamentos as $dep)
-                            <option value="{{ $dep->id_departamento }}">{{ $dep->nombre }}</option>
+
+                        {{-- Usamos sortBy con banderas para que ignore mayúsculas/minúsculas --}}
+                        @foreach($departamentos->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE) as $dep)
+                            <option value="{{ $dep->id_departamento }}" {{ old('id_departamento') == $dep->id_departamento ? 'selected' : '' }}>
+                                {{ $dep->nombre }}
+                            </option>
                         @endforeach
+
                     </select>
+                    @error('id_departamento')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="col-md-4">

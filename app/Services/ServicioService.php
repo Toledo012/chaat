@@ -10,44 +10,50 @@ use Illuminate\Support\Facades\Mail;
 
 class ServicioService
 {
-    public function obtenerOCrearServicio(?int $idServicio, string $tipoFormato, int $idDepartamento): int
+    /**
+     * Si viene $idServicio: solo actualiza quién edita/atiende y regresa ese id.
+     * Si NO viene: crea servicio nuevo con folio institucional global (SEMAHN-...).
+     */
+    public function obtenerOCrearServicio(?int $idServicio, string $tipoFormato, ?int $idDepartamento): int
     {
         return DB::transaction(function () use ($idServicio, $tipoFormato, $idDepartamento) {
 
-            // Si viene un id_servicio (caso ticket o edición), usarlo
-            if ($idServicio) {
+            $tipoFormato = strtoupper($tipoFormato);
 
-                // actualizar "quién está editando/completando"
+            // 1) Si ya existe servicio (ticket/edición), solo actualizar quién lo atiende
+            if ($idServicio) {
                 DB::table('servicios')
                     ->where('id_servicio', $idServicio)
                     ->update([
-                        'id_usuario' => Auth::user()->id_usuario, // cuenta -> usuario ligado
+                        'id_usuario' => Auth::user()->id_usuario,
                         'updated_at' => now(),
                     ]);
 
                 return (int) $idServicio;
             }
 
-            // Caso normal (sin ticket): crear nuevo servicio con folio institucional global
+            // 2) Crear nuevo servicio con folio institucional global
+            // IMPORTANTE: filtrar solo folios institucionales para no romper consecutivo
             $lastFolio = DB::table('servicios')
+                ->where('folio', 'like', 'SEMAHN-%')
                 ->orderByDesc('id_servicio')
                 ->lockForUpdate()
                 ->value('folio');
 
             $lastNum = 0;
-            if ($lastFolio && preg_match('/SEMAHN-[A-D]-(\d+)/', $lastFolio, $m)) {
+            if ($lastFolio && preg_match('/^SEMAHN-[A-D]-(\d+)$/', $lastFolio, $m)) {
                 $lastNum = (int) $m[1];
             }
 
             $nextNum = $lastNum + 1;
-            $folio = 'SEMAHN-' . strtoupper($tipoFormato) . '-' . str_pad((string) $nextNum, 5, '0', STR_PAD_LEFT);
+            $folio = 'SEMAHN-' . $tipoFormato . '-' . str_pad((string) $nextNum, 5, '0', STR_PAD_LEFT);
 
             return (int) DB::table('servicios')->insertGetId([
                 'folio'           => $folio,
                 'fecha'           => now()->format('Y-m-d'),
                 'id_usuario'      => Auth::user()->id_usuario,
-                'id_departamento' => $idDepartamento,
-                'tipo_formato'    => strtoupper($tipoFormato),
+                'id_departamento' => $idDepartamento, // puede ser null si tu flujo lo permite
+                'tipo_formato'    => $tipoFormato,
                 'created_at'      => now(),
                 'updated_at'      => now(),
             ]);
@@ -78,7 +84,6 @@ class ServicioService
     {
         DB::transaction(function () use ($idServicio) {
 
-            // Traer tickets ligados a este servicio (por si existiera más de uno)
             $tickets = Ticket::with(['creadoPor.usuario'])
                 ->where('id_servicio', $idServicio)
                 ->where('estado', '!=', 'completado')
@@ -88,7 +93,6 @@ class ServicioService
                 return;
             }
 
-            // Completar todos los que correspondan
             DB::table('tickets')
                 ->where('id_servicio', $idServicio)
                 ->where('estado', '!=', 'completado')
@@ -97,7 +101,6 @@ class ServicioService
                     'updated_at' => now(),
                 ]);
 
-            // Mandar correo a cada creador
             foreach ($tickets as $ticket) {
                 $this->notificarTicketCompletado($ticket);
             }
