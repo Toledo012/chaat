@@ -2,10 +2,10 @@
 :root {
     /* Paleta de Colores CLARO (Default) */
     --primary-color: #399e91; /* Azul primario limpio para acento (se mantiene) */
-    --secondary-color: #6c757d; 
-    --accent-color: #dc3545; 
-    --dark-color: #343a40; 
-    --light-color: #f8f9fa; 
+    --secondary-color: #6c757d;
+    --accent-color: #dc3545;
+    --dark-color: #343a40;
+    --light-color: #f8f9fa;
     --success-color: #28a745;
     --info-color: #17a2b8;
     --warning-color: #ffc107;
@@ -23,17 +23,17 @@
 
 /* Paleta de Colores OSCURO (Minimalista - Sin cambios) */
 .dark-mode {
-    --primary-color: #399e91; 
+    --primary-color: #399e91;
     --secondary-color: #adb5bd;
     --accent-color: #ff8a80;
-    --dark-color: #e9ecef; 
-    --light-color: #212529; 
+    --dark-color: #e9ecef;
+    --light-color: #212529;
     --success-color: #4CAF50;
     --info-color: #03A9F4;
     --warning-color: #FFEB3B;
     --danger-color: #F44336;
-    --bg-color: #1a1e24; 
-    --card-bg: #2b3038; 
+    --bg-color: #1a1e24;
+    --card-bg: #2b3038;
     --text-color: var(--dark-color);
     --shadow-light: 0 0.5rem 1rem rgba(0,0,0,0.3);
 
@@ -79,8 +79,8 @@ a, a:hover, a:focus {
     transition: all 0.3s ease;
     box-shadow: var(--shadow-light);
     z-index: 1000;
-    border-right: 1px solid #dee2e6; 
-    border-radius: 0; 
+    border-right: 1px solid #dee2e6;
+    border-radius: 0;
 }
 
 .dark-mode .sidebar {
@@ -92,11 +92,11 @@ a, a:hover, a:focus {
 
 /* ESTADO COLAPSADO - FUNCIONALIDAD DE ESCONDER/MOSTRAR */
 .sidebar.collapsed {
-    width: 80px; 
+    width: 80px;
 }
 
 .admin-header, main {
-    margin-left: 260px; 
+    margin-left: 260px;
     transition: all 0.3s ease;
 }
 
@@ -115,7 +115,7 @@ a, a:hover, a:focus {
     max-width: 140px;
     padding: 10px;
     background-color: white; /* Se mantiene blanco para que resalte en el gris */
-    box-shadow: none; 
+    box-shadow: none;
     border-radius: var(--border-radius);
     transition: all 0.3s ease;
     border: 1px solid var(--light-color);
@@ -137,8 +137,8 @@ a, a:hover, a:focus {
     max-width: 140px;
     padding: 10px;
     /* ESTO ES CRUCIAL: Forzamos el fondo blanco y un borde sutil para el logo */
-    background-color: white; 
-    box-shadow: none; 
+    background-color: white;
+    box-shadow: none;
     border-radius: var(--border-radius);
     transition: all 0.3s ease;
     border: 1px solid #dee2e6; /* Un borde claro que se ve bien en blanco */
@@ -161,10 +161,10 @@ a, a:hover, a:focus {
     padding: 8px;
 }
 .sidebar .logo img:hover {
-    transform: scale(1.05); 
+    transform: scale(1.05);
     /* Podemos mantener la sombra de hover, pero podría verse raro si el fondo del sidebar es oscuro */
     /* Para un aspecto más consistente en ambos modos, podrías quitar esta sombra también en modo oscuro */
-    box-shadow: var(--shadow-light); 
+    box-shadow: var(--shadow-light);
 }
 /* Navegación */
 .sidebar .nav-link {
@@ -212,7 +212,7 @@ a, a:hover, a:focus {
 }
 
 .sidebar .nav-link.active {
-    background: rgba(0, 123, 255, 0.1); 
+    background: rgba(0, 123, 255, 0.1);
     border-left: 4px solid var(--primary-color);
     color: var(--primary-color);
     font-weight: 600;
@@ -228,11 +228,11 @@ a, a:hover, a:focus {
     background: var(--header-bg-light);
     color: white; /* Texto blanco en fondo oscuro */
     padding: 1rem 2rem;
-    margin-left: 260px; 
+    margin-left: 260px;
     box-shadow: var(--shadow-light);
     position: relative;
     border-radius: 0 0 var(--border-radius) var(--border-radius);
-    border-bottom: 2px solid var(--accent-color); 
+    border-bottom: 2px solid var(--accent-color);
     transition: margin-left 0.3s ease, background 0.3s ease, color 0.3s ease;
 }
 
@@ -287,15 +287,15 @@ a, a:hover, a:focus {
 /* ====== CONTENIDO PRINCIPAL, TARJETAS, BOTONES, ALERTAS, RESPONSIVE, ANIMACIONES... ====== */
 /* ... (El resto del código CSS se mantiene igual) ... */
 main {
-    margin-left: 260px; 
+    margin-left: 260px;
     transition: all 0.4s ease;
     padding: 2rem;
 }
 /* ====== TARJETAS DE ESTADÍSTICAS MINIMALISTAS ====== */
 .stats-card {
-    border: 1px solid #dee2e6; 
+    border: 1px solid #dee2e6;
     border-radius: var(--border-radius);
-    box-shadow: none; 
+    box-shadow: none;
     background: var(--card-bg);
     transition: all 0.3s ease;
     overflow: hidden;
@@ -308,7 +308,7 @@ main {
     content: none;
 }
 .stats-card:hover {
-    transform: translateY(-4px); 
+    transform: translateY(-4px);
     box-shadow: var(--shadow-light);
 }
 .stats-icon {

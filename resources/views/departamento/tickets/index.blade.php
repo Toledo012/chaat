@@ -26,7 +26,7 @@
                 <div class="col-md-5">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
-                        <input type="text" name="buscar" class="form-control border-start-0" 
+                        <input type="text" name="buscar" class="form-control border-start-0"
                                placeholder="Buscar por folio, título o solicitante..." value="{{ $qBuscar ?? '' }}">
                     </div>
                 </div>
@@ -113,7 +113,7 @@
                                     @endif
                                 </td>
                                 <td class="text-end pe-4">
-                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold shadow-sm" 
+                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold shadow-sm"
                                             data-bs-toggle="modal" data-bs-target="#modalDetalle{{ $t->id_ticket }}">
                                         Gestionar <i class="fas fa-chevron-right ms-1"></i>
                                     </button>
@@ -151,7 +151,7 @@
                                             <div class="d-grid gap-2 border-top pt-4">
                                                 {{-- BOTÓN EDITAR (Solo si no está completado/cancelado) --}}
                                                 @if(!in_array($t->estado, ['completado','cancelado']))
-                                                    <button class="btn btn-warning py-2 fw-bold shadow-sm mb-2" 
+                                                    <button class="btn btn-warning py-2 fw-bold shadow-sm mb-2"
                                                             data-bs-toggle="modal" data-bs-target="#modalEditarTicket{{ $t->id_ticket }}">
                                                         <i class="fas fa-edit me-2"></i> Editar Información
                                                     </button>
@@ -161,8 +161,8 @@
                                                 @if($t->estado === 'completado' && !empty($t->id_servicio))
                                                     <p class="small fw-bold text-primary mb-2 text-uppercase text-center">Formato Finalizado</p>
                                                     <div class="d-flex gap-2 justify-content-center mb-3">
-                                
-                                                       
+
+
                                                         <a href="{{ route('admin.formatos.'.strtolower($t->tipo_formato).'.pdf', $t->id_servicio) }}" target="_blank" class="btn btn-sm btn-danger px-4 fw-bold shadow-sm">
                                                             <i class="fas fa-file-pdf me-1"></i> PDF
                                                         </a>
@@ -172,7 +172,7 @@
                                                 {{-- CANCELAR --}}
                                                 <form method="POST" action="{{ route('departamento.tickets.cancelar', $t->id_ticket) }}">
                                                     @csrf
-                                                    <button class="btn btn-outline-danger btn-sm w-100 fw-bold border-2" 
+                                                    <button class="btn btn-outline-danger btn-sm w-100 fw-bold border-2"
                                                             onclick="return confirm('¿Confirmar cancelación de la solicitud?')"
                                                             @disabled(in_array($t->estado, ['completado','cancelado']))>
                                                         <i class="fas fa-ban me-1"></i> Cancelar Solicitud

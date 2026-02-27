@@ -262,11 +262,11 @@ Route::prefix('user')
 
 
                     Route::get('/tickets/{ticket}/edit', [\App\Http\Controllers\UserTicketController::class, 'edit'])
-            ->middleware('perm:tickets.editar_propios')
+//            ->middleware('perm:tickets.editar_propios')
             ->name('tickets.edit');
 
         Route::put('/tickets/{ticket}', [\App\Http\Controllers\UserTicketController::class, 'update'])
-            ->middleware('perm:tickets.editar_propios')
+//            ->middleware('perm:tickets.editar_propios')
             ->name('tickets.update');
     });
 

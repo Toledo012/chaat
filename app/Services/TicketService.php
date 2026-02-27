@@ -5,8 +5,10 @@ namespace App\Services;
 use App\Mail\TicketAsignadoMail;
 use App\Mail\TicketCreadoMail;
 use App\Models\Cuenta;
+use App\Models\Departamento;
 use App\Models\Servicio;
 use App\Models\Ticket;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -17,25 +19,127 @@ class TicketService
         private ServicioService $servicios
     ) {}
 
-    public function crearComoDepartamento(Cuenta $cuenta, array $data): Ticket
+    /**
+     * Genera sigla de departamento para folio:
+     * - Si existe $departamento->clave, usa esa.
+     * - Si no, toma iniciales del nombre (ignorando conectores comunes).
+     */
+    private function generarSiglaDepartamento(int $idDepartamento): string
     {
-        if (!method_exists($cuenta, 'isDepartamento') || !$cuenta->isDepartamento()) {
-            throw new HttpException(403, 'Solo un Departamento puede crear tickets en este flujo.');
+        $dep = Departamento::find($idDepartamento);
+        if (!$dep) return 'DEP';
+
+        // Si tu tabla tiene columna "clave" (recomendado)
+        if (!empty($dep->clave)) {
+            $clave = strtoupper((string) $dep->clave);
+            $clave = preg_replace('/[^A-Z0-9]/', '', $clave);
+            return $clave !== '' ? $clave : 'DEP';
         }
 
-        return DB::transaction(function () use ($cuenta, $data) {
+        $nombre = trim((string) ($dep->nombre ?? ''));
+        if ($nombre === '') return 'DEP';
 
-            $ticket = Ticket::create([
-                'titulo'       => $data['titulo'],
-                'descripcion'  => $data['descripcion'] ?? null,
-                'prioridad'    => $data['prioridad'] ?? 'media',
-                'tipo_formato' => $data['tipo_formato'],
-                'estado'       => 'nuevo',
-                'creado_por'   => $cuenta->id_cuenta,
-                'asignado_a'   => null,
-                'asignado_por' => null,
-                'id_servicio'  => null,
-            ]);
+        $palabras = preg_split('/\s+/', $nombre);
+        $sigla = '';
+
+        foreach ($palabras as $p) {
+            $p = trim($p);
+            if ($p === '') continue;
+
+            $lower = mb_strtolower($p);
+            if (in_array($lower, ['de', 'del', 'la', 'el', 'y', 'en', 'para'], true)) continue;
+
+            $sigla .= mb_substr($p, 0, 1);
+        }
+
+        $sigla = strtoupper($sigla);
+        return $sigla !== '' ? $sigla : 'DEP';
+    }
+
+    /**
+     * Folio
+     * TCK-YYYYMMDD-DEPTO-01
+     * consecutivo por (fecha + depto)
+     *
+     */
+    private function generarFolio(string $tipoFormato, int $idDepartamento): string
+    {
+        $fecha = now()->format('Ymd');
+        $sigla = $this->generarSiglaDepartamento($idDepartamento);
+
+        $prefix = "TCK-{$fecha}-{$sigla}-";
+
+        // Buscar el último consecutivo de ese prefijo
+        $ultimo = Ticket::query()
+            ->where('folio', 'like', $prefix . '%')
+            ->orderByDesc('folio')
+            ->value('folio');
+
+        $next = 1;
+        if ($ultimo) {
+            // último "-NN" (2 dígitos). Si algún día quieres 3+ dígitos, te lo adapto.
+            $num = (int) substr($ultimo, -2);
+            $next = $num + 1;
+        }
+
+        return $prefix . str_pad((string) $next, 2, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Crea ticket y reintenta si el folio choca (por concurrencia).
+     */
+    private function crearTicketConFolioUnico(array $payload, string $tipoFormato, int $idDepartamento): Ticket
+    {
+        for ($i = 0; $i < 3; $i++) {
+            try {
+                return Ticket::create($payload);
+            } catch (QueryException $e) {
+                $msg = $e->getMessage();
+                $isUnique = str_contains($msg, 'Duplicate') || str_contains($msg, 'UNIQUE') || str_contains($msg, 'duplicate');
+
+                if (!$isUnique) {
+                    throw $e;
+                }
+
+                // regenerar folio y reintentar
+                $payload['folio'] = $this->generarFolio($tipoFormato, $idDepartamento);
+            }
+        }
+
+        throw new HttpException(500, 'No se pudo generar un folio único. Intenta nuevamente.');
+    }
+
+    // ==========================================================
+    // CREACIÓN CENTRALIZADA
+    // ==========================================================
+
+    public function crearComoAdmin(Cuenta $admin, array $data): Ticket
+    {
+        if (!method_exists($admin, 'isAdmin') || !$admin->isAdmin()) {
+            throw new HttpException(403, 'Solo Admin puede crear tickets en este flujo.');
+        }
+
+        $idDepartamento = (int) $data['id_departamento'];
+        $tipoFormato = $data['tipo_formato'];
+
+        return DB::transaction(function () use ($admin, $data, $idDepartamento, $tipoFormato) {
+
+            $folio = $this->generarFolio($tipoFormato, $idDepartamento);
+
+            $ticket = $this->crearTicketConFolioUnico([
+                'folio'           => $folio,
+                'titulo'          => $data['titulo'],
+                'solicitante'     => $data['solicitante'],
+                'descripcion'     => $data['descripcion'] ?? null,
+                'prioridad'       => $data['prioridad'],
+                'tipo_formato'    => $tipoFormato,
+                'estado'          => 'nuevo',
+                'creado_por'      => $admin->id_cuenta,
+                'asignado_a'      => null,
+                'asignado_por'    => null,
+                'id_servicio'     => null,
+                'id_departamento' => $idDepartamento,
+            ], $tipoFormato, $idDepartamento);
 
             $this->notificarTicketCreado($ticket);
 
@@ -49,27 +153,77 @@ class TicketService
             throw new HttpException(403, 'Solo un Usuario puede crear tickets en este flujo.');
         }
 
-        return DB::transaction(function () use ($cuenta, $data, $autoTomar) {
+        $idDepartamento = (int) $data['id_departamento'];
+        $tipoFormato = $data['tipo_formato'];
+
+        return DB::transaction(function () use ($cuenta, $data, $autoTomar, $idDepartamento, $tipoFormato) {
 
             $estado = $autoTomar ? 'asignado' : 'nuevo';
+            $folio  = $this->generarFolio($tipoFormato, $idDepartamento);
 
-            $ticket = Ticket::create([
-                'titulo'       => $data['titulo'],
-                'descripcion'  => $data['descripcion'] ?? null,
-                'prioridad'    => $data['prioridad'] ?? 'media',
-                'tipo_formato' => $data['tipo_formato'],
-                'estado'       => $estado,
-                'creado_por'   => $cuenta->id_cuenta,
-                'asignado_a'   => $autoTomar ? $cuenta->id_cuenta : null,
-                'asignado_por' => $autoTomar ? $cuenta->id_cuenta : null,
-                'id_servicio'  => null,
-            ]);
+            $ticket = $this->crearTicketConFolioUnico([
+                'folio'           => $folio,
+                'titulo'          => $data['titulo'],
+                'solicitante'     => $data['solicitante'],
+                'descripcion'     => $data['descripcion'] ?? null,
+                'prioridad'       => 'media',
+                'tipo_formato'    => $tipoFormato,
+                'estado'          => $estado,
+                'creado_por'      => $cuenta->id_cuenta,
+                'asignado_a'      => $autoTomar ? $cuenta->id_cuenta : null,
+                'asignado_por'    => $autoTomar ? $cuenta->id_cuenta : null,
+                'id_servicio'     => null,
+                'id_departamento' => $idDepartamento,
+            ], $tipoFormato, $idDepartamento);
 
             $this->notificarTicketCreado($ticket);
 
             return $ticket;
         });
     }
+
+    public function crearComoDepartamento(Cuenta $cuenta, array $data): Ticket
+    {
+        if (!method_exists($cuenta, 'isDepartamento') || !$cuenta->isDepartamento()) {
+            throw new HttpException(403, 'Solo un Departamento puede crear tickets en este flujo.');
+        }
+
+        //  depto amarrado al logueado, no al request
+        $idDepartamento = $cuenta->usuario->id_departamento ?? $cuenta->id_departamento ?? null;
+        if (!$idDepartamento) {
+            throw new HttpException(422, 'Tu cuenta no tiene departamento asignado.');
+        }
+
+        $tipoFormato = $data['tipo_formato'] ?? 'a';
+
+        return DB::transaction(function () use ($cuenta, $data, $idDepartamento, $tipoFormato) {
+
+            $folio = $this->generarFolio($tipoFormato, (int) $idDepartamento);
+
+            $ticket = $this->crearTicketConFolioUnico([
+                'folio'           => $folio,
+                'titulo'          => $data['titulo'],
+                'solicitante'     => $data['solicitante'],
+                'descripcion'     => $data['descripcion'] ?? null,
+                'prioridad'       => $data['prioridad'] ?? 'media',
+                'tipo_formato'    => $tipoFormato,
+                'estado'          => 'nuevo',
+                'creado_por'      => $cuenta->id_cuenta,
+                'asignado_a'      => null,
+                'asignado_por'    => null,
+                'id_servicio'     => null,
+                'id_departamento' => (int) $idDepartamento,
+            ], $tipoFormato, (int) $idDepartamento);
+
+            $this->notificarTicketCreado($ticket);
+
+            return $ticket;
+        });
+    }
+
+    // ==========================================================
+    // FLUJOS EXISTENTES (ASIGNAR / TOMAR / CANCELAR / SERVICIO)
+    // ==========================================================
 
     public function asignarComoAdmin(Cuenta $admin, Ticket $ticket, int $asignadoAIdCuenta): Ticket
     {
@@ -164,9 +318,8 @@ class TicketService
     }
 
     /**
-     * ESTE ERA EL BUG.
-     * Aquí antes se creaba servicio con SRV-random.
-     * Ahora siempre se crea vía ServicioService (folio institucional).
+     * Flujo correcto: crear servicio con folio institucional vía ServicioService
+
      */
     public function iniciarAtencionYCrearServicioSiFalta(Cuenta $tecnicoCuenta, Ticket $ticket): Servicio
     {
@@ -202,11 +355,14 @@ class TicketService
                 return Servicio::findOrFail($ticket->id_servicio);
             }
 
-            // Obtener departamento del técnico (si tu tabla usuarios lo maneja)
-            $idDepartamento = DB::table('usuarios')
-                ->where('id_usuario', $idUsuario)
-                ->value('id_departamento');
+            // Obtener departamento del TICKET, si no usa el del user
+            $idDepartamento = $ticket->id_departamento;
 
+            if (!$idDepartamento) {
+                $idDepartamento = DB::table('usuarios')
+                    ->where('id_usuario', $idUsuario)
+                    ->value('id_departamento');
+            }
             // Crear servicio vía ServicioService (folio institucional)
             $idServicio = $this->servicios->obtenerOCrearServicio(
                 null,
@@ -234,16 +390,16 @@ class TicketService
     {
         return DB::transaction(function () use ($ticket, $data) {
             $ticket->fill([
-                'titulo'       => $data['titulo']       ?? $ticket->titulo,
-                'solicitante'  => $data['solicitante']  ?? $ticket->solicitante,
-                'descripcion'  => $data['descripcion']  ?? $ticket->descripcion,
-                'prioridad'    => $data['prioridad']    ?? $ticket->prioridad,
-                'tipo_formato' => $data['tipo_formato'] ?? $ticket->tipo_formato,
-                'estado'       => $data['estado']       ?? $ticket->estado,
-                'asignado_a'   => array_key_exists('asignado_a', $data) ? $data['asignado_a'] : $ticket->asignado_a,
+                'titulo'          => $data['titulo']       ?? $ticket->titulo,
+                'solicitante'     => $data['solicitante']  ?? $ticket->solicitante,
+                'descripcion'     => $data['descripcion']  ?? $ticket->descripcion,
+                'prioridad'       => $data['prioridad']    ?? $ticket->prioridad,
+                'tipo_formato'    => $data['tipo_formato'] ?? $ticket->tipo_formato,
+                'estado'          => $data['estado']       ?? $ticket->estado,
+                'asignado_a'      => array_key_exists('asignado_a', $data) ? $data['asignado_a'] : $ticket->asignado_a,
                 'id_departamento' => $data['id_departamento'] ?? $ticket->id_departamento,
-
             ]);
+
             $ticket->save();
             return $ticket;
         });
@@ -269,6 +425,32 @@ class TicketService
             return $ticket;
         });
     }
+    public function actualizarComoTecnicoAsignado(Cuenta $actor, Ticket $ticket, array $data): Ticket
+    {
+        if (!method_exists($actor, 'isUser') || !$actor->isUser()) {
+            throw new HttpException(403, 'Solo Usuario (técnico) puede editar en este flujo.');
+        }
+
+        if ((int) $ticket->asignado_a !== (int) $actor->id_cuenta) {
+            throw new HttpException(403, 'Este ticket no está asignado a ti.');
+        }
+
+        if (in_array($ticket->estado, ['cancelado', 'completado'], true)) {
+            throw new HttpException(403, 'No puedes editar un ticket cancelado o completado.');
+        }
+
+        return DB::transaction(function () use ($ticket, $data) {
+            $ticket->forceFill([
+                'titulo'          => $data['titulo'],
+                'solicitante'     => $data['solicitante'],
+                'descripcion'     => $data['descripcion'] ?? null,
+                'tipo_formato'    => $data['tipo_formato'],
+                'id_departamento' => (int) $data['id_departamento'],
+            ])->save();
+
+            return $ticket->fresh();
+        });
+    }
 
     public function actualizarComoDepto(Cuenta $actor, Ticket $ticket, array $data): Ticket
     {
@@ -290,6 +472,10 @@ class TicketService
             return $ticket;
         });
     }
+
+    // ==========================================================
+    // MAILS
+    // ==========================================================
 
     public function notificarTicketCreado(Ticket $ticket): void
     {

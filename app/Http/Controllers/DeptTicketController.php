@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Models\Departamento;
 use App\Services\TicketService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class DeptTicketController extends Controller
 {
@@ -13,7 +13,8 @@ class DeptTicketController extends Controller
 
     public function index(Request $request)
     {
-        $cuentaId = auth()->user()->id_cuenta;
+        $cuenta = auth()->user();
+        $cuentaId = $cuenta->id_cuenta;
 
         $qEstado = $request->get('estado');
         $qBuscar = $request->get('buscar');
@@ -36,7 +37,11 @@ class DeptTicketController extends Controller
 
         $tickets = $query->paginate(12)->withQueryString();
 
-        return view('departamento.tickets.index', compact('tickets', 'qEstado', 'qBuscar'));
+        // ✅ mini cambio: para mostrar el nombre del depto en el modal de crear
+        $deptId = $cuenta->usuario->id_departamento ?? $cuenta->id_departamento ?? null;
+        $departamento = $deptId ? Departamento::find($deptId) : null;
+
+        return view('departamento.tickets.index', compact('tickets', 'qEstado', 'qBuscar', 'departamento'));
     }
 
     public function create()
@@ -44,47 +49,23 @@ class DeptTicketController extends Controller
         return view('departamento.tickets.create');
     }
 
+    /**
+     * ✅ Centralizado: creación en TicketService
+     * (id_departamento sale del logueado dentro del service)
+     */
     public function store(Request $request)
     {
         $data = $request->validate([
-            'titulo'      => 'required|string|max:255',
-            'solicitante' => 'required|string|max:150',
-            'descripcion' => 'nullable|string',
-            'prioridad'   => 'nullable|in:baja,media,alta',
-            'tipo_formato'=> 'nullable|in:a,b,c,d',
+            'titulo'       => 'required|string|max:255',
+            'solicitante'  => 'required|string|max:150',
+            'descripcion'  => 'nullable|string',
+            'prioridad'    => 'nullable|in:baja,media,alta',
+            'tipo_formato' => 'nullable|in:a,b,c,d',
         ]);
 
-        $idUsuario = auth()->id();
-        $idDepartamento = DB::table('usuarios')->where('id_usuario', $idUsuario)->value('id_departamento');
+        $this->tickets->crearComoDepartamento(auth()->user(), $data);
 
-        $ticket = DB::transaction(function () use ($data, $idDepartamento) {
-
-            $folio = 'TCK-' . now()->format('YmdHis');
-
-            $ticket = Ticket::create([
-                'folio'        => $folio,
-                'titulo'       => $data['titulo'],
-                'solicitante'  => $data['solicitante'],
-                'descripcion'  => $data['descripcion'] ?? null,
-
-                'prioridad'    => $data['prioridad'] ?? 'media',
-                'tipo_formato' => $data['tipo_formato'] ?? 'a',
-
-                'estado'       => 'nuevo',
-                'creado_por'   => auth()->user()->id_cuenta,
-                'asignado_a'   => null,
-                'asignado_por' => null,
-                'id_servicio'  => null,
-
-                'id_departamento' => $idDepartamento,
-            ]);
-
-            $this->tickets->notificarTicketCreado($ticket);
-
-            return $ticket;
-        });
-
-        return back()->with('success', 'Ticket enviado al Admin');
+        return redirect()->route('departamento.tickets.index')->with('success', 'Ticket enviado al Admin');
     }
 
     public function cancelar(Ticket $ticket)

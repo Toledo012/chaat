@@ -77,40 +77,93 @@ public function formatoA(Request $request)
     $id_servicio = $request->query('id_servicio');
     $id_ticket = $request->query('id_ticket');
 
+
+    //jala el id_departamento del ticket
+    $ticketDeptId = null;
+
+    if ($id_ticket) {
+        $ticketDeptId = \App\Models\Ticket::where('id_ticket', (int)$id_ticket)->value('id_departamento');
+    }
+
+
     return view('admin.formatos.formato_a', compact(
         'departamentos',
         'id_servicio',
-        'id_ticket'
+        'id_ticket',
+        'ticketDeptId'
     ));
 }
 
-    public function formatoB()
+    public function formatoB(Request $request)
     {
+             $departamentos = Departamento::where('activo', 1)->get();
+        $id_servicio = $request->query('id_servicio');
+        $id_ticket = $request->query('id_ticket');
 
-            $departamentos = Departamento::where('activo', 1)->get();
 
-        return view('admin.formatos.formato_b' , compact('departamentos'));
+        //jala el id_departamento del ticket
+        $ticketDeptId = null;
+
+        if ($id_ticket) {
+            $ticketDeptId = \App\Models\Ticket::where('id_ticket', (int)$id_ticket)->value('id_departamento');
+        }
+
+        return view('admin.formatos.formato_b' , compact(
+            'departamentos',
+            'id_servicio',
+            'id_ticket',
+            'ticketDeptId'
+        ));
 
     }
 
-    public function formatoC()
-    
-    {
-            $departamentos = Departamento::where('activo', 1)->get();
+    public function formatoC(Request $request)
 
-        return view('admin.formatos.formato_c'  , compact('departamentos'));
-    }
-
-    public function formatoD()
     {
 
             $departamentos = Departamento::where('activo', 1)->get();
+        $id_servicio = $request->query('id_servicio');
+        $id_ticket = $request->query('id_ticket');
 
-        return view('admin.formatos.formato_d'  , compact('departamentos'));
+
+        //jala el id_departamento del ticket
+        $ticketDeptId = null;
+
+        if ($id_ticket) {
+            $ticketDeptId = \App\Models\Ticket::where('id_ticket', (int)$id_ticket)->value('id_departamento');
+        }
+
+        return view('admin.formatos.formato_c'  , compact(
+            'departamentos',
+            'id_servicio',
+            'id_ticket',
+            'ticketDeptId'));
+    }
+
+    public function formatoD(Request $request)
+    {
+
+            $departamentos = Departamento::where('activo', 1)->get();
+        $id_servicio = $request->query('id_servicio');
+        $id_ticket = $request->query('id_ticket');
+
+
+        //jala el id_departamento del ticket
+        $ticketDeptId = null;
+
+        if ($id_ticket) {
+            $ticketDeptId = \App\Models\Ticket::where('id_ticket', (int)$id_ticket)->value('id_departamento');
+        }
+        return view('admin.formatos.formato_d'  , compact(
+            'departamentos',
+            'id_servicio',
+            'id_ticket',
+            'ticketDeptId'
+        ));
     }
 
 
-    // 
+    //
 
 // private function generarFolioGlobal(string $tipoFormato): string
 // {
@@ -127,7 +180,7 @@ public function formatoA(Request $request)
 //     $nextNum = $lastNum + 1;
 
 //     return 'SEMAHN-' . $tipoFormato . '-' . str_pad((string)$nextNum, 5, '0', STR_PAD_LEFT);
-// }
+//
 
 
 
@@ -159,7 +212,7 @@ public function storeA(Request $request)
 
         // vienen desde tickets (hidden)
         'id_servicio' => 'nullable|integer',
-        'id_ticket'   => 'nullable|integer',
+        'id_ticket'   => 'nullable|integer|exists:tickets,id_ticket',
     ]);
 
     // Normalizar "otro"
@@ -170,6 +223,15 @@ public function storeA(Request $request)
     //  sacar antes del transaction
     $idServicioFromRequest = $data['id_servicio'] ?? null;
     $idTicketFromRequest   = $data['id_ticket'] ?? null;
+
+    //forzar el id_departamento al request
+    if ($idTicketFromRequest) {
+        $ticketDeptId = \App\Models\Ticket::where('id_ticket', (int)$idTicketFromRequest)->value('id_departamento');
+
+        if ($ticketDeptId) {
+            $data['id_departamento'] = (int) $ticketDeptId;
+        }
+    }
 
     return DB::transaction(function () use ($data, $tipoServicioFinal, $idServicioFromRequest, $idTicketFromRequest) {
 
@@ -198,11 +260,11 @@ public function storeA(Request $request)
             'updated_at' => now(),
         ]);
 
-        // 
+        //
         if ($idTicketFromRequest) {
             $this->servicios->completarTicketPorId((int)$idTicketFromRequest, (int)$idServicio);
 
-            return redirect()->route('admin.tickets.index')
+            return redirect()->route('admin.formatos.index')
                 ->with('success', 'Ticket completado y Formato A guardado 🫡');
         }
 
@@ -220,7 +282,7 @@ public function storeB(Request $request)
 
             'subtipo' => 'required|string',
             'subtipo_otro' => 'nullable|required_if:subtipo,otro|string', // Validación condicional
-            
+
             'descripcion_servicio' => 'nullable|string',
             'equipo' => 'nullable|string',
             'marca' => 'nullable|string',
@@ -251,7 +313,7 @@ public function storeB(Request $request)
 
             // vienen desde tickets (hidden)
             'id_servicio' => 'nullable|integer',
-            'id_ticket'   => 'nullable|integer',
+            'id_ticket'   => 'nullable|integer|exists:tickets,id_ticket',
         ]);
 
         // Lógica para asignar el subtipo real
@@ -259,6 +321,17 @@ public function storeB(Request $request)
 
         $idServicioFromRequest = $data['id_servicio'] ?? null;
         $idTicketFromRequest   = $data['id_ticket'] ?? null;
+
+        $idServicioFromRequest = $data['id_servicio'] ?? null;
+        $idTicketFromRequest   = $data['id_ticket'] ?? null;
+        //forzar el id_departamento al request
+        if ($idTicketFromRequest) {
+            $ticketDeptId = \App\Models\Ticket::where('id_ticket', (int)$idTicketFromRequest)->value('id_departamento');
+
+            if ($ticketDeptId) {
+                $data['id_departamento'] = (int) $ticketDeptId;
+            }
+        }
 
         return DB::transaction(function () use ($data, $idServicioFromRequest, $idTicketFromRequest, $subtipoFinal) {
 
@@ -304,7 +377,7 @@ public function storeB(Request $request)
             if ($idTicketFromRequest) {
                 $this->servicios->completarTicketPorId((int)$idTicketFromRequest, (int)$idServicio);
 
-                return redirect()->route('admin.tickets.index')
+                return redirect()->route('admin.formatos.index')
                     ->with('success', 'Ticket completado y Formato B guardado 🫡');
             }
 
@@ -344,13 +417,27 @@ public function storeC(Request $request)
         'materiales.*.id_material' => 'nullable|integer|exists:catalogo_materiales,id_material',
         'materiales.*.cantidad' => 'nullable|numeric|min:1',
 
-        // ✅ tickets
+        // tickets
         'id_servicio' => 'nullable|integer',
-        'id_ticket'   => 'nullable|integer',
+        'id_ticket'   => 'nullable|integer|exists:tickets,id_ticket',
+
     ]);
 
     $idServicioFromRequest = $data['id_servicio'] ?? null;
     $idTicketFromRequest   = $data['id_ticket'] ?? null;
+
+    //  sacar antes del transaction
+    $idServicioFromRequest = $data['id_servicio'] ?? null;
+    $idTicketFromRequest   = $data['id_ticket'] ?? null;
+
+    //forzar el id_departamento al request
+    if ($idTicketFromRequest) {
+        $ticketDeptId = \App\Models\Ticket::where('id_ticket', (int)$idTicketFromRequest)->value('id_departamento');
+
+        if ($ticketDeptId) {
+            $data['id_departamento'] = (int) $ticketDeptId;
+        }
+    }
 
     return DB::transaction(function () use ($data, $idServicioFromRequest, $idTicketFromRequest) {
 
@@ -382,7 +469,7 @@ public function storeC(Request $request)
         if ($idTicketFromRequest) {
             $this->servicios->completarTicketPorId((int)$idTicketFromRequest, (int)$idServicio);
 
-            return redirect()->route('admin.tickets.index')
+            return redirect()->route('admin.formatos.index')
                 ->with('success', 'Ticket completado y Formato C guardado 🫡');
         }
 
@@ -410,13 +497,25 @@ public function storeD(Request $request)
         'firma_tecnico' => 'nullable|string',
         'firma_jefe_area' => 'nullable|string',
 
-        // ✅ tickets
+        // tickets
         'id_servicio' => 'nullable|integer',
-        'id_ticket'   => 'nullable|integer',
+        'id_ticket'   => 'nullable|integer|exists:tickets,id_ticket',
     ]);
 
     $idServicioFromRequest = $data['id_servicio'] ?? null;
     $idTicketFromRequest   = $data['id_ticket'] ?? null;
+    //  sacar antes del transaction
+    $idServicioFromRequest = $data['id_servicio'] ?? null;
+    $idTicketFromRequest   = $data['id_ticket'] ?? null;
+
+    //forzar el id_departamento al request
+    if ($idTicketFromRequest) {
+        $ticketDeptId = \App\Models\Ticket::where('id_ticket', (int)$idTicketFromRequest)->value('id_departamento');
+
+        if ($ticketDeptId) {
+            $data['id_departamento'] = (int) $ticketDeptId;
+        }
+    }
 
     return DB::transaction(function () use ($data, $idServicioFromRequest, $idTicketFromRequest) {
 
@@ -446,7 +545,7 @@ public function storeD(Request $request)
         if ($idTicketFromRequest) {
             $this->servicios->completarTicketPorId((int)$idTicketFromRequest, (int)$idServicio);
 
-            return redirect()->route('admin.tickets.index')
+            return redirect()->route('admin.formatos.index')
                 ->with('success', 'Ticket completado y Formato D guardado ✅');
         }
 
@@ -530,7 +629,7 @@ public function previewB($id)
     if (!$servicio) {
         return redirect()->route('admin.formatos.index')
             ->with('error', 'Formato B no encontrado.');
-            
+
     }
 
     // materiales usados
@@ -645,8 +744,8 @@ public function generarPDFA($id)
             'formato_a.subtipo',
             'formato_a.tipo_atencion',
             'formato_a.tipo_servicio',
-            
-        
+
+
             'formato_a.detalle_realizado',
             'formato_a.conclusion_servicio',
             'formato_a.observaciones',
@@ -801,7 +900,7 @@ public function edit($tipo, $id)
     }
 }
 
-// ============================= 
+// =============================
 
 // ACTUALIZAR FORMATO
 public function update(Request $request, $tipo, $id)
@@ -821,7 +920,7 @@ public function update(Request $request, $tipo, $id)
                         'updated_at' => now(),
                     ]);
 
-                unset($data['id_departamento']); 
+                unset($data['id_departamento']);
             }
 
             // 2. ACTUALIZAR FORMATO A
@@ -850,7 +949,7 @@ public function update(Request $request, $tipo, $id)
                         'updated_at' => now(),
                     ]);
 
-                unset($data['id_departamento']); 
+                unset($data['id_departamento']);
             }
 
             // 2. QUITAR MATERIALES DEL UPDATE

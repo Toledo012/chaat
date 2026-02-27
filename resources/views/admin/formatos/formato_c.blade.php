@@ -29,24 +29,52 @@
         <form method="POST" action="{{ route('admin.formatos.c.store') }}">
             @csrf
 
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label">Departamento <span class="text-danger">*</span></label>
-                    <select name="id_departamento" class="form-select @error('id_departamento') is-invalid @enderror" required>
-                        <option value="">Selecciona un departamento</option>
 
-                        {{-- Usamos sortBy con banderas para que ignore mayúsculas/minúsculas --}}
-                        @foreach($departamentos->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE) as $dep)
-                            <option value="{{ $dep->id_departamento }}" {{ old('id_departamento') == $dep->id_departamento ? 'selected' : '' }}>
-                                {{ $dep->nombre }}
-                            </option>
-                        @endforeach
+            <div class="col-md-6">
+                <label class="form-label">
+                    Departamento <span class="text-danger">*</span>
+                </label>
 
-                    </select>
-                    @error('id_departamento')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                @php
+                    // $ticketDeptId viene desde el controller (null si no viene de ticket)
+                    $selectedDept = $ticketDeptId ?? old('id_departamento');
+                @endphp
+
+                <select name="id_departamento"
+                        class="form-select @error('id_departamento') is-invalid @enderror"
+                        required
+                    @disabled($ticketDeptId)>
+
+                    <option value="">Selecciona un departamento</option>
+
+                    {{-- Orden alfabético natural ignorando mayúsculas --}}
+                    @foreach($departamentos->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE) as $dep)
+                        <option value="{{ $dep->id_departamento }}"
+                            {{ $selectedDept == $dep->id_departamento ? 'selected' : '' }}>
+                            {{ $dep->nombre }}
+                        </option>
+                    @endforeach
+                </select>
+
+                {{-- Si viene de ticket, forzar envío del depto correcto --}}
+                @if($ticketDeptId)
+                    <input type="hidden" name="id_departamento" value="{{ $ticketDeptId }}">
+                @endif
+
+                @error('id_departamento')
+                <div class="invalid-feedback">
+                    {{ $message }}
                 </div>
+                @enderror
+            </div>
+
+            </select>
+            @error('id_departamento')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+
+
 
                 <div class="col-md-4">
                     <label class="form-label">Tipo de Red <span class="text-danger">*</span></label>

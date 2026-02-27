@@ -45,22 +45,49 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Departamento <span class="text-danger">*</span></label>
-                        <select name="id_departamento" class="form-select @error('id_departamento') is-invalid @enderror" required>
+                        <label class="form-label">
+                            Departamento <span class="text-danger">*</span>
+                        </label>
+
+                        @php
+                            // $ticketDeptId viene desde el controller (null si no viene de ticket)
+                            $selectedDept = $ticketDeptId ?? old('id_departamento');
+                        @endphp
+
+                        <select name="id_departamento"
+                                class="form-select @error('id_departamento') is-invalid @enderror"
+                                required
+                            @disabled($ticketDeptId)>
+
                             <option value="">Selecciona un departamento</option>
 
-                            {{-- Usamos sortBy con banderas para que ignore mayúsculas/minúsculas --}}
+                            {{-- Orden alfabético natural ignorando mayúsculas --}}
                             @foreach($departamentos->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE) as $dep)
-                                <option value="{{ $dep->id_departamento }}" {{ old('id_departamento') == $dep->id_departamento ? 'selected' : '' }}>
+                                <option value="{{ $dep->id_departamento }}"
+                                    {{ $selectedDept == $dep->id_departamento ? 'selected' : '' }}>
                                     {{ $dep->nombre }}
                                 </option>
                             @endforeach
-
                         </select>
+
+                        {{-- Si viene de ticket, forzar envío del depto correcto --}}
+                        @if($ticketDeptId)
+                            <input type="hidden" name="id_departamento" value="{{ $ticketDeptId }}">
+                        @endif
+
                         @error('id_departamento')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
                         @enderror
                     </div>
+
+                    </select>
+                    @error('id_departamento')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
 
                 <hr>
                 <h6 class="text-primary mb-3"><i class="fas fa-info-circle me-1"></i> Información del Equipo</h6>

@@ -127,7 +127,7 @@ class AdminTicketController extends Controller
 
                 // se jala el id_departamento relacionado a la cuenta .
 
-                $idDepartamento = auth()->user()->id_departamento ?? null;
+                $idDepartamento = $ticket->id_departamento ?? auth()->user()->id_departamento ?? null;
 
                 $idServicio = $this->servicios->obtenerOCrearServicio(
                     null,
