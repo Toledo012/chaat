@@ -61,10 +61,12 @@
                                             <i class="fas fa-pen-nib me-1 text-muted small"></i>{{ $t->creador->username ?? 'Sistema' }}
                                         </span>
                                     </td>
+
                                     <td class="small text-muted">
                                         <div class="text-nowrap">
-                                            <i class="far fa-calendar-plus me-1"></i>
-                                            {{ \Carbon\Carbon::parse($t->created_at)->format('d/m/y H:i') }}
+                                            <i class="far fa-calendar-plus me-1 text-primary"></i>
+                                            {{-- Forzamos la zona horaria de México y el formato de 12 horas --}}
+                                            {{ \Carbon\Carbon::parse($t->created_at)->timezone('America/Mexico_City')->format('d/m/Y h:i A') }}
                                         </div>
                                     </td>
                                     <td class="text-end pe-4">
@@ -129,15 +131,19 @@
                                             {{ strtoupper(str_replace('_',' ',$t->estado)) }}
                                         </span>
                                     </td>
+
                                     <td class="small">
+                                        {{-- Fecha de creación con zona horaria de México --}}
                                         <div class="text-muted small">
                                             <i class="fas fa-calendar-plus me-1 text-primary small"></i>
-                                            <strong>Creado:</strong> {{ \Carbon\Carbon::parse($t->created_at)->format('d/m/y H:i') }}
+                                            {{ \Carbon\Carbon::parse($t->created_at)->timezone('America/Mexico_City')->format('d/m/Y h:i A') }}
                                         </div>
+
                                         @if(in_array($t->estado, ['completado','cancelado']))
+                                            {{-- Fecha de actualización/cierre --}}
                                             <div class="text-success fw-semibold small mt-1">
                                                 <i class="fas fa-calendar-check me-1 small"></i>
-                                                <strong>Concluido:</strong> {{ \Carbon\Carbon::parse($t->updated_at)->format('d/m/y H:i') }}
+                                                {{ \Carbon\Carbon::parse($t->updated_at)->timezone('America/Mexico_City')->format('d/m/Y h:i A') }}
                                             </div>
                                         @endif
                                     </td>

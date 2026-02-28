@@ -9,7 +9,7 @@
     .kpi-card { border-radius: 12px; transition: transform 0.2s; }
     .kpi-card:hover { transform: scale(1.02); }
     .kpi-icon-shape { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
-    
+
     /* Contenedores con scroll para ahorrar espacio */
     .scroll-container { max-height: 280px; overflow-y: auto; }
     .scroll-container::-webkit-scrollbar { width: 4px; }
@@ -178,8 +178,14 @@ $usuariosFormatos = DB::table('usuarios')
                 <div class="text-center p-3">
                     <h5 class="fw-bold mb-1 small">Sistema SEMAHN 2026</h5>
                     <div class="d-flex gap-3 justify-content-center mt-2">
-                        <div class="bg-white bg-opacity-25 px-3 py-2 rounded-3"><h6 class="mb-0 fw-bold">{{ date('H:i') }}</h6></div>
-                        <div class="bg-white bg-opacity-25 px-3 py-2 rounded-3"><h6 class="mb-0 fw-bold">{{ date('d/m/y') }}</h6></div>
+                        {{-- Ajuste de zona horaria y formato de 12 horas --}}
+                        @php date_default_timezone_set('America/Mexico_City'); @endphp
+                        <div class="bg-white bg-opacity-25 px-3 py-2 rounded-3">
+                            <h6 class="mb-0 fw-bold">{{ date('h:i A') }}</h6>
+                        </div>
+                        <div class="bg-white bg-opacity-25 px-3 py-2 rounded-3">
+                            <h6 class="mb-0 fw-bold">{{ date('d/m/Y') }}</h6>
+                        </div>
                     </div>
                 </div>
             </div>

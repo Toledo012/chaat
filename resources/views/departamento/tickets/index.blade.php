@@ -105,11 +105,19 @@
                                     <small class="{{ $prioColor }} fw-bold text-uppercase" style="font-size: 0.6rem;">
                                         <i class="fas fa-flag me-1"></i>{{ $t->prioridad }}
                                     </small>
-                                </td>
-                                <td class="small">
-                                    <div class="text-muted small"><i class="fas fa-calendar-plus me-1 text-primary small"></i> {{ \Carbon\Carbon::parse($t->created_at)->format('d/m/y H:i') }}</div>
+                                </td><td class="small">
+                                    {{-- Fecha de creación con zona horaria de México --}}
+                                    <div class="text-muted small">
+                                        <i class="fas fa-calendar-plus me-1 text-primary small"></i>
+                                        {{ \Carbon\Carbon::parse($t->created_at)->timezone('America/Mexico_City')->format('d/m/Y h:i A') }}
+                                    </div>
+
                                     @if(in_array($t->estado, ['completado','cancelado']))
-                                        <div class="text-success fw-semibold small mt-1"><i class="fas fa-calendar-check me-1 small"></i> {{ \Carbon\Carbon::parse($t->updated_at)->format('d/m/y H:i') }}</div>
+                                        {{-- Fecha de actualización/cierre --}}
+                                        <div class="text-success fw-semibold small mt-1">
+                                            <i class="fas fa-calendar-check me-1 small"></i>
+                                            {{ \Carbon\Carbon::parse($t->updated_at)->timezone('America/Mexico_City')->format('d/m/Y h:i A') }}
+                                        </div>
                                     @endif
                                 </td>
                                 <td class="text-end pe-4">
