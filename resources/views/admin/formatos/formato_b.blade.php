@@ -39,55 +39,59 @@
                             <option value="Impresora">Impresora</option>
                             <option value="otro">Otro…</option>
                         </select>
-
                         <input type="text" name="subtipo_otro" id="inputSubtipoOtro"
                                class="form-control mt-2" placeholder="Especifique el subtipo" style="display: none;">
                     </div>
 
+                    {{-- DEPARTAMENTO --}}
                     <div class="col-md-6">
-                        <label class="form-label">
+                        <label class="form-label small fw-bold text-muted text-uppercase">
                             Departamento <span class="text-danger">*</span>
                         </label>
 
                         @php
-                            // $ticketDeptId viene desde el controller (null si no viene de ticket)
                             $selectedDept = $ticketDeptId ?? old('id_departamento');
                         @endphp
 
-                        <select name="id_departamento"
-                                class="form-select @error('id_departamento') is-invalid @enderror"
-                                required
-                            @disabled($ticketDeptId)>
-
-                            <option value="">Selecciona un departamento</option>
-
-                            {{-- Orden alfabético natural ignorando mayúsculas --}}
-                            @foreach($departamentos->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE) as $dep)
-                                <option value="{{ $dep->id_departamento }}"
-                                    {{ $selectedDept == $dep->id_departamento ? 'selected' : '' }}>
-                                    {{ $dep->nombre }}
-                                </option>
-                            @endforeach
-                        </select>
-
-                        {{-- Si viene de ticket, forzar envío del depto correcto --}}
                         @if($ticketDeptId)
+                            <select name="_depto_display"
+                                    class="form-select @error('id_departamento') is-invalid @enderror"
+                                    disabled>
+                                @foreach($departamentos->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE) as $dep)
+                                    <option value="{{ $dep->id_departamento }}"
+                                        {{ $selectedDept == $dep->id_departamento ? 'selected' : '' }}>
+                                        {{ $dep->nombre }}
+                                    </option>
+                                @endforeach
+                            </select>
                             <input type="hidden" name="id_departamento" value="{{ $ticketDeptId }}">
+                        @else
+                            <div class="input-group">
+                                <select id="selectDepartamentoFormatoB"
+                                        name="id_departamento"
+                                        class="form-select shadow-sm border-light-subtle @error('id_departamento') is-invalid @enderror"
+                                        required>
+                                    <option value="">Selecciona un departamento</option>
+                                    @foreach($departamentos->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE) as $dep)
+                                        <option value="{{ $dep->id_departamento }}"
+                                            {{ old('id_departamento') == $dep->id_departamento ? 'selected' : '' }}>
+                                            {{ $dep->nombre }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <button type="button" class="btn btn-outline-success fw-bold"
+                                        data-bs-toggle="modal" data-bs-target="#modalCrearDepartamentoFormatoB">
+                                    <i class="fas fa-plus me-1"></i> Nuevo
+                                </button>
+                            </div>
+                            <small class="text-muted d-block mt-1">Si no existe, crea uno aquí mismo.</small>
                         @endif
 
                         @error('id_departamento')
-                        <div class="invalid-feedback">
-                            {{ $message }}
-                        </div>
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
-
-                    </select>
-                    @error('id_departamento')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
                 </div>
-
 
                 <hr>
                 <h6 class="text-primary mb-3"><i class="fas fa-info-circle me-1"></i> Información del Equipo</h6>
@@ -212,23 +216,23 @@
 
                 <table class="table table-bordered mb-4" id="tablaMateriales">
                     <thead class="table-light">
-                        <tr><th>Material</th><th width="150">Cantidad</th><th width="100">Acción</th></tr>
+                    <tr><th>Material</th><th width="150">Cantidad</th><th width="100">Acción</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>
-                                <select name="materiales[0][id_material]" class="form-select">
-                                    <option value="">Sin material / Seleccionar</option>
-                                    @foreach(\DB::table('catalogo_materiales')->orderBy('nombre')->get() as $mat)
-                                        <option value="{{ $mat->id_material }}">{{ $mat->nombre }}</option>
-                                    @endforeach
-                                </select>
-                            </td>
-                            <td><input type="number" name="materiales[0][cantidad]" class="form-control" min="1"></td>
-                            <td class="text-center">
-                                <button type="button" class="btn btn-outline-success btn-sm agregar-material"><i class="fas fa-plus"></i></button>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td>
+                            <select name="materiales[0][id_material]" class="form-select">
+                                <option value="">Sin material / Seleccionar</option>
+                                @foreach(\DB::table('catalogo_materiales')->orderBy('nombre')->get() as $mat)
+                                    <option value="{{ $mat->id_material }}">{{ $mat->nombre }}</option>
+                                @endforeach
+                            </select>
+                        </td>
+                        <td><input type="number" name="materiales[0][cantidad]" class="form-control" min="1"></td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-outline-success btn-sm agregar-material"><i class="fas fa-plus"></i></button>
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
 
@@ -265,11 +269,51 @@
             </form>
         </div>
     </div>
+
+    {{-- MODAL CREAR DEPARTAMENTO (solo si NO viene de ticket) --}}
+    @if(!$ticketDeptId)
+        <div class="modal fade" id="modalCrearDepartamentoFormatoB" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-md modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-success text-white border-0">
+                        <h5 class="modal-title fw-bold">
+                            <i class="fas fa-building me-2"></i> Registrar Departamento
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="formCrearDepartamentoFormatoB">
+                        @csrf
+                        <div class="modal-body p-4">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Nombre *</label>
+                                <input type="text" name="nombre" class="form-control shadow-sm" required maxlength="50">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Descripción</label>
+                                <textarea name="descripcion" class="form-control shadow-sm" rows="3"></textarea>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="1" id="activoDeptoFormatoB" name="activo" checked>
+                                <label class="form-check-label" for="activoDeptoFormatoB">Activo</label>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light border-0">
+                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-success btn-sm fw-bold px-4 rounded-pill shadow-sm">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
+
 @endsection
 
 @section('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function(){
+
+            // ----- Subtipo equipo -----
             const selectSubtipo = document.getElementById('selectSubtipo');
             const inputSubtipoOtro = document.getElementById('inputSubtipoOtro');
             const bloqueComputadora = document.getElementById('bloqueComputadora');
@@ -284,7 +328,6 @@
                     inputSubtipoOtro.required = false;
                     inputSubtipoOtro.value = '';
                 }
-
                 if (this.value === 'Computadora') {
                     bloqueComputadora.style.display = 'block';
                     camposPC.forEach(id => document.getElementById(id).required = true);
@@ -298,6 +341,7 @@
                 }
             });
 
+            // ----- Materiales -----
             document.addEventListener('click', e => {
                 if(e.target.closest('.agregar-material')){
                     const tbody = document.querySelector('#tablaMateriales tbody');
@@ -308,11 +352,11 @@
                             <select name="materiales[${index}][id_material]" class="form-select">
                                 <option value="">Sin material / Seleccionar</option>
                                 @foreach(\DB::table('catalogo_materiales')->orderBy('nombre')->get() as $mat)
-                                    <option value="{{ $mat->id_material }}">{{ $mat->nombre }}</option>
+                    <option value="{{ $mat->id_material }}">{{ $mat->nombre }}</option>
                                 @endforeach
-                            </select>
-                        </td>
-                        <td><input type="number" name="materiales[${index}][cantidad]" class="form-control" min="1"></td>
+                    </select>
+                </td>
+                <td><input type="number" name="materiales[${index}][cantidad]" class="form-control" min="1"></td>
                         <td class="text-center">
                             <button type="button" class="btn btn-outline-danger btn-sm eliminar-material"><i class="fas fa-trash"></i></button>
                         </td>`;
@@ -320,6 +364,45 @@
                 }
                 if(e.target.closest('.eliminar-material')){
                     e.target.closest('tr').remove();
+                }
+            });
+
+            // ----- Crear departamento (solo si NO viene de ticket) -----
+            const formDepto = document.getElementById('formCrearDepartamentoFormatoB');
+            if (!formDepto) return;
+
+            formDepto.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = formDepto.querySelector('button[type="submit"]');
+                btn.disabled = true;
+                try {
+                    const res = await fetch("{{ route('admin.departamentos.quickStore') }}", {
+                        method: "POST",
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest",
+                            "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                            "Accept": "application/json"
+                        },
+                        body: new FormData(formDepto)
+                    });
+                    const data = await res.json();
+                    if (!res.ok) { alert(data?.message || 'Error al crear departamento'); return; }
+
+                    const sel = document.getElementById('selectDepartamentoFormatoB');
+                    const opt = document.createElement('option');
+                    opt.value = data.id_departamento;
+                    opt.textContent = data.nombre;
+                    opt.selected = true;
+                    sel.appendChild(opt);
+
+                    bootstrap.Modal.getInstance(document.getElementById('modalCrearDepartamentoFormatoB'))?.hide();
+                    formDepto.reset();
+                    document.getElementById('activoDeptoFormatoB').checked = true;
+                } catch (err) {
+                    console.error(err);
+                    alert('No se pudo crear el departamento.');
+                } finally {
+                    btn.disabled = false;
                 }
             });
         });

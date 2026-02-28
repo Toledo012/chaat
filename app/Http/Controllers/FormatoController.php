@@ -485,13 +485,12 @@ public function storeD(Request $request)
 {
     $data = $request->validate([
         'id_departamento' => 'required|exists:departamentos,id_departamento',
-        'fecha' => 'nullable|date',
-        'equipo' => 'nullable|string',
+            'equipo' => 'nullable|string',
         'marca' => 'nullable|string',
         'modelo' => 'nullable|string',
         'serie' => 'nullable|string',
-        'diagnostico' => 'nullable|string',
-        'mantenimiento_realizado' => 'nullable|string',
+//        'diagnostico' => 'nullable|string',
+//        'mantenimiento_realizado' => 'nullable|string',
         'observaciones' => 'nullable|string',
         'firma_usuario' => 'nullable|string',
         'firma_tecnico' => 'nullable|string',
