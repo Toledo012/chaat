@@ -69,4 +69,28 @@ class MaterialController extends Controller
             ->with('success', 'Material eliminado');
     }
 
+    public function quickStore(Request $request)
+    {
+        $request->validate([
+            'nombre'          => 'required|string|max:50',
+            'unidad_sugerida' => 'nullable|string|max:20',
+            'unidad_otro'     => 'nullable|string|max:20',
+        ]);
+
+        $unidad = $request->unidad_sugerida === 'otro'
+            ? $request->unidad_otro
+            : $request->unidad_sugerida;
+
+        $material = CatalogoMateriales::create([
+            'nombre'          => $request->nombre,
+            'unidad_sugerida' => $unidad,
+        ]);
+
+        return response()->json([
+            'id_material'     => $material->id_material,
+            'nombre'          => $material->nombre,
+            'unidad_sugerida' => $material->unidad_sugerida,
+        ], 200);
+    }
+
 }

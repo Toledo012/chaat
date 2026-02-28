@@ -36,35 +36,21 @@
                         <label class="form-label small fw-bold text-muted text-uppercase">
                             Departamento <span class="text-danger">*</span>
                         </label>
-
-                        @php
-                            $selectedDept = $ticketDeptId ?? old('id_departamento');
-                        @endphp
-
+                        @php $selectedDept = $ticketDeptId ?? old('id_departamento'); @endphp
                         @if($ticketDeptId)
-                            <select name="_depto_display"
-                                    class="form-select @error('id_departamento') is-invalid @enderror"
-                                    disabled>
+                            <select name="_depto_display" class="form-select @error('id_departamento') is-invalid @enderror" disabled>
                                 @foreach($departamentos->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE) as $dep)
-                                    <option value="{{ $dep->id_departamento }}"
-                                        {{ $selectedDept == $dep->id_departamento ? 'selected' : '' }}>
-                                        {{ $dep->nombre }}
-                                    </option>
+                                    <option value="{{ $dep->id_departamento }}" {{ $selectedDept == $dep->id_departamento ? 'selected' : '' }}>{{ $dep->nombre }}</option>
                                 @endforeach
                             </select>
                             <input type="hidden" name="id_departamento" value="{{ $ticketDeptId }}">
                         @else
                             <div class="input-group">
-                                <select id="selectDepartamentoFormatoC"
-                                        name="id_departamento"
-                                        class="form-select shadow-sm border-light-subtle @error('id_departamento') is-invalid @enderror"
-                                        required>
+                                <select id="selectDepartamentoFormatoC" name="id_departamento"
+                                        class="form-select shadow-sm @error('id_departamento') is-invalid @enderror" required>
                                     <option value="">Selecciona un departamento</option>
                                     @foreach($departamentos->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE) as $dep)
-                                        <option value="{{ $dep->id_departamento }}"
-                                            {{ old('id_departamento') == $dep->id_departamento ? 'selected' : '' }}>
-                                            {{ $dep->nombre }}
-                                        </option>
+                                        <option value="{{ $dep->id_departamento }}" {{ old('id_departamento') == $dep->id_departamento ? 'selected' : '' }}>{{ $dep->nombre }}</option>
                                     @endforeach
                                 </select>
                                 <button type="button" class="btn btn-outline-success fw-bold"
@@ -74,10 +60,7 @@
                             </div>
                             <small class="text-muted d-block mt-1">Si no existe, crea uno aquí mismo.</small>
                         @endif
-
-                        @error('id_departamento')
-                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
+                        @error('id_departamento')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="col-md-3">
@@ -133,15 +116,24 @@
                 </div>
 
                 <hr>
-                <h6>Materiales Utilizados</h6>
-                <table class="table table-bordered" id="tablaMateriales">
+
+                {{-- Encabezado materiales con botón Nuevo Material --}}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0">Materiales Utilizados</h6>
+                    <button type="button" class="btn btn-outline-success btn-sm fw-bold"
+                            data-bs-toggle="modal" data-bs-target="#modalCrearMaterialC">
+                        <i class="fas fa-plus me-1"></i> Nuevo Material
+                    </button>
+                </div>
+
+                <table class="table table-bordered mb-4" id="tablaMateriales">
                     <thead class="table-light">
                     <tr><th>Material</th><th width="120">Cantidad</th><th width="90">Acción</th></tr>
                     </thead>
                     <tbody>
                     <tr>
                         <td>
-                            <select name="materiales[0][id_material]" class="form-select">
+                            <select name="materiales[0][id_material]" class="form-select select-material">
                                 <option value="">Seleccionar material</option>
                                 @foreach(\DB::table('catalogo_materiales')->get() as $mat)
                                     <option value="{{ $mat->id_material }}">{{ $mat->nombre }}</option>
@@ -176,15 +168,13 @@
         </div>
     </div>
 
-    {{-- MODAL CREAR DEPARTAMENTO (solo si NO viene de ticket) --}}
+    {{-- MODAL CREAR DEPARTAMENTO --}}
     @if(!$ticketDeptId)
         <div class="modal fade" id="modalCrearDepartamentoFormatoC" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-md modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg">
                     <div class="modal-header bg-success text-white border-0">
-                        <h5 class="modal-title fw-bold">
-                            <i class="fas fa-building me-2"></i> Registrar Departamento
-                        </h5>
+                        <h5 class="modal-title fw-bold"><i class="fas fa-building me-2"></i> Registrar Departamento</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <form id="formCrearDepartamentoFormatoC">
@@ -213,61 +203,136 @@
         </div>
     @endif
 
+    {{-- MODAL CREAR MATERIAL --}}
+    <div class="modal fade" id="modalCrearMaterialC" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-md modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-success text-white border-0">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-box me-2"></i> Registrar Material</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formCrearMaterialC">
+                    @csrf
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Nombre *</label>
+                            <input type="text" name="nombre" class="form-control shadow-sm" required maxlength="50">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Unidad sugerida</label>
+                            <select name="unidad_sugerida" id="selectUnidadC" class="form-select shadow-sm">
+                                <option value="">Sin unidad</option>
+                                <option value="pza">Pieza</option>
+                                <option value="mts">Metros</option>
+                                <option value="caja">Caja</option>
+                                <option value="lt">Litro</option>
+                                <option value="otro">Otro…</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="unidadOtroCDiv" style="display:none;">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Especificar unidad</label>
+                            <input type="text" name="unidad_otro" id="unidadOtroC" class="form-control shadow-sm" maxlength="20">
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0">
+                        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success btn-sm fw-bold px-4 rounded-pill shadow-sm">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @section('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function(){
 
-            // ----- Materiales -----
+            // ----- Unidad "otro" en modal material -----
+            document.getElementById('selectUnidadC').addEventListener('change', function() {
+                const show = this.value === 'otro';
+                document.getElementById('unidadOtroCDiv').style.display = show ? 'block' : 'none';
+                const inp = document.getElementById('unidadOtroC');
+                inp.required = show;
+                if (!show) inp.value = '';
+            });
+
+            // ----- Filas de materiales -----
+            let opcionesMateriales = document.querySelector('#tablaMateriales .select-material').innerHTML;
+
             document.addEventListener('click', e => {
                 if (e.target.closest('.agregar-material')) {
                     const tbody = document.querySelector('#tablaMateriales tbody');
                     const index = tbody.querySelectorAll('tr').length;
-                    const fila = `<tr><td><select name="materiales[${index}][id_material]" class="form-select"><option value="">Seleccionar material</option>@foreach(\DB::table('catalogo_materiales')->get() as $mat)<option value="{{ $mat->id_material }}">{{ $mat->nombre }}</option>@endforeach</select></td><td><input type="number" name="materiales[${index}][cantidad]" class="form-control" min="1" value="1"></td><td class="text-center"><button type="button" class="btn btn-outline-danger btn-sm eliminar-material"><i class="fas fa-trash"></i></button></td></tr>`;
-                    tbody.insertAdjacentHTML('beforeend', fila);
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                <td><select name="materiales[${index}][id_material]" class="form-select select-material">${opcionesMateriales}</select></td>
+                <td><input type="number" name="materiales[${index}][cantidad]" class="form-control" min="1" value="1"></td>
+                <td class="text-center"><button type="button" class="btn btn-outline-danger btn-sm eliminar-material"><i class="fas fa-trash"></i></button></td>`;
+                    tbody.appendChild(fila);
                 }
-                if (e.target.closest('.eliminar-material')) { e.target.closest('tr').remove(); }
+                if (e.target.closest('.eliminar-material')) e.target.closest('tr').remove();
             });
 
-            // ----- Crear departamento (solo si NO viene de ticket) -----
+            // ----- quickStore Departamento -----
             const formDepto = document.getElementById('formCrearDepartamentoFormatoC');
-            if (!formDepto) return;
+            if (formDepto) {
+                formDepto.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const btn = formDepto.querySelector('button[type="submit"]');
+                    btn.disabled = true;
+                    try {
+                        const res = await fetch("{{ route('admin.departamentos.quickStore') }}", {
+                            method: "POST",
+                            headers: { "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": "{{ csrf_token() }}", "Accept": "application/json" },
+                            body: new FormData(formDepto)
+                        });
+                        const data = await res.json();
+                        if (!res.ok) { alert(data?.message || 'Error al crear departamento'); return; }
+                        const sel = document.getElementById('selectDepartamentoFormatoC');
+                        const opt = document.createElement('option');
+                        opt.value = data.id_departamento; opt.textContent = data.nombre; opt.selected = true;
+                        sel.appendChild(opt);
+                        bootstrap.Modal.getInstance(document.getElementById('modalCrearDepartamentoFormatoC'))?.hide();
+                        formDepto.reset();
+                        document.getElementById('activoDeptoFormatoC').checked = true;
+                    } catch (err) { console.error(err); alert('No se pudo crear el departamento.'); }
+                    finally { btn.disabled = false; }
+                });
+            }
 
-            formDepto.addEventListener('submit', async (e) => {
+            // ----- quickStore Material -----
+            const formMaterial = document.getElementById('formCrearMaterialC');
+            formMaterial.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const btn = formDepto.querySelector('button[type="submit"]');
+                const btn = formMaterial.querySelector('button[type="submit"]');
                 btn.disabled = true;
                 try {
-                    const res = await fetch("{{ route('admin.departamentos.quickStore') }}", {
+                    const res = await fetch("{{ route('admin.materiales.quickStore') }}", {
                         method: "POST",
-                        headers: {
-                            "X-Requested-With": "XMLHttpRequest",
-                            "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                            "Accept": "application/json"
-                        },
-                        body: new FormData(formDepto)
+                        headers: { "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": "{{ csrf_token() }}", "Accept": "application/json" },
+                        body: new FormData(formMaterial)
                     });
                     const data = await res.json();
-                    if (!res.ok) { alert(data?.message || 'Error al crear departamento'); return; }
+                    if (!res.ok) { alert(data?.message || 'Error al crear material'); return; }
 
-                    const sel = document.getElementById('selectDepartamentoFormatoC');
-                    const opt = document.createElement('option');
-                    opt.value = data.id_departamento;
-                    opt.textContent = data.nombre;
-                    opt.selected = true;
-                    sel.appendChild(opt);
+                    // Agregar opción a todos los selects existentes
+                    document.querySelectorAll('#tablaMateriales .select-material').forEach(sel => {
+                        const opt = document.createElement('option');
+                        opt.value = data.id_material; opt.textContent = data.nombre;
+                        sel.appendChild(opt);
+                    });
+                    // Actualizar template para filas nuevas
+                    opcionesMateriales = document.querySelector('#tablaMateriales .select-material').innerHTML;
 
-                    bootstrap.Modal.getInstance(document.getElementById('modalCrearDepartamentoFormatoC'))?.hide();
-                    formDepto.reset();
-                    document.getElementById('activoDeptoFormatoC').checked = true;
-                } catch (err) {
-                    console.error(err);
-                    alert('No se pudo crear el departamento.');
-                } finally {
-                    btn.disabled = false;
-                }
+                    bootstrap.Modal.getInstance(document.getElementById('modalCrearMaterialC'))?.hide();
+                    formMaterial.reset();
+                    document.getElementById('selectUnidadC').dispatchEvent(new Event('change'));
+                } catch (err) { console.error(err); alert('No se pudo crear el material.'); }
+                finally { btn.disabled = false; }
             });
+
         });
     </script>
 @endsection

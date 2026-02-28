@@ -191,6 +191,8 @@ Route::prefix('admin/materiales')
             ->name('destroy.multiple');
     });
 
+Route::post('materiales/quick-store', [MaterialController::class, 'quickStore'])
+    ->name('admin.materiales.quickStore');
 /*
 |--------------------------------------------------------------------------
 | ADMIN: DEPARTAMENTOS (catálogo) -> SOLO ADMIN REAL

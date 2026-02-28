@@ -29,7 +29,6 @@
             <form method="POST" action="{{ route('admin.formatos.b.store') }}">
                 @csrf
 
-                {{-- SECCIÓN: DATOS DE CABECERA --}}
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <label class="form-label">Subtipo de equipo <span class="text-danger">*</span></label>
@@ -48,35 +47,21 @@
                         <label class="form-label small fw-bold text-muted text-uppercase">
                             Departamento <span class="text-danger">*</span>
                         </label>
-
-                        @php
-                            $selectedDept = $ticketDeptId ?? old('id_departamento');
-                        @endphp
-
+                        @php $selectedDept = $ticketDeptId ?? old('id_departamento'); @endphp
                         @if($ticketDeptId)
-                            <select name="_depto_display"
-                                    class="form-select @error('id_departamento') is-invalid @enderror"
-                                    disabled>
+                            <select name="_depto_display" class="form-select @error('id_departamento') is-invalid @enderror" disabled>
                                 @foreach($departamentos->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE) as $dep)
-                                    <option value="{{ $dep->id_departamento }}"
-                                        {{ $selectedDept == $dep->id_departamento ? 'selected' : '' }}>
-                                        {{ $dep->nombre }}
-                                    </option>
+                                    <option value="{{ $dep->id_departamento }}" {{ $selectedDept == $dep->id_departamento ? 'selected' : '' }}>{{ $dep->nombre }}</option>
                                 @endforeach
                             </select>
                             <input type="hidden" name="id_departamento" value="{{ $ticketDeptId }}">
                         @else
                             <div class="input-group">
-                                <select id="selectDepartamentoFormatoB"
-                                        name="id_departamento"
-                                        class="form-select shadow-sm border-light-subtle @error('id_departamento') is-invalid @enderror"
-                                        required>
+                                <select id="selectDepartamentoFormatoB" name="id_departamento"
+                                        class="form-select shadow-sm @error('id_departamento') is-invalid @enderror" required>
                                     <option value="">Selecciona un departamento</option>
                                     @foreach($departamentos->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE) as $dep)
-                                        <option value="{{ $dep->id_departamento }}"
-                                            {{ old('id_departamento') == $dep->id_departamento ? 'selected' : '' }}>
-                                            {{ $dep->nombre }}
-                                        </option>
+                                        <option value="{{ $dep->id_departamento }}" {{ old('id_departamento') == $dep->id_departamento ? 'selected' : '' }}>{{ $dep->nombre }}</option>
                                     @endforeach
                                 </select>
                                 <button type="button" class="btn btn-outline-success fw-bold"
@@ -86,10 +71,7 @@
                             </div>
                             <small class="text-muted d-block mt-1">Si no existe, crea uno aquí mismo.</small>
                         @endif
-
-                        @error('id_departamento')
-                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
+                        @error('id_departamento')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
                 </div>
 
@@ -122,7 +104,6 @@
                     </div>
                 </div>
 
-                {{-- BLOQUE DINÁMICO COMPUTADORA --}}
                 <div id="bloqueComputadora" style="display:none;" class="p-3 bg-light rounded mb-3">
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -170,11 +151,8 @@
                         <label>Tipo de servicio <span class="text-danger">*</span></label>
                         <select name="tipo_servicio" class="form-select" required>
                             <option value="">Seleccionar</option>
-                            <option>Preventivo</option>
-                            <option>Correctivo</option>
-                            <option>Instalación</option>
-                            <option>Corrección</option>
-                            <option>Diagnóstico</option>
+                            <option>Preventivo</option><option>Correctivo</option>
+                            <option>Instalación</option><option>Corrección</option><option>Diagnóstico</option>
                         </select>
                     </div>
                 </div>
@@ -188,9 +166,7 @@
                         <label>Origen de la falla <span class="text-danger">*</span></label>
                         <select name="origen_falla" class="form-select" required>
                             <option value="">Seleccionar</option>
-                            <option>Desgaste natural</option>
-                            <option>Mala operación</option>
-                            <option>Otro</option>
+                            <option>Desgaste natural</option><option>Mala operación</option><option>Otro</option>
                         </select>
                     </div>
                 </div>
@@ -212,7 +188,15 @@
                 </div>
 
                 <hr>
-                <h6 class="text-primary mb-3"><i class="fas fa-boxes me-1"></i> Materiales y Observaciones</h6>
+
+                {{-- Encabezado materiales con botón Nuevo Material --}}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="text-primary mb-0"><i class="fas fa-boxes me-1"></i> Materiales y Observaciones</h6>
+                    <button type="button" class="btn btn-outline-success btn-sm fw-bold"
+                            data-bs-toggle="modal" data-bs-target="#modalCrearMaterialB">
+                        <i class="fas fa-plus me-1"></i> Nuevo Material
+                    </button>
+                </div>
 
                 <table class="table table-bordered mb-4" id="tablaMateriales">
                     <thead class="table-light">
@@ -221,7 +205,7 @@
                     <tbody>
                     <tr>
                         <td>
-                            <select name="materiales[0][id_material]" class="form-select">
+                            <select name="materiales[0][id_material]" class="form-select select-material">
                                 <option value="">Sin material / Seleccionar</option>
                                 @foreach(\DB::table('catalogo_materiales')->orderBy('nombre')->get() as $mat)
                                     <option value="{{ $mat->id_material }}">{{ $mat->nombre }}</option>
@@ -270,15 +254,13 @@
         </div>
     </div>
 
-    {{-- MODAL CREAR DEPARTAMENTO (solo si NO viene de ticket) --}}
+    {{-- MODAL CREAR DEPARTAMENTO --}}
     @if(!$ticketDeptId)
         <div class="modal fade" id="modalCrearDepartamentoFormatoB" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-md modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg">
                     <div class="modal-header bg-success text-white border-0">
-                        <h5 class="modal-title fw-bold">
-                            <i class="fas fa-building me-2"></i> Registrar Departamento
-                        </h5>
+                        <h5 class="modal-title fw-bold"><i class="fas fa-building me-2"></i> Registrar Departamento</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <form id="formCrearDepartamentoFormatoB">
@@ -307,6 +289,46 @@
         </div>
     @endif
 
+    {{-- MODAL CREAR MATERIAL --}}
+    <div class="modal fade" id="modalCrearMaterialB" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-md modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-success text-white border-0">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-box me-2"></i> Registrar Material</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formCrearMaterialB">
+                    @csrf
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Nombre *</label>
+                            <input type="text" name="nombre" class="form-control shadow-sm" required maxlength="50">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Unidad sugerida</label>
+                            <select name="unidad_sugerida" id="selectUnidadB" class="form-select shadow-sm">
+                                <option value="">Sin unidad</option>
+                                <option value="pza">Pieza</option>
+                                <option value="mts">Metros</option>
+                                <option value="caja">Caja</option>
+                                <option value="lt">Litro</option>
+                                <option value="otro">Otro…</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="unidadOtroBDiv" style="display:none;">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Especificar unidad</label>
+                            <input type="text" name="unidad_otro" id="unidadOtroB" class="form-control shadow-sm" maxlength="20">
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0">
+                        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success btn-sm fw-bold px-4 rounded-pill shadow-sm">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @section('scripts')
@@ -320,91 +342,103 @@
             const camposPC = ['inputProcesador', 'selectRam', 'selectDisco', 'selectSO'];
 
             selectSubtipo.addEventListener('change', function() {
-                if (this.value === 'otro') {
-                    inputSubtipoOtro.style.display = 'block';
-                    inputSubtipoOtro.required = true;
-                } else {
-                    inputSubtipoOtro.style.display = 'none';
-                    inputSubtipoOtro.required = false;
-                    inputSubtipoOtro.value = '';
-                }
-                if (this.value === 'Computadora') {
-                    bloqueComputadora.style.display = 'block';
-                    camposPC.forEach(id => document.getElementById(id).required = true);
-                } else {
-                    bloqueComputadora.style.display = 'none';
-                    camposPC.forEach(id => {
-                        const el = document.getElementById(id);
-                        el.required = false;
-                        el.value = '';
-                    });
-                }
+                inputSubtipoOtro.style.display = this.value === 'otro' ? 'block' : 'none';
+                inputSubtipoOtro.required = this.value === 'otro';
+                if (this.value !== 'otro') inputSubtipoOtro.value = '';
+
+                bloqueComputadora.style.display = this.value === 'Computadora' ? 'block' : 'none';
+                camposPC.forEach(id => {
+                    const el = document.getElementById(id);
+                    el.required = this.value === 'Computadora';
+                    if (this.value !== 'Computadora') el.value = '';
+                });
             });
 
-            // ----- Materiales -----
+            // ----- Unidad "otro" en modal material -----
+            document.getElementById('selectUnidadB').addEventListener('change', function() {
+                const show = this.value === 'otro';
+                document.getElementById('unidadOtroBDiv').style.display = show ? 'block' : 'none';
+                const inp = document.getElementById('unidadOtroB');
+                inp.required = show;
+                if (!show) inp.value = '';
+            });
+
+            // ----- Filas de materiales -----
+            // Captura opciones iniciales para clonar en nuevas filas
+            let opcionesMateriales = document.querySelector('#tablaMateriales .select-material').innerHTML;
+
             document.addEventListener('click', e => {
-                if(e.target.closest('.agregar-material')){
+                if (e.target.closest('.agregar-material')) {
                     const tbody = document.querySelector('#tablaMateriales tbody');
                     const index = tbody.querySelectorAll('tr').length;
                     const fila = document.createElement('tr');
                     fila.innerHTML = `
-                        <td>
-                            <select name="materiales[${index}][id_material]" class="form-select">
-                                <option value="">Sin material / Seleccionar</option>
-                                @foreach(\DB::table('catalogo_materiales')->orderBy('nombre')->get() as $mat)
-                    <option value="{{ $mat->id_material }}">{{ $mat->nombre }}</option>
-                                @endforeach
-                    </select>
-                </td>
-                <td><input type="number" name="materiales[${index}][cantidad]" class="form-control" min="1"></td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-outline-danger btn-sm eliminar-material"><i class="fas fa-trash"></i></button>
-                        </td>`;
+                        <td><select name="materiales[${index}][id_material]" class="form-select select-material">${opcionesMateriales}</select></td>
+                        <td><input type="number" name="materiales[${index}][cantidad]" class="form-control" min="1"></td>
+                        <td class="text-center"><button type="button" class="btn btn-outline-danger btn-sm eliminar-material"><i class="fas fa-trash"></i></button></td>`;
                     tbody.appendChild(fila);
                 }
-                if(e.target.closest('.eliminar-material')){
-                    e.target.closest('tr').remove();
-                }
+                if (e.target.closest('.eliminar-material')) e.target.closest('tr').remove();
             });
 
-            // ----- Crear departamento (solo si NO viene de ticket) -----
+            // ----- quickStore Departamento -----
             const formDepto = document.getElementById('formCrearDepartamentoFormatoB');
-            if (!formDepto) return;
+            if (formDepto) {
+                formDepto.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const btn = formDepto.querySelector('button[type="submit"]');
+                    btn.disabled = true;
+                    try {
+                        const res = await fetch("{{ route('admin.departamentos.quickStore') }}", {
+                            method: "POST",
+                            headers: { "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": "{{ csrf_token() }}", "Accept": "application/json" },
+                            body: new FormData(formDepto)
+                        });
+                        const data = await res.json();
+                        if (!res.ok) { alert(data?.message || 'Error al crear departamento'); return; }
+                        const sel = document.getElementById('selectDepartamentoFormatoB');
+                        const opt = document.createElement('option');
+                        opt.value = data.id_departamento; opt.textContent = data.nombre; opt.selected = true;
+                        sel.appendChild(opt);
+                        bootstrap.Modal.getInstance(document.getElementById('modalCrearDepartamentoFormatoB'))?.hide();
+                        formDepto.reset();
+                        document.getElementById('activoDeptoFormatoB').checked = true;
+                    } catch (err) { console.error(err); alert('No se pudo crear el departamento.'); }
+                    finally { btn.disabled = false; }
+                });
+            }
 
-            formDepto.addEventListener('submit', async (e) => {
+            // ----- quickStore Material -----
+            const formMaterial = document.getElementById('formCrearMaterialB');
+            formMaterial.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const btn = formDepto.querySelector('button[type="submit"]');
+                const btn = formMaterial.querySelector('button[type="submit"]');
                 btn.disabled = true;
                 try {
-                    const res = await fetch("{{ route('admin.departamentos.quickStore') }}", {
+                    const res = await fetch("{{ route('admin.materiales.quickStore') }}", {
                         method: "POST",
-                        headers: {
-                            "X-Requested-With": "XMLHttpRequest",
-                            "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                            "Accept": "application/json"
-                        },
-                        body: new FormData(formDepto)
+                        headers: { "X-Requested-With": "XMLHttpRequest", "X-CSRF-TOKEN": "{{ csrf_token() }}", "Accept": "application/json" },
+                        body: new FormData(formMaterial)
                     });
                     const data = await res.json();
-                    if (!res.ok) { alert(data?.message || 'Error al crear departamento'); return; }
+                    if (!res.ok) { alert(data?.message || 'Error al crear material'); return; }
 
-                    const sel = document.getElementById('selectDepartamentoFormatoB');
-                    const opt = document.createElement('option');
-                    opt.value = data.id_departamento;
-                    opt.textContent = data.nombre;
-                    opt.selected = true;
-                    sel.appendChild(opt);
+                    // Agregar la nueva opción a TODOS los selects de material (filas existentes y futuras)
+                    document.querySelectorAll('#tablaMateriales .select-material').forEach(sel => {
+                        const opt = document.createElement('option');
+                        opt.value = data.id_material; opt.textContent = data.nombre; opt.selected = false;
+                        sel.appendChild(opt);
+                    });
+                    // También actualizar el template de opciones para filas nuevas
+                    opcionesMateriales = document.querySelector('#tablaMateriales .select-material').innerHTML;
 
-                    bootstrap.Modal.getInstance(document.getElementById('modalCrearDepartamentoFormatoB'))?.hide();
-                    formDepto.reset();
-                    document.getElementById('activoDeptoFormatoB').checked = true;
-                } catch (err) {
-                    console.error(err);
-                    alert('No se pudo crear el departamento.');
-                } finally {
-                    btn.disabled = false;
-                }
+                    bootstrap.Modal.getInstance(document.getElementById('modalCrearMaterialB'))?.hide();
+                    formMaterial.reset();
+                    document.getElementById('selectUnidadB').dispatchEvent(new Event('change'));
+                } catch (err) { console.error(err); alert('No se pudo crear el material.'); }
+                finally { btn.disabled = false; }
             });
+
         });
     </script>
 @endsection
