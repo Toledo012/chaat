@@ -22,7 +22,7 @@
 <div class="container-fluid px-2">
 
     {{-- HEADER DE ACCIONES --}}
-    <div class="d-flex align-items-center gap-3 mb-4">
+    <div class="d-flex align-items-center    gap-3 mb-4">
         <div class="bg-primary-subtle text-primary p-3 rounded-3 shadow-sm">
             <i class="fa-solid fa-file-invoice fa-2x"></i>
         </div>
@@ -35,38 +35,44 @@
         </a>
     </div>
 
-    {{-- ================= FILTROS MODERNOS ================= --}}
+    {{-- ================= FILTROS MODERNOS CON RANGO DE FECHAS ================= --}}
     <div class="card card-main mb-4 border-0 shadow-sm">
         <div class="card-body p-3">
             <form method="GET" action="{{ route('admin.formatos.index') }}" class="row g-3 align-items-end">
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label small fw-bold text-muted">TIPO DE FORMATO</label>
                     <select name="tipo" class="form-select form-select-sm shadow-none">
-                        <option value="">— Todos los tipos —</option>
-                        <option value="A" @selected($tipo == 'A')>Formato A - Soporte</option>
-                        <option value="B" @selected($tipo == 'B')>Formato B - Equipos</option>
-                        <option value="C" @selected($tipo == 'C')>Formato C - Redes</option>
-                        <option value="D" @selected($tipo == 'D')>Formato D - Entrega</option>
+                        <option value="">— Todos —</option>
+                        <option value="A" @selected($tipo == 'A')>Formato A</option>
+                        <option value="B" @selected($tipo == 'B')>Formato B</option>
+                        <option value="C" @selected($tipo == 'C')>Formato C</option>
+                        <option value="D" @selected($tipo == 'D')>Formato D</option>
                     </select>
                 </div>
 
                 @if(Auth::user()->isAdmin())
-                <div class="col-md-3">
-                    <label class="form-label small fw-bold text-muted">TÉCNICO / USUARIO</label>
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted small"></i></span>
-                        <input type="text" name="usuario" class="form-control border-start-0 shadow-none" placeholder="Buscar por nombre..." value="{{ $usuario }}">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-muted">TÉCNICO / USUARIO</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted small"></i></span>
+                            <input type="text" name="usuario" class="form-control border-start-0 shadow-none" placeholder="Nombre..." value="{{ $usuario }}">
+                        </div>
                     </div>
-                </div>
                 @endif
 
-                <div class="col-md-3">
-                    <label class="form-label small fw-bold text-muted">FECHA ESPECÍFICA</label>
-                    <input type="date" name="fecha" class="form-control form-control-sm shadow-none" value="{{ $fecha }}">
+                {{-- Campos de Rango de Fechas --}}
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold text-muted">DESDE</label>
+                    <input type="date" name="fecha_inicio" class="form-control form-control-sm shadow-none" value="{{ request('fecha_inicio') }}">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold text-muted">HASTA</label>
+                    <input type="date" name="fecha_fin" class="form-control form-control-sm shadow-none" value="{{ request('fecha_fin') }}">
                 </div>
 
                 <div class="col-md-3 d-flex gap-2">
-                    <button class="btn btn-dark btn-sm flex-fill fw-bold rounded-pill shadow-sm">
+                    <button type="submit" class="btn btn-dark btn-sm flex-fill fw-bold rounded-pill shadow-sm">
                         <i class="fa-solid fa-filter me-1"></i> Filtrar
                     </button>
                     <a href="{{ route('admin.formatos.index') }}" class="btn btn-outline-secondary btn-sm flex-fill fw-bold rounded-pill">
@@ -76,7 +82,6 @@
             </form>
         </div>
     </div>
-
     {{-- ================= TABLA DE RESULTADOS ================= --}}
     <div class="card card-main shadow-sm overflow-hidden">
         <div class="table-responsive">
@@ -159,11 +164,12 @@
     {{-- ================= REPORTE GENERAL ================= --}}
     <div class="mt-4 text-center">
         <a href="{{ route('admin.formatos.reporte.general', [
-                'tipo' => $tipo,
-                'usuario' => $usuario,
-                'fecha' => $fecha
-            ]) }}"
-            class="btn btn-warning shadow-sm fw-bold px-5 rounded-pill text-dark border-0">
+            'tipo' => $tipo,
+            'usuario' => $usuario,
+            'fecha_inicio' => request('fecha_inicio'),
+            'fecha_fin' => request('fecha_fin')
+        ]) }}"
+           class="btn btn-warning shadow-sm fw-bold px-5 rounded-pill text-dark border-0">
             <i class="fa-solid fa-chart-column me-2"></i>
             Generar Reporte Consolidado
         </a>

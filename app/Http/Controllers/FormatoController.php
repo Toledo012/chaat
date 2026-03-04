@@ -20,44 +20,55 @@ class FormatoController extends Controller
     // =============================
     public function index(Request $request)
     {
-      $tipo = $request->input('tipo');
-    $usuario = $request->input('usuario');
-    $fecha = $request->input('fecha');
+        $tipo = $request->input('tipo');
+        $usuario = $request->input('usuario');
 
-    $query = DB::table('servicios')
-        ->leftJoin('usuarios', 'usuarios.id_usuario', '=', 'servicios.id_usuario')
-        ->select(
-            'servicios.id_servicio',
-            'servicios.tipo_formato as tipo',
-            'servicios.fecha',
-            'usuarios.nombre'
-        )
-        ->orderByDesc('servicios.id_servicio');
+        $fecha_inicio = $request->input('fecha_inicio');
+        $fecha_fin = $request->input('fecha_fin');
 
-    // 🔍 Filtros desde el formulario
-    if (!empty($tipo)) {
-        $query->where('servicios.tipo_formato', $tipo);
+        $query = DB::table('servicios')
+            ->leftJoin('usuarios', 'usuarios.id_usuario', '=', 'servicios.id_usuario')
+            ->select(
+                'servicios.id_servicio',
+                'servicios.tipo_formato as tipo',
+                'servicios.fecha',
+                'usuarios.nombre'
+            )
+            ->orderByDesc('servicios.id_servicio');
+
+        //  Filtro por Tipo
+        if (!empty($tipo)) {
+            $query->where('servicios.tipo_formato', $tipo);
+        }
+
+        //  Filtro por Usuario (Nombre)
+        if (!empty($usuario)) {
+            $query->where('usuarios.nombre', 'like', "%$usuario%");
+        }
+
+        // Filtro por Rango de Fechas
+        if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+            // Si ambas fechas están presentes, buscamos el rango inclusivo
+            $query->whereBetween('servicios.fecha', [$fecha_inicio, $fecha_fin]);
+        } elseif (!empty($fecha_inicio)) {
+            // Si solo pone "desde", filtramos de esa fecha en adelante
+            $query->whereDate('servicios.fecha', '>=', $fecha_inicio);
+        } elseif (!empty($fecha_fin)) {
+            // Si solo pone "hasta", filtramos todo lo anterior a esa fecha
+            $query->whereDate('servicios.fecha', '<=', $fecha_fin);
+        }
+
+        // Filtro por usuario autenticado
+        $cuenta = Auth::user();
+        if (!$cuenta->isAdmin()) {
+            $query->where('servicios.id_usuario', $cuenta->id_usuario);
+        }
+
+        $formatos = $query->get();
+
+        // Pasamos las variables a la vista para que los campos no se vacíen al filtrar
+        return view('admin.formatos.index', compact('formatos', 'tipo', 'usuario', 'fecha_inicio', 'fecha_fin'));
     }
-    if (!empty($usuario)) {
-        $query->where('usuarios.nombre', 'like', "%$usuario%");
-    }
-    if (!empty($fecha)) {
-        $query->whereDate('servicios.fecha', $fecha);
-    }
-
-    // ⚙️ Filtro por usuario autenticado
-    $cuenta = Auth::user();
-
-    if (!$cuenta->isAdmin()) {
-        // Si no es admin, solo ve los servicios que él mismo creó
-        $query->where('servicios.id_usuario', $cuenta->id_usuario);
-    }
-
-    $formatos = $query->get();
-
-    return view('admin.formatos.index', compact('formatos', 'tipo', 'usuario', 'fecha'));
-    }
-
     // =============================
     // CREAR NUEVO FORMATO (vista)
     // =============================
@@ -1067,65 +1078,94 @@ public function update(Request $request, $tipo, $id)
 
 // REPORTE GENERAL PDF
 // =============================
-public function reporteGeneral(Request $request)
-{
-   $tipo = $request->input('tipo');
-    $usuario = $request->input('usuario');
-    $fecha = $request->input('fecha');
+    public function reporteGeneral(Request $request)
+    {
+        // Captura de filtros
+        $tipo = $request->input('tipo');
+        $usuario = $request->input('usuario');
+        $fecha_inicio = $request->input('fecha_inicio');
+        $fecha_fin = $request->input('fecha_fin');
 
-    $cuenta = Auth::user();
+        $cuenta = Auth::user();
 
-    // Base principal
-    $query = DB::table('servicios')
-        ->leftJoin('usuarios', 'usuarios.id_usuario', '=', 'servicios.id_usuario')
-        ->select(
-            'servicios.id_servicio',
-            'servicios.folio',
-            'servicios.fecha',
-            'servicios.tipo_formato',
-            'usuarios.nombre as usuario'
-        );
+        // 1. Consulta Base con Join a departamentos
+        $query = DB::table('servicios')
+            ->leftJoin('usuarios', 'usuarios.id_usuario', '=', 'servicios.id_usuario')
+            ->leftJoin('departamentos', 'departamentos.id_departamento', '=', 'servicios.id_departamento')
+            ->select(
+                'servicios.*',
+                'usuarios.nombre as usuario',
+                'departamentos.nombre as departamento_nombre'
+            )
+            ->orderBy('servicios.fecha', 'desc');
 
-    //Si el usuario NO es admin, limitar a sus registros
-    if (!$cuenta->isAdmin()) {
-        $query->where('servicios.id_usuario', $cuenta->id_usuario);
+        // Filtro de seguridad
+        if (!$cuenta->isAdmin()) {
+            $query->where('servicios.id_usuario', $cuenta->id_usuario);
+        }
+
+        if ($tipo) $query->where('servicios.tipo_formato', $tipo);
+        if ($usuario && $cuenta->isAdmin()) $query->where('usuarios.nombre', 'like', "%$usuario%");
+
+        if ($fecha_inicio && $fecha_fin) {
+            $query->whereBetween('servicios.fecha', [$fecha_inicio, $fecha_fin]);
+        } elseif ($fecha_inicio) {
+            $query->whereDate('servicios.fecha', '>=', $fecha_inicio);
+        }
+
+        $servicios = $query->get();
+
+        if ($servicios->isEmpty()) {
+            return back()->with('error', 'No hay registros para los filtros seleccionados.');
+        }
+
+        // 2. Cálculos para Gráficas y Resumen
+        $totalGlobal = $servicios->count();
+        $resumenUsuarios = $servicios->groupBy('usuario')->map(function ($grupo) {
+            return [
+                'total' => $grupo->count(),
+                'A' => $grupo->where('tipo_formato', 'A')->count(),
+                'B' => $grupo->where('tipo_formato', 'B')->count(),
+                'C' => $grupo->where('tipo_formato', 'C')->count(),
+                'D' => $grupo->where('tipo_formato', 'D')->count(),
+            ];
+        })->sortByDesc('total');
+
+        $statsTipos = [
+            'A' => $servicios->where('tipo_formato', 'A')->count(),
+            'B' => $servicios->where('tipo_formato', 'B')->count(),
+            'C' => $servicios->where('tipo_formato', 'C')->count(),
+            'D' => $servicios->where('tipo_formato', 'D')->count(),
+        ];
+
+        // Tabla de Análisis Mensual (La que faltaba)
+        $analisisMensual = $servicios->groupBy(function($d) {
+            return \Carbon\Carbon::parse($d->fecha)->format('Y-m');
+        })->map->count();
+
+        // 3. Unión de detalles específicos
+        $formatos = collect();
+        foreach ($servicios as $s) {
+            $detalle = match ($s->tipo_formato) {
+                'A' => DB::table('formato_a')->where('id_servicio', $s->id_servicio)->first(),
+                'B' => DB::table('formato_b')->where('id_servicio', $s->id_servicio)->first(),
+                'C' => DB::table('formato_c')->where('id_servicio', $s->id_servicio)->first(),
+                'D' => DB::table('formato_d')->where('id_servicio', $s->id_servicio)->first(),
+                default => null,
+            };
+
+            $detalleArray = $detalle ? (array)$detalle : [];
+            $formatos->push((object) array_merge((array)$s, $detalleArray));
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView(
+            'admin.formatos.pdfs.pdf_reporte_general',
+            compact('formatos', 'tipo', 'usuario', 'fecha_inicio', 'fecha_fin', 'resumenUsuarios', 'totalGlobal', 'statsTipos', 'analisisMensual')
+        )->setPaper('letter', 'portrait');
+
+        return $pdf->stream('Reporte_SEMAHN_' . now()->format('dmY_His') . '.pdf');
     }
 
-    //  Aplicar filtros opcionales
-    if ($tipo) $query->where('servicios.tipo_formato', $tipo);
-    if ($usuario && $cuenta->isAdmin()) // Solo admins pueden filtrar por usuario
-        $query->where('usuarios.nombre', 'like', "%$usuario%");
-    if ($fecha) $query->whereDate('servicios.fecha', $fecha);
-
-    $servicios = $query->get();
-
-    // Unir campos adicionales según tipo
-    $formatos = collect();
-    foreach ($servicios as $s) {
-        $detalle = match ($s->tipo_formato) {
-            'A' => DB::table('formato_a')->where('id_servicio', $s->id_servicio)->first(),
-            'B' => DB::table('formato_b')->where('id_servicio', $s->id_servicio)->first(),
-            'C' => DB::table('formato_c')->where('id_servicio', $s->id_servicio)->first(),
-            'D' => DB::table('formato_d')->where('id_servicio', $s->id_servicio)->first(),
-            default => null,
-        };
-        $formatos->push((object) array_merge((array)$s, (array)($detalle ?? [])));
-    }
-
-    if ($formatos->isEmpty()) {
-        return back()->with('error', 'No hay registros para generar el reporte.');
-    }
-
-    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView(
-        'admin.formatos.pdfs.pdf_reporte_general',
-        compact('formatos', 'tipo', 'usuario', 'fecha')
-    )->setPaper('letter', 'portrait');
-
-    $nombre = 'Reporte_Formatos_' . ($cuenta->isAdmin() ? 'General' : $cuenta->usuario->nombre) . '_' . now()->format('Ymd_His') . '.pdf';
-
-    return $pdf->stream($nombre);
-
-}
 
 
 }
