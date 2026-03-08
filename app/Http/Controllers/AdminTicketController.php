@@ -58,6 +58,64 @@ class AdminTicketController extends Controller
         ));
     }
 
+    public function data(Request $request)
+    {
+        $qEstado    = $request->get('estado');
+        $qTipo      = $request->get('tipo_formato');
+        $qPrioridad = $request->get('prioridad');
+        $qBuscar    = $request->get('buscar');
+
+        $query = Ticket::with([
+            'asignadoA:id_cuenta,username',
+            'creadoPor:id_cuenta,username',
+        ])->orderByDesc('id_ticket');
+
+        if ($qEstado) {
+            $query->where('estado', $qEstado);
+        }
+
+        if ($qTipo) {
+            $query->where('tipo_formato', $qTipo);
+        }
+
+        if ($qPrioridad) {
+            $query->where('prioridad', $qPrioridad);
+        }
+
+        if ($qBuscar) {
+            $query->where(function ($qq) use ($qBuscar) {
+                $qq->where('folio', 'like', "%{$qBuscar}%")
+                    ->orWhere('titulo', 'like', "%{$qBuscar}%");
+            });
+        }
+
+        $tickets = $query->get()->map(function ($ticket) {
+            return [
+                'id_ticket'        => $ticket->id_ticket,
+                'folio'            => $ticket->folio,
+                'titulo'           => $ticket->titulo,
+                'solicitante'      => $ticket->solicitante,
+                'descripcion'      => $ticket->descripcion,
+                'prioridad'        => $ticket->prioridad,
+                'tipo_formato'     => $ticket->tipo_formato,
+                'estado'           => $ticket->estado,
+                'id_servicio'      => $ticket->id_servicio,
+                'id_departamento'  => $ticket->id_departamento,
+                'created_at'       => $ticket->created_at,
+                'updated_at'       => $ticket->updated_at,
+                'creado_por'       => $ticket->creadoPor ? [
+                    'id_cuenta' => $ticket->creadoPor->id_cuenta,
+                    'username'  => $ticket->creadoPor->username,
+                ] : null,
+                'asignado_a'       => $ticket->asignadoA ? [
+                    'id_cuenta' => $ticket->asignadoA->id_cuenta,
+                    'username'  => $ticket->asignadoA->username,
+                ] : null,
+            ];
+        });
+
+        return response()->json($tickets);
+    }
     public function asignar(Request $request, Ticket $ticket)
     {
         $data = $request->validate([

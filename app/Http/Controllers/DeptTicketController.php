@@ -37,20 +37,63 @@ class DeptTicketController extends Controller
 
         $tickets = $query->paginate(12)->withQueryString();
 
-        // ✅ mini cambio: para mostrar el nombre del depto en el modal de crear
+        //cambio: para mostrar el nombre del depto en el modal de crear
         $deptId = $cuenta->usuario->id_departamento ?? $cuenta->id_departamento ?? null;
         $departamento = $deptId ? Departamento::find($deptId) : null;
 
         return view('departamento.tickets.index', compact('tickets', 'qEstado', 'qBuscar', 'departamento'));
     }
 
+
+    public function data(Request $request)
+    {
+        $cuenta = auth()->user();
+        $cuentaId = $cuenta->id_cuenta;
+
+        $qEstado = $request->get('estado');
+        $qBuscar = $request->get('buscar');
+
+        $query = Ticket::query()
+            ->where('creado_por', $cuentaId)
+            ->orderByDesc('id_ticket');
+
+        if ($qEstado) {
+            $query->where('estado', $qEstado);
+        }
+
+        if ($qBuscar) {
+            $query->where(function ($qq) use ($qBuscar) {
+                $qq->where('folio', 'like', "%{$qBuscar}%")
+                    ->orWhere('titulo', 'like', "%{$qBuscar}%")
+                    ->orWhere('solicitante', 'like', "%{$qBuscar}%");
+            });
+        }
+
+        $tickets = $query->get()->map(function ($ticket) {
+            return [
+                'id_ticket'      => $ticket->id_ticket,
+                'folio'          => $ticket->folio,
+                'titulo'         => $ticket->titulo,
+                'solicitante'    => $ticket->solicitante,
+                'descripcion'    => $ticket->descripcion,
+                'prioridad'      => $ticket->prioridad,
+                'tipo_formato'   => $ticket->tipo_formato,
+                'estado'         => $ticket->estado,
+                'id_servicio'    => $ticket->id_servicio,
+                'created_at'     => $ticket->created_at,
+                'updated_at'     => $ticket->updated_at,
+            ];
+        })->values();
+
+        return response()->json($tickets);
+    }
     public function create()
     {
         return view('departamento.tickets.create');
     }
 
     /**
-     * ✅ Centralizado: creación en TicketService
+     *  Centralizado: creación en TicketService
      * (id_departamento sale del logueado dentro del service)
      */
     public function store(Request $request)

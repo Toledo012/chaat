@@ -31,6 +31,68 @@ class UserTicketController extends Controller
         return view('user.tickets.index', compact('disponibles', 'misTickets', 'departamentos'));
     }
 
+    public function data()
+    {
+        $cuentaId = auth()->user()->id_cuenta;
+
+        $disponibles = Ticket::with(['creadoPor:id_cuenta,username'])
+            ->whereNull('asignado_a')
+            ->where('estado', 'nuevo')
+            ->orderByDesc('id_ticket')
+            ->get()
+            ->map(function ($ticket) {
+                return [
+                    'id_ticket'       => $ticket->id_ticket,
+                    'folio'           => $ticket->folio,
+                    'titulo'          => $ticket->titulo,
+                    'solicitante'     => $ticket->solicitante,
+                    'descripcion'     => $ticket->descripcion,
+                    'prioridad'       => $ticket->prioridad,
+                    'tipo_formato'    => $ticket->tipo_formato,
+                    'estado'          => $ticket->estado,
+                    'id_servicio'     => $ticket->id_servicio,
+                    'id_departamento' => $ticket->id_departamento,
+                    'created_at'      => $ticket->created_at,
+                    'updated_at'      => $ticket->updated_at,
+                    'creado_por'      => $ticket->creadoPor ? [
+                        'id_cuenta' => $ticket->creadoPor->id_cuenta,
+                        'username'  => $ticket->creadoPor->username,
+                    ] : null,
+                ];
+            })
+            ->values();
+
+        $misTickets = Ticket::with(['creadoPor:id_cuenta,username'])
+            ->where('asignado_a', $cuentaId)
+            ->orderByDesc('id_ticket')
+            ->get()
+            ->map(function ($ticket) {
+                return [
+                    'id_ticket'       => $ticket->id_ticket,
+                    'folio'           => $ticket->folio,
+                    'titulo'          => $ticket->titulo,
+                    'solicitante'     => $ticket->solicitante,
+                    'descripcion'     => $ticket->descripcion,
+                    'prioridad'       => $ticket->prioridad,
+                    'tipo_formato'    => $ticket->tipo_formato,
+                    'estado'          => $ticket->estado,
+                    'id_servicio'     => $ticket->id_servicio,
+                    'id_departamento' => $ticket->id_departamento,
+                    'created_at'      => $ticket->created_at,
+                    'updated_at'      => $ticket->updated_at,
+                    'creado_por'      => $ticket->creadoPor ? [
+                        'id_cuenta' => $ticket->creadoPor->id_cuenta,
+                        'username'  => $ticket->creadoPor->username,
+                    ] : null,
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'disponibles' => $disponibles,
+            'misTickets'  => $misTickets,
+        ]);
+    }
     public function tomar(Ticket $ticket)
     {
         $this->tickets->tomarComoUsuario(auth()->user(), $ticket);
@@ -39,7 +101,7 @@ class UserTicketController extends Controller
     }
 
     /**
-     * ✅ Centralizado: creación en TicketService
+     * Centralizado: creación en TicketService
      */
     public function store(Request $request)
     {

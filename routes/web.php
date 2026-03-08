@@ -217,6 +217,9 @@ Route::prefix('admin/tickets')
     ->group(function () {
 
         Route::get('/', [\App\Http\Controllers\AdminTicketController::class, 'index'])->name('index');
+        Route::get('/data', [\App\Http\Controllers\AdminTicketController::class, 'data'])
+            ->name('data');
+
         Route::post('/', [\App\Http\Controllers\AdminTicketController::class, 'store'])->name('store');
 
         Route::post('/{ticket}/asignar', [\App\Http\Controllers\AdminTicketController::class, 'asignar'])->name('asignar');
@@ -238,6 +241,7 @@ Route::prefix('admin/tickets')
 
 
 
+
 /*
 |--------------------------------------------------------------------------
 | TICKETS - USUARIO (TECNICO)
@@ -250,6 +254,9 @@ Route::prefix('user')
 
         Route::get('/tickets', [\App\Http\Controllers\UserTicketController::class, 'index'])
             ->name('tickets.index');
+
+        Route::get('/tickets/data', [\App\Http\Controllers\UserTicketController::class, 'data'])
+            ->name('tickets.data');
 
             Route::post('/tickets', [\App\Http\Controllers\UserTicketController::class, 'store'])
     ->name('tickets.store');
@@ -270,6 +277,8 @@ Route::prefix('user')
         Route::put('/tickets/{ticket}', [\App\Http\Controllers\UserTicketController::class, 'update'])
 //            ->middleware('perm:tickets.editar_propios')
             ->name('tickets.update');
+
+
     });
 
 /*
@@ -290,10 +299,11 @@ Route::prefix('departamento/tickets')
         Route::put('/{ticket}', [\App\Http\Controllers\DeptTicketController::class, 'update'])
             ->name('update');
 
+        Route::get('/data', [\App\Http\Controllers\DeptTicketController::class, 'data'])
+            ->name('data');
         });
 Route::post('/admin/departamentos/quick-store', [\App\Http\Controllers\DepartamentoController::class, 'quickStore'])
     ->name('admin.departamentos.quickStore');
-
 
 /*
 |--------------------------------------------------------------------------
