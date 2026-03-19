@@ -27,12 +27,12 @@ class FormatoController extends Controller
         $fecha_fin = $request->input('fecha_fin');
 
         $query = DB::table('servicios')
-            ->leftJoin('usuarios', 'usuarios.id_usuario', '=', 'servicios.id_usuario')
+            ->leftJoin('usuarios_formatos', 'usuarios_formatos.id_usuario', '=', 'servicios.id_usuario')
             ->select(
                 'servicios.id_servicio',
                 'servicios.tipo_formato as tipo',
                 'servicios.fecha',
-                'usuarios.nombre'
+                'usuarios_formatos.nombre'
             )
             ->orderByDesc('servicios.id_servicio');
 
@@ -1090,11 +1090,11 @@ public function update(Request $request, $tipo, $id)
 
         // 1. Consulta Base con Join a departamentos
         $query = DB::table('servicios')
-            ->leftJoin('usuarios', 'usuarios.id_usuario', '=', 'servicios.id_usuario')
+            ->leftJoin('usuarios_formatos', 'usuarios_formatos.id_usuario', '=', 'servicios.id_usuario')
             ->leftJoin('departamentos', 'departamentos.id_departamento', '=', 'servicios.id_departamento')
             ->select(
                 'servicios.*',
-                'usuarios.nombre as usuario',
+                'usuarios_formatos.nombre as usuarios_formatos',
                 'departamentos.nombre as departamento_nombre'
             )
             ->orderBy('servicios.fecha', 'desc');

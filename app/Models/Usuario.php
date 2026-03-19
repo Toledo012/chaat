@@ -10,9 +10,9 @@ class Usuario extends Model
 {
     use HasFactory;
 
-    protected $table = 'usuarios';
+    protected $table = 'usuarios_formatos';
     protected $primaryKey = 'id_usuario';
-    
+
     protected $fillable = [
         'nombre',
         'puesto',
@@ -36,7 +36,7 @@ class Usuario extends Model
     }
 
 
-    // Relación con Departamento    
+    // Relación con Departamento
     public function departamentos()
 {
     return $this->belongsTo(Departamento::class, 'id_departamento');

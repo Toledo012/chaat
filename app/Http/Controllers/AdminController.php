@@ -24,7 +24,7 @@ class AdminController extends Controller
         }
 
         $stats = [
-            'total_usuarios' => DB::table('usuarios')->count(),
+            'total_usuarios' => DB::table('usuarios_formatos')->count(),
             'total_servicios' => DB::table('servicios')->count(),
             'total_formatos' => 0,
             'cuentas_activas' => DB::table('cuentas')->where('estado', 'activo')->count(),
@@ -62,7 +62,7 @@ class AdminController extends Controller
         }
 
         $usuario = Usuario::find($id);
-        
+
         if ($usuario && $usuario->cuenta) {
             if ($usuario->id_usuario == 1) {
                 return redirect()->route('admin.users.index')->with('error', 'El Super Admin no puede ser modificado.');
@@ -124,7 +124,7 @@ class AdminController extends Controller
         }
 
         $usuario = Usuario::find($id);
-        
+
         if ($usuario && $usuario->cuenta) {
             if ($usuario->id_usuario == auth()->user()->id_usuario) {
                 return redirect()->route('admin.users.index')->with('error', 'No puedes desactivar tu propia cuenta.');
@@ -212,7 +212,7 @@ class AdminController extends Controller
         }
 
         $usuario = Usuario::find($id);
-        
+
         if ($usuario) {
             Cuenta::create([
                 'username' => strtolower(str_replace(' ', '.', $usuario->nombre)),
@@ -268,19 +268,19 @@ class AdminController extends Controller
         }
 
         $usuario = Usuario::find($id);
-        
+
         if ($usuario) {
             if (auth()->user()->id_usuario == $usuario->id_usuario) {
                 return redirect()->route('admin.users.index')->with('error', 'No puedes eliminar tu propia cuenta');
             }
 
-            if ($usuario->cuenta && $usuario->cuenta->id_rol == 1 && auth()->user()->id_usuario != 1) { 
+            if ($usuario->cuenta && $usuario->cuenta->id_rol == 1 && auth()->user()->id_usuario != 1) {
                 return redirect()->route('admin.users.index')->with('error', 'Solo el Super Admin puede eliminar a un Administrador.');
             }
 
             if ($usuario->cuenta) { $usuario->cuenta->delete(); }
             $usuario->delete();
-            
+
             return redirect()->route('admin.users.index')->with('success', 'Usuario eliminado exitosamente');
         }
 

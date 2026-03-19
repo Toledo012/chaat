@@ -36,14 +36,14 @@ $ticketsRecientes = \App\Models\Ticket::with('creador')->orderBy('created_at', '
 $formatosPorTipo = DB::table('servicios')->select('tipo_formato', DB::raw('COUNT(*) as total'))->groupBy('tipo_formato')->pluck('total','tipo_formato');
 
 /* Productividad */
-$usuariosFormatos = DB::table('usuarios')
-    ->leftJoin('servicios','usuarios.id_usuario','=','servicios.id_usuario')
-    ->select('usuarios.nombre', DB::raw('COUNT(servicios.id_servicio) as total'),
+$usuariosFormatos = DB::table('usuarios_formatos')
+    ->leftJoin('servicios','usuarios_formatos.id_usuario','=','servicios.id_usuario')
+    ->select('usuarios_formatos.nombre', DB::raw('COUNT(servicios.id_servicio) as total'),
         DB::raw("SUM(CASE WHEN servicios.tipo_formato='A' THEN 1 ELSE 0 END) as A"),
         DB::raw("SUM(CASE WHEN servicios.tipo_formato='B' THEN 1 ELSE 0 END) as B"),
         DB::raw("SUM(CASE WHEN servicios.tipo_formato='C' THEN 1 ELSE 0 END) as C"),
         DB::raw("SUM(CASE WHEN servicios.tipo_formato='D' THEN 1 ELSE 0 END) as D"))
-    ->groupBy('usuarios.nombre')->orderByDesc('total')->limit(5)->get();
+    ->groupBy('usuarios_formatos.nombre')->orderByDesc('total')->limit(5)->get();
 @endphp
 
 <div class="container-fluid">

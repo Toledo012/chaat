@@ -9,7 +9,7 @@ class Cuenta extends Authenticatable
 {
     protected $table = 'cuentas';
     protected $primaryKey = 'id_cuenta';
-    
+
     protected $fillable = [
         'username',
         'password',
@@ -138,7 +138,7 @@ class Cuenta extends Authenticatable
     }
 
     /**
-     * ✅ NUEVO: Obtener array de IDs de permisos del usuario
+     *  Obtener array de IDs de permisos del usuario
      */
     public function permisosArray()
     {
@@ -150,7 +150,7 @@ class Cuenta extends Authenticatable
     }
 
     /**
-     * ✅ NUEVO: Obtener nombres de permisos del usuario
+     * Obtener nombres de permisos del usuario
      */
     public function permisosNombres()
     {
@@ -183,7 +183,7 @@ class Cuenta extends Authenticatable
     {
         // Eliminar permisos actuales del rol
         DB::table('rol_permiso')->where('id_rol', $this->id_rol)->delete();
-        
+
         // Insertar nuevos permisos
         foreach ($nuevosPermisos as $permisoId) {
             DB::table('rol_permiso')->insert([
@@ -191,7 +191,7 @@ class Cuenta extends Authenticatable
                 'id_permiso' => $permisoId
             ]);
         }
-        
+
         return true;
     }
 }
