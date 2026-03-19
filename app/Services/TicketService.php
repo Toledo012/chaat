@@ -359,7 +359,7 @@ class TicketService
             $idDepartamento = $ticket->id_departamento;
 
             if (!$idDepartamento) {
-                $idDepartamento = DB::table('usuarios')
+                $idDepartamento = DB::table('usuarios_formatos')
                     ->where('id_usuario', $idUsuario)
                     ->value('id_departamento');
             }

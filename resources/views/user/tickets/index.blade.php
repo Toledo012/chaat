@@ -229,7 +229,9 @@
                         </div>
                     </div>
                     <div class="modal-footer bg-light border-0 text-center">
-                        <button type="submit" class="btn btn-primary btn-sm fw-bold px-5 rounded-pill shadow-sm mx-auto">
+                        <button type="submit"
+                                class="btn btn-primary btn-sm fw-bold px-5 rounded-pill shadow-sm mx-auto"
+                                onclick="this.disabled=true; this.innerText='Guardando...'; this.form.submit();">
                             Guardar Ticket
                         </button>
                     </div>

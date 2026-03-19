@@ -69,6 +69,8 @@ class DeptTicketController extends Controller
             });
         }
 
+        $paginated = $query->paginate(12)->withQueryString();
+
         $tickets = $query->get()->map(function ($ticket) {
             return [
                 'id_ticket'      => $ticket->id_ticket,

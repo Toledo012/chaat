@@ -1105,7 +1105,7 @@ public function update(Request $request, $tipo, $id)
         }
 
         if ($tipo) $query->where('servicios.tipo_formato', $tipo);
-        if ($usuario && $cuenta->isAdmin()) $query->where('usuarios.nombre', 'like', "%$usuario%");
+        if ($usuario && $cuenta->isAdmin()) $query->where('usuarios_formatos.nombre', 'like', "%$usuario%");
 
         if ($fecha_inicio && $fecha_fin) {
             $query->whereBetween('servicios.fecha', [$fecha_inicio, $fecha_fin]);
