@@ -206,6 +206,8 @@ public function storeA(Request $request)
         'subtipo' => 'required|string',
 
         'tipo_atencion' => 'nullable|string',
+        'num_memo' => 'nullable|string|max:100|required_if:tipo_atencion, memo',
+
         'peticion' => 'nullable|string',
 
         'tipo_servicio' => 'nullable|string',
@@ -258,6 +260,7 @@ public function storeA(Request $request)
             'id_servicio' => $idServicio,
             'subtipo' => $data['subtipo'],
             'tipo_atencion' => $data['tipo_atencion'] ?? null,
+            'num_memo'      => $data['num_memo'] ?? null,
             'peticion' => $data['peticion'] ?? null,
             'tipo_servicio' => $tipoServicioFinal,
             'trabajo_realizado' => $data['trabajo_realizado'] ?? null,
@@ -576,6 +579,7 @@ public function previewA($id)
             'formato_a.peticion',
             'formato_a.trabajo_realizado',
             'formato_a.subtipo',
+            'formato_a.num_memo',
             'formato_a.tipo_atencion',
             'formato_a.tipo_servicio',
 
@@ -752,6 +756,7 @@ public function generarPDFA($id)
             'formato_a.peticion',
             'formato_a.trabajo_realizado',
             'formato_a.subtipo',
+            'formato_a.num_memo',
             'formato_a.tipo_atencion',
             'formato_a.tipo_servicio',
 

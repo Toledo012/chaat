@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Usuario;
 use App\Models\Cuenta;
+use App\Models\CatalogoMateriales;
+use App\Models\Ticket;
 use App\Models\Servicio;
 use App\Models\Departamento;
 use Illuminate\Support\Facades\Hash;
@@ -23,16 +25,59 @@ class AdminController extends Controller
             return redirect()->route('user.dashboard');
         }
 
+        // ── KPIs ──────────────────────────────────────────────
         $stats = [
-            'total_usuarios' => DB::table('usuarios_formatos')->count(),
-            'total_servicios' => DB::table('servicios')->count(),
-            'total_formatos' => 0,
-            'cuentas_activas' => DB::table('cuentas')->where('estado', 'activo')->count(),
+            'total_usuarios'   => DB::table('usuarios_formatos')->count(),
+            'total_servicios'  => DB::table('servicios')->count(),
+            'cuentas_activas'  => DB::table('cuentas')->where('estado', 'activo')->count(),
+            'tickets_abiertos' => DB::table('tickets')->where('estado', 'nuevo')->count(),
         ];
 
-        return view('admin.dashboard', compact('stats'));
-    }
+        // ── Últimos 5 materiales ───────────────────────────────
+        $materiales = \App\Models\CatalogoMateriales::orderBy('id_material', 'desc')->limit(5)->get();
 
+        // ── Mini bandeja tickets ───────────────────────────────
+        $ticketsRecientes = \App\Models\Ticket::orderBy('created_at', 'desc')->limit(5)->get();
+
+        // ── Distribución formatos (gráfica doughnut) ───────────
+        $formatosPorTipo = DB::table('servicios')
+            ->select('tipo_formato', DB::raw('COUNT(*) as total'))
+            ->groupBy('tipo_formato')
+            ->pluck('total', 'tipo_formato');
+
+        // ── Productividad del equipo (top 5) ───────────────────
+        $maxServicios = DB::table('usuarios_formatos')
+            ->leftJoin('servicios', 'usuarios_formatos.id_usuario', '=', 'servicios.id_usuario')
+            ->selectRaw('COUNT(servicios.id_servicio) as total')
+            ->groupBy('usuarios_formatos.id_usuario')
+            ->orderByDesc('total')
+            ->limit(1)
+            ->value('total') ?? 1;
+
+        $usuariosFormatos = DB::table('usuarios_formatos')
+            ->leftJoin('servicios', 'usuarios_formatos.id_usuario', '=', 'servicios.id_usuario')
+            ->select(
+                'usuarios_formatos.nombre',
+                DB::raw('COUNT(servicios.id_servicio) as total'),
+                DB::raw("SUM(CASE WHEN servicios.tipo_formato = 'A' THEN 1 ELSE 0 END) as A"),
+                DB::raw("SUM(CASE WHEN servicios.tipo_formato = 'B' THEN 1 ELSE 0 END) as B"),
+                DB::raw("SUM(CASE WHEN servicios.tipo_formato = 'C' THEN 1 ELSE 0 END) as C"),
+                DB::raw("SUM(CASE WHEN servicios.tipo_formato = 'D' THEN 1 ELSE 0 END) as D")
+            )
+            ->groupBy('usuarios_formatos.id_usuario', 'usuarios_formatos.nombre')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
+        return view('admin.dashboard', compact(
+            'stats',
+            'materiales',
+            'ticketsRecientes',
+            'formatosPorTipo',
+            'usuariosFormatos',
+            'maxServicios'
+        ));
+    }
     public function usersIndex(Request $request)
     {
         if (!auth()->check()) {

@@ -1,36 +1,80 @@
 @extends('layouts.admin')
 
-@section('title', 'Formato A - Soporte / Desarrollo')
-@section('header_title', 'Formato A - Soporte / Desarrollo')
-@section('header_subtitle', 'Registro y documentación de actividades de soporte')
+@section('title', 'Formato A - Soporte y Desarrollo')
+@section('header_title', 'Formato A - Soporte y Desarrollo')
+@section('header_subtitle', 'Registro de servicios de soporte técnico o desarrollo institucional')
 
 @section('styles')
     <style>
-        .card { border-radius: 10px; box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.05); border: none; }
         .card-header { background-color: #399e91; color: white; font-weight: 600; }
         .form-control, .form-select { border-radius: 8px; }
         .btn-primary { background-color: #399e91; border-color: #399e91; }
         .btn-primary:hover { background-color: #2f847a; border-color: #2f847a; }
+        .alert-info { background-color: #d1f0eb; border-color: #399e91; color: #25685d; font-weight: 500; }
+
+        /* Animación suave del bloque memo */
+        #bloqueMemo {
+            overflow: hidden;
+            transition: all 0.25s ease;
+        }
     </style>
 @endsection
 
 @section('content')
     <div class="alert alert-info mb-4 d-flex align-items-center">
         <i class="fas fa-exclamation-circle me-2"></i>
-        Por favor llena todos los campos obligatorios antes de guardar el formato.
+        Llena todos los campos obligatorios antes de guardar el formato.
     </div>
 
-    <div class="card">
-        <div class="card-header">
-            <i class="fas fa-laptop-code me-2"></i> Formulario de Registro
-        </div>
-
+    <div class="card shadow border-0">
+        <div class="card-header"><i class="fas fa-headset me-2"></i>Formulario de Formato A</div>
         <div class="card-body">
             <form method="POST" action="{{ route('admin.formatos.a.store') }}">
                 @csrf
 
+                {{-- Hiddens del servicio/ticket --}}
+                <input type="hidden" name="id_servicio" value="{{ request('id_servicio') }}">
+                <input type="hidden" name="id_ticket"   value="{{ request('id_ticket') }}">
+
+                {{-- ── DEPARTAMENTO ── --}}
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Departamento <span class="text-danger">*</span></label>
+
+                        @if($ticketDeptId)
+                            {{-- Viene de ticket: solo mostrar --}}
+                            <select name="id_departamento" class="form-select" disabled>
+                                @foreach($departamentos->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE) as $dep)
+                                    <option value="{{ $dep->id_departamento }}"
+                                        {{ $ticketDeptId == $dep->id_departamento ? 'selected' : '' }}>
+                                        {{ $dep->nombre }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <input type="hidden" name="id_departamento" value="{{ $ticketDeptId }}">
+                        @else
+                            <div class="input-group">
+                                <select id="selectDepartamentoFormatoA" name="id_departamento" class="form-select" required>
+                                    <option value="">Selecciona un departamento</option>
+                                    @foreach($departamentos->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE) as $dep)
+                                        <option value="{{ $dep->id_departamento }}">{{ $dep->nombre }}</option>
+                                    @endforeach
+                                </select>
+                                <button type="button" class="btn btn-outline-success fw-bold"
+                                        data-bs-toggle="modal" data-bs-target="#modalCrearDepartamentoFormatoA">
+                                    <i class="fas fa-plus me-1"></i> Nuevo
+                                </button>
+                            </div>
+                            <small class="text-muted d-block mt-1">Si no existe, crea uno aquí mismo.</small>
+                        @endif
+                    </div>
+                </div>
+
+                <hr>
+
+                {{-- ── SUBTIPO ── --}}
                 <div class="row mb-3">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label">Subtipo <span class="text-danger">*</span></label>
                         <select name="subtipo" class="form-select" required>
                             <option value="">Selecciona...</option>
@@ -39,61 +83,8 @@
                         </select>
                     </div>
 
-                    {{-- DEPARTAMENTO --}}
+                    {{-- ── TIPO DE ATENCIÓN + BLOQUE MEMO ── --}}
                     <div class="col-md-6">
-                        <label class="form-label small fw-bold text-muted text-uppercase">
-                            Departamento <span class="text-danger">*</span>
-                        </label>
-
-                        @php
-                            $selectedDept = $ticketDeptId ?? old('id_departamento');
-                        @endphp
-
-                        {{-- Si viene de ticket: select simple disabled (sin botón) --}}
-                        @if($ticketDeptId)
-                            <select name="_depto_display"
-                                    class="form-select @error('id_departamento') is-invalid @enderror"
-                                    disabled>
-                                @foreach($departamentos->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE) as $dep)
-                                    <option value="{{ $dep->id_departamento }}"
-                                        {{ $selectedDept == $dep->id_departamento ? 'selected' : '' }}>
-                                        {{ $dep->nombre }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            {{-- Hidden que realmente envía el valor --}}
-                            <input type="hidden" name="id_departamento" value="{{ $ticketDeptId }}">
-
-                            {{-- Si NO viene de ticket: input-group con botón "Nuevo" --}}
-                        @else
-                            <div class="input-group">
-                                <select id="selectDepartamentoFormato"
-                                        name="id_departamento"
-                                        class="form-select shadow-sm border-light-subtle @error('id_departamento') is-invalid @enderror"
-                                        required>
-                                    <option value="">Selecciona un departamento</option>
-                                    @foreach($departamentos->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE) as $dep)
-                                        <option value="{{ $dep->id_departamento }}"
-                                            {{ old('id_departamento') == $dep->id_departamento ? 'selected' : '' }}>
-                                            {{ $dep->nombre }}
-                                        </option>
-                                    @endforeach
-                                </select>
-
-                                <button type="button" class="btn btn-outline-success fw-bold"
-                                        data-bs-toggle="modal" data-bs-target="#modalCrearDepartamentoFormato">
-                                    <i class="fas fa-plus me-1"></i> Nuevo
-                                </button>
-                            </div>
-                            <small class="text-muted d-block mt-1">Si no existe, crea uno aquí mismo.</small>
-                        @endif
-
-                        @error('id_departamento')
-                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="col-md-4">
                         <label class="form-label">Tipo de Atención <span class="text-danger">*</span></label>
                         <select name="tipo_atencion" id="tipoAtencion" class="form-select" required>
                             <option value="">Selecciona...</option>
@@ -102,17 +93,31 @@
                             <option value="Jefe">Jefe</option>
                             <option value="Usuario">Usuario</option>
                         </select>
+
+                        {{-- Campo condicional: solo visible cuando se elige "Memo" --}}
+                        <div id="bloqueMemo" style="display:none;" class="mt-2">
+                            <input type="text"
+                                   name="num_memo"
+                                   id="num_memo"
+                                   class="form-control"
+                                   placeholder="Número o folio del memo"
+                                   maxlength="100">
+                            <small class="text-muted">Ingresa el número o folio del memo de referencia.</small>
+                        </div>
                     </div>
                 </div>
 
+                {{-- ── PETICIÓN ── --}}
                 <div class="mb-3">
                     <label class="form-label">Petición <span class="text-danger">*</span></label>
-                    <input type="text" name="peticion" class="form-control" placeholder="Describe brevemente la solicitud" required>
+                    <input type="text" name="peticion" class="form-control"
+                           placeholder="Describe brevemente la solicitud" required>
                 </div>
 
+                {{-- ── TIPO DE SERVICIO + TRABAJO REALIZADO ── --}}
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label">Tipo de Servicio *</label>
+                        <label class="form-label">Tipo de Servicio <span class="text-danger">*</span></label>
                         <select name="tipo_servicio" id="tipo_servicio" class="form-select" required>
                             <option value="">Selecciona...</option>
                             <option value="Equipos">Equipos</option>
@@ -121,11 +126,13 @@
                             <option value="Software">Software</option>
                             <option value="otro">Otro…</option>
                         </select>
-                        <input type="text" name="tipo_servicio_otro" id="servicioOtro" class="form-control mt-2" style="display:none">
+                        <input type="text" name="tipo_servicio_otro" id="servicioOtro"
+                               class="form-control mt-2" style="display:none"
+                               placeholder="Especifica el tipo de servicio">
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Trabajo Realizado *</label>
+                        <label class="form-label">Trabajo Realizado <span class="text-danger">*</span></label>
                         <select name="trabajo_realizado" class="form-select" required>
                             <option value="">Selecciona...</option>
                             <option value="En sitio">En sitio</option>
@@ -136,6 +143,7 @@
                     </div>
                 </div>
 
+                {{-- ── CONCLUSIÓN ── --}}
                 <div class="mb-3">
                     <label class="form-label">Conclusión del Servicio <span class="text-danger">*</span></label>
                     <select name="conclusion_servicio" class="form-select" required>
@@ -145,30 +153,43 @@
                     </select>
                 </div>
 
+                {{-- ── DETALLE REALIZADO ── --}}
                 <div class="mb-3">
                     <label class="form-label">Trabajo Específico Realizado <span class="text-danger">*</span></label>
                     <textarea name="detalle_realizado" class="form-control" rows="3" required></textarea>
                 </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <input id="firmaSolicitante" name="firma_usuario" placeholder="Solicitante" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                        <input name="firma_tecnico" readonly value="{{ Auth::user()->usuario->nombre ?? Auth::user()->name }}" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <input id="firmaJefe" name="firma_jefe_area" readonly value="{{ \App\Models\Usuario::where('puesto','Jefe de Área')->value('nombre') ?? 'Jefe de Área' }}" class="form-control">
-                    </div>
-                </div>
-
+                {{-- ── OBSERVACIONES ── --}}
                 <div class="mb-3">
                     <label class="form-label">Observaciones</label>
-                    <textarea name="observaciones" class="form-control" rows="2"></textarea>
+                    <textarea name="observaciones" class="form-control" rows="2"
+                              placeholder="Opcional..."></textarea>
                 </div>
 
-                <input type="hidden" name="id_servicio" value="{{ request('id_servicio') }}">
-                <input type="hidden" name="id_ticket" value="{{ request('id_ticket') }}">
+                <hr>
+                <h6 class="text-primary mb-3"><i class="fas fa-signature me-1"></i> Firmas y Validación</h6>
+
+                {{-- ── FIRMAS ── --}}
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label">Solicitante <span class="text-danger">*</span></label>
+                        <input id="firmaSolicitante" name="firma_usuario"
+                               placeholder="Nombre de quien solicita"
+                               class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Técnico responsable</label>
+                        <input name="firma_tecnico" readonly
+                               class="form-control bg-light"
+                               value="{{ Auth::user()->usuario->nombre ?? Auth::user()->name }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Jefe de Área</label>
+                        <input id="firmaJefe" name="firma_jefe_area" readonly
+                               class="form-control bg-light"
+                               value="{{ \App\Models\Usuario::where('puesto','Jefe de Área')->value('nombre') ?? 'Jefe de Área' }}">
+                    </div>
+                </div>
 
                 <div class="text-end">
                     <button class="btn btn-primary"><i class="fas fa-save me-1"></i> Guardar</button>
@@ -178,9 +199,9 @@
         </div>
     </div>
 
-    {{-- MODAL CREAR DEPARTAMENTO (solo si NO viene de ticket) --}}
+    {{-- ── MODAL CREAR DEPARTAMENTO (solo si NO viene de ticket) ── --}}
     @if(!$ticketDeptId)
-        <div class="modal fade" id="modalCrearDepartamentoFormato" tabindex="-1" aria-hidden="true">
+        <div class="modal fade" id="modalCrearDepartamentoFormatoA" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-md modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg">
                     <div class="modal-header bg-success text-white border-0">
@@ -189,32 +210,22 @@
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
-
                     <form id="formCrearDepartamentoFormato">
                         @csrf
                         <div class="modal-body p-4">
                             <div class="mb-3">
                                 <label class="form-label small fw-bold text-muted text-uppercase">Nombre *</label>
-                                <input type="text" name="nombre" class="form-control shadow-sm" required maxlength="50">
+                                <input type="text" name="nombre" class="form-control shadow-sm"
+                                       required maxlength="50">
                             </div>
-
                             <div class="mb-3">
                                 <label class="form-label small fw-bold text-muted text-uppercase">Descripción</label>
-                                <textarea name="descripcion" class="form-control shadow-sm" rows="3"></textarea>
-                            </div>
-
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="1" id="activoDeptoFormato" name="activo" checked>
-                                <label class="form-check-label" for="activoDeptoFormato">Activo</label>
+                                <input type="text" name="descripcion" class="form-control shadow-sm" maxlength="100">
                             </div>
                         </div>
-
-                        <div class="modal-footer bg-light border-0">
-                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn btn-success btn-sm fw-bold px-4 rounded-pill shadow-sm">
-                                Guardar
+                        <div class="modal-footer border-0">
+                            <button type="submit" class="btn btn-success fw-bold px-4 rounded-pill">
+                                <i class="fas fa-save me-1"></i> Guardar
                             </button>
                         </div>
                     </form>
@@ -227,89 +238,92 @@
 
 @section('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', () => {
 
-            // ----- Tipo de servicio: mostrar input "Otro" -----
-            const tipoServicio = document.getElementById('tipo_servicio');
-            const servicioOtro = document.getElementById('servicioOtro');
-            tipoServicio.addEventListener('change', () => {
-                if (tipoServicio.value === 'otro') {
-                    servicioOtro.style.display = 'block';
-                    servicioOtro.required = true;
-                } else {
-                    servicioOtro.style.display = 'none';
-                    servicioOtro.required = false;
-                    servicioOtro.value = '';
-                }
-            });
-
-            // ----- Tipo de atención: firma solicitante -----
+            // ── 1. Tipo de atención → mostrar/ocultar bloque Memo ──────────────────
             const tipoAtencion = document.getElementById('tipoAtencion');
-            const firmaSolicitante = document.getElementById('firmaSolicitante');
-            const firmaJefe = document.getElementById('firmaJefe');
+            const bloqueMemo   = document.getElementById('bloqueMemo');
+            const inputMemo    = document.getElementById('num_memo');
+
             tipoAtencion.addEventListener('change', () => {
+                if (tipoAtencion.value === 'Memo') {
+                    bloqueMemo.style.display = 'block';
+                    inputMemo.setAttribute('required', 'required');
+                } else {
+                    bloqueMemo.style.display = 'none';
+                    inputMemo.removeAttribute('required');
+                    inputMemo.value = '';
+                }
+
+                // Cuando seleccionan "Jefe", autocompleta firma solicitante
+                const firmaSolicitante = document.getElementById('firmaSolicitante');
+                const firmaJefe        = document.getElementById('firmaJefe');
                 if (tipoAtencion.value === 'Jefe') {
-                    firmaSolicitante.value = firmaJefe.value;
+                    firmaSolicitante.value    = firmaJefe.value;
                     firmaSolicitante.readOnly = true;
                 } else {
-                    firmaSolicitante.value = '';
+                    if (firmaSolicitante.readOnly) firmaSolicitante.value = '';
                     firmaSolicitante.readOnly = false;
                 }
             });
 
-            // ----- Crear departamento desde formato (solo si NO viene de ticket) -----
+            // ── 2. Tipo de servicio → mostrar input "Otro" ──────────────────────────
+            const tipoServicio = document.getElementById('tipo_servicio');
+            const servicioOtro = document.getElementById('servicioOtro');
+
+            tipoServicio.addEventListener('change', () => {
+                if (tipoServicio.value === 'otro') {
+                    servicioOtro.style.display = 'block';
+                    servicioOtro.required      = true;
+                } else {
+                    servicioOtro.style.display = 'none';
+                    servicioOtro.required      = false;
+                    servicioOtro.value         = '';
+                }
+            });
+
+            // ── 3. Crear departamento desde el modal (solo si existe el form) ───────
             const formDepto = document.getElementById('formCrearDepartamentoFormato');
-            if (!formDepto) return; // viene de ticket, no hay modal
+            if (!formDepto) return;
 
             formDepto.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
                 const btn = formDepto.querySelector('button[type="submit"]');
-                btn.disabled = true;
+                btn.disabled    = true;
+                btn.textContent = 'Guardando...';
 
                 try {
-                    const fd = new FormData(formDepto);
-
-                    const res = await fetch("{{ route('admin.departamentos.quickStore') }}", {
-                        method: "POST",
+                    const resp = await fetch('{{ route("admin.departamentos.store") }}', {
+                        method:  'POST',
                         headers: {
-                            "X-Requested-With": "XMLHttpRequest",
-                            "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                            "Accept": "application/json"
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Content-Type': 'application/json',
+                            'Accept':       'application/json',
                         },
-                        body: fd
+                        body: JSON.stringify(Object.fromEntries(new FormData(formDepto))),
                     });
 
-                    const data = await res.json();
+                    const data = await resp.json();
 
-                    if (!res.ok) {
-                        alert(data?.message || 'Error al crear departamento');
-                        return;
+                    if (data.success) {
+                        const select = document.getElementById('selectDepartamentoFormatoA');
+                        const opt    = new Option(data.departamento.nombre, data.departamento.id_departamento, true, true);
+                        select.appendChild(opt);
+                        bootstrap.Modal.getInstance(
+                            document.getElementById('modalCrearDepartamentoFormatoA')
+                        ).hide();
+                        formDepto.reset();
+                    } else {
+                        alert('Error al crear el departamento.');
                     }
-
-                    // Inyectar nueva opción y seleccionarla
-                    const sel = document.getElementById('selectDepartamentoFormato');
-                    const opt = document.createElement('option');
-                    opt.value = data.id_departamento;
-                    opt.textContent = data.nombre;
-                    opt.selected = true;
-                    sel.appendChild(opt);
-
-                    // Cerrar modal y resetear form
-                    const modalEl = document.getElementById('modalCrearDepartamentoFormato');
-                    bootstrap.Modal.getInstance(modalEl)?.hide();
-
-                    formDepto.reset();
-                    document.getElementById('activoDeptoFormato').checked = true;
-
-                } catch (err) {
-                    console.error(err);
-                    alert('No se pudo crear el departamento.');
+                } catch {
+                    alert('Error de conexión.');
                 } finally {
-                    btn.disabled = false;
+                    btn.disabled    = false;
+                    btn.textContent = 'Guardar';
                 }
             });
-
         });
     </script>
 @endsection
