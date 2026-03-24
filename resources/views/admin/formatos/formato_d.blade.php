@@ -11,6 +11,14 @@
         .btn-primary { background-color: #399e91; border-color: #399e91; }
         .btn-primary:hover { background-color: #2f847a; border-color: #2f847a; }
         .alert-info { background-color: #d1f0eb; border-color: #399e91; color: #25685d; font-weight: 500; }
+
+
+        /* Animación suave del bloque memo */
+        #bloqueMemo {
+            overflow: hidden;
+            transition: all 0.25s ease;
+        }
+
     </style>
 @endsection
 
@@ -62,6 +70,29 @@
                             <small class="text-muted d-block mt-1">Si no existe, crea uno aquí mismo.</small>
                         @endif
                     </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo de Atención <span class="text-danger">*</span></label>
+                        <select name="tipo_atencion" id="tipoAtencion" class="form-select" required>
+                            <option value="">Selecciona...</option>
+                            <option value="Memo">Memo</option>
+                            <option value="Teléfono">Teléfono</option>
+                            <option value="Jefe">Jefe</option>
+                            <option value="Usuario">Usuario</option>
+                        </select>
+
+                        {{-- Campo condicional: solo visible cuando se elige "Memo" --}}
+                        <div id="bloqueMemo" style="display:none;" class="mt-2">
+                            <input type="text"
+                                   name="num_memo"
+                                   id="num_memo"
+                                   class="form-control"
+                                   placeholder="Número o folio del memo"
+                                   maxlength="100">
+                            <small class="text-muted">Ingresa el número o folio del memo de referencia.</small>
+                        </div>
+                    </div>
+
+
                 </div>
 
                 <hr>
@@ -92,24 +123,21 @@
 
                 <hr>
                 <h6 class="text-primary mb-3"><i class="fas fa-signature me-1"></i> Firmas y Validaciones</h6>
-
-                <div class="row mb-3">
+                <div class="row mb-4">
                     <div class="col-md-4">
-                        <label class="form-label">Otorgante <span class="text-danger">*</span></label>
-                        <input name="otorgante" class="form-control" placeholder="Nombre de quien entrega"
-                               value="{{ old('otorgante') }}" required>
+                        <label>Firma solicitante <span class="text-danger">*</span></label>
+                        <input id="firmaSolicitante" name="firma_usuario" class="form-control" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Receptor</label>
-                        <input name="receptor" readonly class="form-control bg-light"
-                               value="{{ Auth::user()->usuario->nombre ?? Auth::user()->name }}">
+                        <label>Técnico responsable</label>
+                        <input name="firma_tecnico" readonly class="form-control bg-light" value="{{ Auth::user()->usuario->nombre ?? Auth::user()->name }}">
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Jefe de Área</label>
-                        <input name="firma_jefe_area" readonly class="form-control bg-light"
-                               value="{{ \App\Models\Usuario::where('puesto','Jefe de Área')->value('nombre') ?? 'Jefe de Área' }}">
-                    </div>
+                        <label>Jefe de Área</label>
+                        <input id="firmaJefe" name="firma_jefe_area" readonly class="form-control bg-light"
+                               value="{{ \App\Models\Usuario::where('puesto','Jefe de Área')->value('nombre') ?? 'Jefe de Área' }}">                    </div>
                 </div>
+
 
                 {{-- OBSERVACIONES --}}
                 <div class="mb-4">
@@ -203,6 +231,37 @@
                     alert('No se pudo crear el departamento.');
                 } finally {
                     btn.disabled = false;
+                }
+            });
+
+
+
+            // ── 1. Tipo de atención → mostrar/ocultar bloque Memo ──────────────────
+            const tipoAtencion = document.getElementById('tipoAtencion');
+            const bloqueMemo   = document.getElementById('bloqueMemo');
+            const inputMemo    = document.getElementById('num_memo');
+
+            //TIPO DE ATENCION -> MEMO
+            tipoAtencion.addEventListener('change', () => {
+                if (tipoAtencion.value === 'Memo') {
+                    bloqueMemo.style.display = 'block';
+                    inputMemo.setAttribute('required', 'required');
+                } else {
+                    bloqueMemo.style.display = 'none';
+                    inputMemo.removeAttribute('required');
+                    inputMemo.value = '';
+                }
+
+
+                // Cuando seleccionan "Jefe", autocompleta firma solicitante
+                const firmaSolicitante = document.getElementById('firmaSolicitante');
+                const firmaJefe        = document.getElementById('firmaJefe');
+                if (tipoAtencion.value === 'Jefe') {
+                    firmaSolicitante.value    = firmaJefe.value;
+                    firmaSolicitante.readOnly = true;
+                } else {
+                    if (firmaSolicitante.readOnly) firmaSolicitante.value = '';
+                    firmaSolicitante.readOnly = false;
                 }
             });
         });

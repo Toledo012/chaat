@@ -12,10 +12,10 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_servicio');
 
             $table->enum('subtipo', ['Desarrollo','Soporte']);
-            $table->enum('tipo_atencion', ['Memo','Teléfono','Jefe','Usuario'])->nullable();
+            $table->string('tipo_atencion', ['Memo','Telï¿½fono','Jefe','Usuario'])->nullable();
             $table->text('peticion')->nullable();
             $table->enum('tipo_servicio', ['Equipos','Redes LAN/WAN','Antivirus','Software'])->nullable();
-            $table->enum('trabajo_realizado', ['En sitio','Área de producción','Traslado de equipo'])->nullable();
+            $table->enum('trabajo_realizado', ['En sitio','ï¿½rea de producciï¿½n','Traslado de equipo'])->nullable();
             $table->enum('conclusion_servicio', ['Terminado','En proceso'])->nullable();
 
             $table->text('detalle_realizado')->nullable();

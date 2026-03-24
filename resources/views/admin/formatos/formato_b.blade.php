@@ -12,6 +12,13 @@
         .btn-primary:hover { background-color: #2f847a; border-color: #2f847a; }
         .alert-info { background-color: #d1f0eb; border-color: #399e91; color: #25685d; font-weight: 500; }
         label { font-weight: 500; margin-bottom: 0.3rem; }
+
+
+        /* Animación suave del bloque memo */
+        #bloqueMemo {
+            overflow: hidden;
+            transition: all 0.25s ease;
+        }
     </style>
 @endsection
 
@@ -40,6 +47,28 @@
                         </select>
                         <input type="text" name="subtipo_otro" id="inputSubtipoOtro"
                                class="form-control mt-2" placeholder="Especifique el subtipo" style="display: none;">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo de Atención <span class="text-danger">*</span></label>
+                        <select name="tipo_atencion" id="tipoAtencion" class="form-select" required>
+                            <option value="">Selecciona...</option>
+                            <option value="Memo">Memo</option>
+                            <option value="Teléfono">Teléfono</option>
+                            <option value="Jefe">Jefe</option>
+                            <option value="Usuario">Usuario</option>
+                        </select>
+
+                        {{-- Campo condicional: solo visible cuando se elige "Memo" --}}
+                        <div id="bloqueMemo" style="display:none;" class="mt-2">
+                            <input type="text"
+                                   name="num_memo"
+                                   id="num_memo"
+                                   class="form-control"
+                                   placeholder="Número o folio del memo"
+                                   maxlength="100">
+                            <small class="text-muted">Ingresa el número o folio del memo de referencia.</small>
+                        </div>
                     </div>
 
                     {{-- DEPARTAMENTO --}}
@@ -132,6 +161,7 @@
                         <div class="col-md-6">
                             <label>Sistema operativo <span class="text-danger">*</span></label>
                             <select name="sistema_operativo" id="selectSO" class="form-select">
+                                <option value="">Seleccionar</option>
                                 <option value="">Seleccionar</option>
                                 <option>Windows 7</option><option>Windows 8/8.1</option><option>Windows 10</option> <option>Windows 11</option>
                                 <option>Linux</option><option>MacOS</option><option>Otro</option>
@@ -232,7 +262,7 @@
                 <div class="row mb-4">
                     <div class="col-md-4">
                         <label>Firma solicitante <span class="text-danger">*</span></label>
-                        <input name="firma_usuario" class="form-control" required placeholder="Nombre de quien recibe">
+                        <input id="firmaSolicitante" name="firma_usuario" class="form-control" required>
                     </div>
                     <div class="col-md-4">
                         <label>Técnico responsable</label>
@@ -240,8 +270,8 @@
                     </div>
                     <div class="col-md-4">
                         <label>Jefe de Área</label>
-                        <input name="firma_jefe_area" readonly class="form-control bg-light" value="{{ \App\Models\Usuario::where('puesto','Jefe de Área')->value('nombre') ?? 'Jefe de Área' }}">
-                    </div>
+                        <input id="firmaJefe" name="firma_jefe_area" readonly class="form-control bg-light"
+                               value="{{ \App\Models\Usuario::where('puesto','Jefe de Área')->value('nombre') ?? 'Jefe de Área' }}">                    </div>
                 </div>
 
                 <input type="hidden" name="id_servicio" value="{{ request('id_servicio') }}">
@@ -342,7 +372,7 @@
             const bloqueComputadora = document.getElementById('bloqueComputadora');
             const camposPC = ['inputProcesador', 'selectRam', 'selectDisco', 'selectSO'];
 
-            selectSubtipo.addEventListener('change', function() {
+                selectSubtipo.addEventListener('change', function() {
                 inputSubtipoOtro.style.display = this.value === 'otro' ? 'block' : 'none';
                 inputSubtipoOtro.required = this.value === 'otro';
                 if (this.value !== 'otro') inputSubtipoOtro.value = '';
@@ -440,6 +470,36 @@
                 finally { btn.disabled = false; }
             });
 
-        });
+
+            // ── 1. Tipo de atención → mostrar/ocultar bloque Memo ──────────────────
+            const tipoAtencion = document.getElementById('tipoAtencion');
+            const bloqueMemo   = document.getElementById('bloqueMemo');
+            const inputMemo    = document.getElementById('num_memo');
+
+            //TIPO DE ATENCION -> MEMO
+            tipoAtencion.addEventListener('change', () => {
+                if (tipoAtencion.value === 'Memo') {
+                    bloqueMemo.style.display = 'block';
+                    inputMemo.setAttribute('required', 'required');
+                } else {
+                    bloqueMemo.style.display = 'none';
+                    inputMemo.removeAttribute('required');
+                    inputMemo.value = '';
+                }
+
+
+                // Cuando seleccionan "Jefe", autocompleta firma solicitante
+                const firmaSolicitante = document.getElementById('firmaSolicitante');
+                const firmaJefe        = document.getElementById('firmaJefe');
+                if (tipoAtencion.value === 'Jefe') {
+                    firmaSolicitante.value    = firmaJefe.value;
+                    firmaSolicitante.readOnly = true;
+                } else {
+                    if (firmaSolicitante.readOnly) firmaSolicitante.value = '';
+                    firmaSolicitante.readOnly = false;
+                }
+            });
+
+            });
     </script>
 @endsection

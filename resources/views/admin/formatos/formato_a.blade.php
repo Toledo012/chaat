@@ -255,17 +255,8 @@
                     inputMemo.value = '';
                 }
 
-                // Cuando seleccionan "Jefe", autocompleta firma solicitante
-                const firmaSolicitante = document.getElementById('firmaSolicitante');
-                const firmaJefe        = document.getElementById('firmaJefe');
-                if (tipoAtencion.value === 'Jefe') {
-                    firmaSolicitante.value    = firmaJefe.value;
-                    firmaSolicitante.readOnly = true;
-                } else {
-                    if (firmaSolicitante.readOnly) firmaSolicitante.value = '';
-                    firmaSolicitante.readOnly = false;
-                }
-            });
+
+        });
 
             // ── 2. Tipo de servicio → mostrar input "Otro" ──────────────────────────
             const tipoServicio = document.getElementById('tipo_servicio');

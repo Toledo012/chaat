@@ -43,7 +43,7 @@ class FormatoController extends Controller
 
         //  Filtro por Usuario (Nombre)
         if (!empty($usuario)) {
-            $query->where('usuarios.nombre', 'like', "%$usuario%");
+            $query->where('usuarios_formatos.nombre', 'like', "%$usuario%");
         }
 
         // Filtro por Rango de Fechas
@@ -297,6 +297,9 @@ public function storeB(Request $request)
             'subtipo' => 'required|string',
             'subtipo_otro' => 'nullable|required_if:subtipo,otro|string', // Validación condicional
 
+            'tipo_atencion' => 'nullable|string',
+            'num_memo' => 'nullable|string|max:100|required_if:tipo_atencion, memo',
+
             'descripcion_servicio' => 'nullable|string',
             'equipo' => 'nullable|string',
             'marca' => 'nullable|string',
@@ -358,6 +361,8 @@ public function storeB(Request $request)
             DB::table('formato_b')->insert([
                 'id_servicio'          => $idServicio,
                 'subtipo'              => $subtipoFinal, // Usamos el valor procesado
+                'tipo_atencion' => $data['tipo_atencion'] ?? null,
+                'num_memo'      => $data['num_memo'] ?? null,
                 'descripcion_servicio' => $data['descripcion_servicio'] ?? null,
                 'equipo'               => $data['equipo'] ?? null,
                 'marca'                => $data['marca'] ?? null,
@@ -415,6 +420,10 @@ public function storeC(Request $request)
     $data = $request->validate([
         'id_departamento' => 'required|exists:departamentos,id_departamento',
 
+
+        'tipo_atencion' => 'nullable|string',
+        'num_memo' => 'nullable|string|max:100|required_if:tipo_atencion, memo',
+
         'descripcion_servicio' => 'nullable|string',
         'tipo_red' => 'required|in:Red,Telefonía',
         'tipo_servicio' => 'required|in:Preventivo,Correctivo,Configuracion',
@@ -464,6 +473,8 @@ public function storeC(Request $request)
         DB::table('formato_c')->insert([
             'id_servicio' => $idServicio,
             'descripcion_servicio' => $data['descripcion_servicio'] ?? null,
+            'tipo_atencion' => $data['tipo_atencion'] ?? null,
+            'num_memo'      => $data['num_memo'] ?? null,
             'tipo_red' => $data['tipo_red'],
             'tipo_servicio' => $data['tipo_servicio'],
             'diagnostico' => $data['diagnostico'] ?? null,
@@ -499,7 +510,11 @@ public function storeD(Request $request)
 {
     $data = $request->validate([
         'id_departamento' => 'required|exists:departamentos,id_departamento',
-            'equipo' => 'nullable|string',
+
+        'tipo_atencion' => 'nullable|string',
+        'num_memo' => 'nullable|string|max:100|required_if:tipo_atencion, memo',
+
+        'equipo' => 'nullable|string',
         'marca' => 'nullable|string',
         'modelo' => 'nullable|string',
         'serie' => 'nullable|string',
@@ -540,13 +555,14 @@ public function storeD(Request $request)
 
         DB::table('formato_d')->insert([
             'id_servicio' => $idServicio,
-            'fecha' => $data['fecha'] ?? now()->format('Y-m-d'),
+            'tipo_atencion' => $data['tipo_atencion'] ?? null,
+            'num_memo'      => $data['num_memo'] ?? null,
             'equipo' => $data['equipo'] ?? null,
             'marca' => $data['marca'] ?? null,
             'modelo' => $data['modelo'] ?? null,
             'serie' => $data['serie'] ?? null,
-            'diagnostico' => $data['diagnostico'] ?? null,
-            'mantenimiento_realizado' => $data['mantenimiento_realizado'] ?? null,
+//            'diagnostico' => $data['diagnostico'] ?? null,
+//            'mantenimiento_realizado' => $data['mantenimiento_realizado'] ?? null,
             'observaciones' => $data['observaciones'] ?? null,
             'firma_usuario' => $data['firma_usuario'] ?? null,
             'firma_tecnico' => $data['firma_tecnico'] ?? (Auth::user()->usuario->nombre ?? Auth::user()->name),
@@ -615,6 +631,8 @@ public function previewB($id)
         ->select(
             'servicios.*',
             'formato_b.subtipo',
+            'formato_b.num_memo',
+            'formato_b.tipo_atencion',
             'formato_b.descripcion_servicio',
             'formato_b.equipo',
             'formato_b.marca',
@@ -673,6 +691,8 @@ public function previewC($id)
         ->select(
             'servicios.*',
             'formato_c.tipo_red',
+            'formato_c.num_memo',
+            'formato_c.tipo_atencion',
             'formato_c.tipo_servicio',
             'formato_c.descripcion_servicio',
             'formato_c.diagnostico',
@@ -718,6 +738,8 @@ public function previewD($id)
         ->select(
             'servicios.*',
             'formato_d.fecha',
+            'formato_d.num_memo',
+            'formato_d.tipo_atencion',
             'formato_d.equipo',
             'formato_d.marca',
             'formato_d.modelo',
