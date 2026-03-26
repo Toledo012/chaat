@@ -31,7 +31,7 @@
     <div style="clear:both"></div>
 </div>
 
-<div class="titulo">Formato C — Redes / Telefonía</div>
+<div class="titulo">Formato C — REDES Y TELEFONíA</div>
 <div class="subtitulo">Atención de servicios de redes o telefonía institucional</div>
 
 <div class="section-title">Datos del Servicio</div>

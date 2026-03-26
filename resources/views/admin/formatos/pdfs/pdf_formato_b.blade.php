@@ -35,7 +35,7 @@
     </table>
 </div>
 
-<div class="titulo">Formato B — Equipos de Cómputo / Impresoras</div>
+<div class="titulo">Formato B —  MANTENIMIENTO CORRECTIVO Y PREVENTIVO</div>
 
 <div class="section">Datos del Servicio</div>
 <table>

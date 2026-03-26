@@ -22,7 +22,7 @@
       </nav>
 
       <header class="admin-header d-flex justify-content-between align-items-center px-4">
-        <h1 class="h5 mb-0">Formato D - Mantenimiento Personal</h1>
+        <h1 class="h5 mb-0">Formato D - MANTENIMIENTO EQUIPOS PERSONALES</h1>
         <div class="user-info">{{ Auth::user()->name ?? 'Administrador' }}</div>
       </header>
 
