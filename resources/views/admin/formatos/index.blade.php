@@ -13,6 +13,8 @@
     .badge-b { background-color: #e3f2fd; color: #17a2b8; border-color: #17a2b8; }
     .badge-c { background-color: #fff8e1; color: #f59e0b; border-color: #f59e0b; }
     .badge-d { background-color: #fce4ec; color: #e91e63; border-color: #e91e63; }
+    .badge-r { background-color: #fce4ec; color: #841ee9; border-color: #581ee9; }
+
     .btn-action { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; transition: 0.2s; }
 </style>
 @endsection
@@ -47,8 +49,10 @@
                         <option value="B" @selected($tipo == 'B')>Formato B</option>
                         <option value="C" @selected($tipo == 'C')>Formato C</option>
                         <option value="D" @selected($tipo == 'D')>Formato D</option>
+                        <option value="R" @selected($tipo == 'R')>Formato R</option>
                     </select>
                 </div>
+
 
                 @if(Auth::user()->isAdmin())
                     <div class="col-md-3">

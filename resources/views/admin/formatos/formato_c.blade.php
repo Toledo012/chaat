@@ -179,7 +179,7 @@
                         <input id="firmaSolicitante" name="firma_usuario" class="form-control" required>
                     </div>
                     <div class="col-md-4">
-                        <label>Técnico responsable</label>
+                        <label>Responsable</label>
                         <input name="firma_tecnico" readonly class="form-control bg-light" value="{{ Auth::user()->usuario->nombre ?? Auth::user()->name }}">
                     </div>
                     <div class="col-md-4">

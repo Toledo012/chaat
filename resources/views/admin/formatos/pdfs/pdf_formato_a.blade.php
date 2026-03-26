@@ -99,7 +99,7 @@
             <td>
                 {{ $servicio->tipo_atencion ?? '—' }}
                 @if($servicio->tipo_atencion === 'Memo' && $servicio->num_memo)
-                    — Memo N° {{ $servicio->num_memo }}
+                    — N° {{ $servicio->num_memo }}
                 @endif
             </td>
         </tr>

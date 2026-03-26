@@ -241,7 +241,7 @@
                     <input name="firma_usuario" id="firmaUsuarioEdit" class="form-control edicion" value="{{ $servicio->firma_usuario }}">
                 </td>
                 <td>
-                    <strong>Técnico</strong><br>
+                    <strong>Responsable</strong><br>
                     <span class="vista">{{ $servicio->firma_tecnico ?: '_________________' }}</span>
                     <input name="firma_tecnico" class="form-control edicion" value="{{ $servicio->firma_tecnico }}">
                 </td>

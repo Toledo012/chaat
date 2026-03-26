@@ -116,6 +116,8 @@ Route::post('/admin/users/{id}/reset-password', [AdminController::class, 'resetP
  * 1) GESTIÓN DE FORMATOS (index, reporte, editar)
  * Solo quien tiene gestion_formatos
  */
+
+
 Route::prefix('admin/formatos')
     ->name('admin.formatos.')
     ->middleware(['auth', 'perm:gestion_formatos'])
@@ -130,43 +132,57 @@ Route::prefix('admin/formatos')
         Route::post('/editar/{tipo}/{id}', [FormatoController::class, 'update'])->name('update');
     });
 
-/**
- * 2) EJECUCIÓN DESDE TICKETS (A–D + store + preview/pdf)
- * Permite:
- * - admin con gestion_formatos
- * - técnico con tickets.completar
- */
+/*
+|--------------------------------------------------------------------------
+| ADMIN: FORMATOS
+|--------------------------------------------------------------------------
+*/
 Route::prefix('admin/formatos')
     ->name('admin.formatos.')
-
     ->group(function () {
 
-        // Formularios A–D
-        Route::get('/a', [FormatoController::class, 'formatoA'])->name('a');
-        Route::post('/a', [FormatoController::class, 'storeA'])->name('a.store');
+        Route::get('/', [FormatoController::class, 'index'])->name('index');
+        Route::get('/create', [FormatoController::class, 'create'])->name('create');
 
-        Route::get('/b', [FormatoController::class, 'formatoB'])->name('b');
-        Route::post('/b', [FormatoController::class, 'storeB'])->name('b.store');
+        // Editar / actualizar formato genérico
+        Route::get('/{tipo}/{id}/edit', [FormatoController::class, 'edit'])->name('edit');
+        Route::post('/{tipo}/{id}/update', [FormatoController::class, 'update'])->name('update');
 
-        Route::get('/c', [FormatoController::class, 'formatoC'])->name('c');
-        Route::post('/c', [FormatoController::class, 'storeC'])->name('c.store');
+        // Reporte general
+        Route::get('/reporte/general/pdf', [FormatoController::class, 'reporteGeneral'])->name('reporte.general');
 
-        Route::get('/d', [FormatoController::class, 'formatoD'])->name('d');
-        Route::post('/d', [FormatoController::class, 'storeD'])->name('d.store');
-
-        // Preview / PDF (para que al completar desde tickets puedan ver)
+        // ── FORMATO A ──
+        Route::get('/a',              [FormatoController::class, 'formatoA'])->name('a');
+        Route::post('/a',             [FormatoController::class, 'storeA'])->name('a.store');
         Route::get('/a/{id}/preview', [FormatoController::class, 'previewA'])->name('a.preview');
-        Route::get('/a/{id}/pdf', [FormatoController::class, 'generarPDFA'])->name('a.pdf');
+        Route::get('/a/{id}/pdf',     [FormatoController::class, 'generarPDFA'])->name('a.pdf');
 
+        // ── FORMATO B ──
+        Route::get('/b',              [FormatoController::class, 'formatoB'])->name('b');
+        Route::post('/b',             [FormatoController::class, 'storeB'])->name('b.store');
         Route::get('/b/{id}/preview', [FormatoController::class, 'previewB'])->name('b.preview');
-        Route::get('/b/{id}/pdf', [FormatoController::class, 'generarPDFB'])->name('b.pdf');
+        Route::get('/b/{id}/pdf',     [FormatoController::class, 'generarPDFB'])->name('b.pdf');
 
+        // ── FORMATO C ──
+        Route::get('/c',              [FormatoController::class, 'formatoC'])->name('c');
+        Route::post('/c',             [FormatoController::class, 'storeC'])->name('c.store');
         Route::get('/c/{id}/preview', [FormatoController::class, 'previewC'])->name('c.preview');
-        Route::get('/c/{id}/pdf', [FormatoController::class, 'generarPDFC'])->name('c.pdf');
+        Route::get('/c/{id}/pdf',     [FormatoController::class, 'generarPDFC'])->name('c.pdf');
 
+        // ── FORMATO D ──
+        Route::get('/d',              [FormatoController::class, 'formatoD'])->name('d');
+        Route::post('/d',             [FormatoController::class, 'storeD'])->name('d.store');
         Route::get('/d/{id}/preview', [FormatoController::class, 'previewD'])->name('d.preview');
-        Route::get('/d/{id}/pdf', [FormatoController::class, 'generarPDFD'])->name('d.pdf');
+        Route::get('/d/{id}/pdf',     [FormatoController::class, 'generarPDFD'])->name('d.pdf');
+
+        // ── FORMATO R / RECEPCIÓN ──
+        Route::get('/r',              [FormatoController::class, 'formatoRecepcion'])->name('r');
+        Route::post('/r',             [FormatoController::class, 'storeRecepcion'])->name('r.store');
+        Route::get('/r/{id}/preview', [FormatoController::class, 'previewRecepcion'])->name('r.preview');
+        Route::get('/r/{id}/pdf',     [FormatoController::class, 'generarPDFRecepcion'])->name('r.pdf');
     });
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -229,7 +245,7 @@ Route::prefix('admin/tickets')
 
         Route::post('/{ticket}/cancelar', [\App\Http\Controllers\AdminTicketController::class, 'cancelar'])->name('cancelar');
 
-                Route::get('/{ticket}/edit', [\App\Http\Controllers\AdminTicketController::class, 'edit'])
+        Route::get('/{ticket}/edit', [\App\Http\Controllers\AdminTicketController::class, 'edit'])
             ->middleware('perm:any,tickets.editar_propios,tickets.cambiar_prioridad,tickets.cambiar_estado_cualquiera')
             ->name('edit');
 
@@ -258,8 +274,8 @@ Route::prefix('user')
         Route::get('/tickets/data', [\App\Http\Controllers\UserTicketController::class, 'data'])
             ->name('tickets.data');
 
-            Route::post('/tickets', [\App\Http\Controllers\UserTicketController::class, 'store'])
-    ->name('tickets.store');
+        Route::post('/tickets', [\App\Http\Controllers\UserTicketController::class, 'store'])
+            ->name('tickets.store');
 
 
         Route::post('/tickets/{ticket}/tomar', [\App\Http\Controllers\UserTicketController::class, 'tomar'])
@@ -270,7 +286,7 @@ Route::prefix('user')
 
 
 
-                    Route::get('/tickets/{ticket}/edit', [\App\Http\Controllers\UserTicketController::class, 'edit'])
+        Route::get('/tickets/{ticket}/edit', [\App\Http\Controllers\UserTicketController::class, 'edit'])
 //            ->middleware('perm:tickets.editar_propios')
             ->name('tickets.edit');
 
@@ -293,7 +309,7 @@ Route::prefix('departamento/tickets')
         Route::get('/', [\App\Http\Controllers\DeptTicketController::class, 'index'])->name('index');
         Route::post('/', [\App\Http\Controllers\DeptTicketController::class, 'store'])->name('store');
         Route::post('/{ticket}/cancelar', [\App\Http\Controllers\DeptTicketController::class, 'cancelar'])->name('cancelar');
-            Route::get('/{ticket}/edit', [\App\Http\Controllers\DeptTicketController::class, 'edit'])
+        Route::get('/{ticket}/edit', [\App\Http\Controllers\DeptTicketController::class, 'edit'])
             ->name('edit');
 
         Route::put('/{ticket}', [\App\Http\Controllers\DeptTicketController::class, 'update'])
@@ -301,7 +317,7 @@ Route::prefix('departamento/tickets')
 
         Route::get('/data', [\App\Http\Controllers\DeptTicketController::class, 'data'])
             ->name('data');
-        });
+    });
 Route::post('/admin/departamentos/quick-store', [\App\Http\Controllers\DepartamentoController::class, 'quickStore'])
     ->name('admin.departamentos.quickStore');
 
@@ -320,7 +336,8 @@ Route::get('/test-mail', function () {
 });
 
 
-
+Route::post('/departamentos/quick-store', [DepartamentoController::class, 'quickStore'])
+    ->name('admin.departamentos.quickStore');
 
 Route::get('/test-mail2', function () {
     Mail::raw('PRUEBA DIRECTA', function ($message) {
@@ -329,8 +346,8 @@ Route::get('/test-mail2', function () {
             'kevinsanchezalvarez23@gmail.com',
             'masacregamer23@gmail.com',
         ])->subject('PRUEBA DIRECTA LARAVEL');
-        });
-        return 'Correo enviado (si no llegó, revisa logs).';
+    });
+    return 'Correo enviado (si no llegó, revisa logs).';
 
 });
 

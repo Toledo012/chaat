@@ -54,7 +54,7 @@
         <td colspan="3">
             {{ $servicio->tipo_atencion ?? '—' }}
             @if($servicio->tipo_atencion === 'Memo' && $servicio->num_memo)
-                — Memo N° {{ $servicio->num_memo }}
+                — N° {{ $servicio->num_memo }}
             @endif
         </td>
     </tr>
@@ -114,7 +114,7 @@
 <table class="firmas" width="100%">
     <tr>
         <td width="33%"><strong>Usuario</strong><br><br>{{ $servicio->firma_usuario ?? '___________________' }}</td>
-        <td width="33%"><strong>Técnico</strong><br><br>{{ $servicio->firma_tecnico ?? '___________________' }}</td>
+        <td width="33%"><strong>Responsable</strong><br><br>{{ $servicio->firma_tecnico ?? '___________________' }}</td>
         <td width="33%"><strong>Jefe de Área</strong><br><br>{{ $servicio->firma_jefe_area ?? '___________________' }}</td>
     </tr>
 </table>

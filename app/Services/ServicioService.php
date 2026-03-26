@@ -20,7 +20,6 @@ class ServicioService
 
             $tipoFormato = strtoupper($tipoFormato);
 
-            // 1) Si ya existe servicio (ticket/edición), solo actualizar quién lo atiende
             if ($idServicio) {
                 DB::table('servicios')
                     ->where('id_servicio', $idServicio)
@@ -32,8 +31,6 @@ class ServicioService
                 return (int) $idServicio;
             }
 
-            // 2) Crear nuevo servicio con folio institucional global
-            // IMPORTANTE: filtrar solo folios institucionales para no romper consecutivo
             $lastFolio = DB::table('servicios')
                 ->where('folio', 'like', 'SEMAHN-%')
                 ->orderByDesc('id_servicio')
@@ -41,7 +38,7 @@ class ServicioService
                 ->value('folio');
 
             $lastNum = 0;
-            if ($lastFolio && preg_match('/^SEMAHN-[A-D]-(\d+)$/', $lastFolio, $m)) {
+            if ($lastFolio && preg_match('/^SEMAHN-[A-Z]-(\d+)$/', $lastFolio, $m)) {
                 $lastNum = (int) $m[1];
             }
 
@@ -52,14 +49,13 @@ class ServicioService
                 'folio'           => $folio,
                 'fecha'           => now()->format('Y-m-d'),
                 'id_usuario'      => Auth::user()->id_usuario,
-                'id_departamento' => $idDepartamento, // puede ser null si tu flujo lo permite
+                'id_departamento' => $idDepartamento,
                 'tipo_formato'    => $tipoFormato,
                 'created_at'      => now(),
                 'updated_at'      => now(),
             ]);
         });
     }
-
     public function completarTicketPorId(int $idTicket, int $idServicio): void
     {
         DB::transaction(function () use ($idTicket, $idServicio) {
