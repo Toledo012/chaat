@@ -117,7 +117,7 @@
     </tbody>
 </table>
 
-{{-- ====================== TABLA MENSUAL (LA QUE FALTABA) ====================== --}}
+{{-- ====================== TABLA MENSUAL ) ====================== --}}
 <div class="header-seccion">
     <h3>Comparativa Mensual</h3>
 </div>
@@ -151,7 +151,7 @@
         </tr>
         <tr>
             <th>Usuario.</th>
-            <td>{{ $f->usuario }} <br></td>
+            <td>{{ $f->usuarios_formatos}} <br></td>
             <th>Fecha</th><td>{{ \Carbon\Carbon::parse($f->fecha)->format('d/m/Y') }}</td>
         </tr>
         <tr>

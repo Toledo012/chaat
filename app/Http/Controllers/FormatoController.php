@@ -1337,7 +1337,7 @@
 
             // 2. Cálculos para Gráficas y Resumen
             $totalGlobal = $servicios->count();
-            $resumenUsuarios = $servicios->groupBy('usuario')->map(function ($grupo) {
+            $resumenUsuarios = $servicios->groupBy('usuarios_formatos')->map(function ($grupo) {
                 return [
                     'total' => $grupo->count(),
                     'A' => $grupo->where('tipo_formato', 'A')->count(),
