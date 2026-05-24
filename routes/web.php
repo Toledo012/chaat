@@ -117,7 +117,7 @@ Route::post('/admin/users/{id}/reset-password', [AdminController::class, 'resetP
  * Solo quien tiene gestion_formatos
  */
 
-
+/*
 Route::prefix('admin/formatos')
     ->name('admin.formatos.')
     ->middleware(['auth', 'perm:gestion_formatos'])
@@ -131,6 +131,8 @@ Route::prefix('admin/formatos')
         Route::get('/editar/{tipo}/{id}', [FormatoController::class, 'edit'])->name('edit');
         Route::post('/editar/{tipo}/{id}', [FormatoController::class, 'update'])->name('update');
     });
+*/
+
 
 /*
 |--------------------------------------------------------------------------
@@ -335,10 +337,10 @@ Route::get('/test-mail', function () {
     return 'Correo enviado (si no llegó, revisa logs).';
 });
 
-
+/*
 Route::post('/departamentos/quick-store', [DepartamentoController::class, 'quickStore'])
     ->name('admin.departamentos.quickStore');
-
+*/
 Route::get('/test-mail2', function () {
     Mail::raw('PRUEBA DIRECTA', function ($message) {
         $message->to([
