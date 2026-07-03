@@ -112,7 +112,7 @@
 
                 <div class="mb-3">
                     <label class="form-label">Descripción del Servicio <span class="text-danger">*</span></label>
-                    <input name="descripcion_servicio" class="form-control" required>
+                    <input name="descripcion_servicio" class="form-control" value="{{ old('descripcion_servicio', $ticketDescripcion ?? '') }}" required>
                 </div>
 
                 <div class="row mb-3">
@@ -176,7 +176,7 @@
                 <div class="row mb-4">
                     <div class="col-md-4">
                         <label>Firma solicitante <span class="text-danger">*</span></label>
-                        <input id="firmaSolicitante" name="firma_usuario" class="form-control" required>
+                        <input id="firmaSolicitante" name="firma_usuario" class="form-control" value="{{ old('firma_usuario', $ticketSolicitante ?? '') }}" required>
                     </div>
                     <div class="col-md-4">
                         <label>Responsable</label>

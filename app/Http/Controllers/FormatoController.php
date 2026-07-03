@@ -89,11 +89,16 @@
         $id_ticket = $request->query('id_ticket');
 
 
-        //jala el id_departamento del ticket
-        $ticketDeptId = null;
+        //jala datos del ticket para precargar el formato
+        $ticketDeptId      = null;
+        $ticketSolicitante = null;
+        $ticketDescripcion = null;
 
         if ($id_ticket) {
-            $ticketDeptId = \App\Models\Ticket::where('id_ticket', (int)$id_ticket)->value('id_departamento');
+            $ticket = \App\Models\Ticket::find((int) $id_ticket);
+            $ticketDeptId      = $ticket?->id_departamento;
+            $ticketSolicitante = $ticket?->solicitante;
+            $ticketDescripcion = $ticket?->descripcion;
         }
 
 
@@ -101,7 +106,9 @@
             'departamentos',
             'id_servicio',
             'id_ticket',
-            'ticketDeptId'
+            'ticketDeptId',
+            'ticketSolicitante',
+            'ticketDescripcion'
         ));
     }
 
@@ -112,18 +119,25 @@
             $id_ticket = $request->query('id_ticket');
 
 
-            //jala el id_departamento del ticket
-            $ticketDeptId = null;
+            //jala datos del ticket para precargar el formato
+            $ticketDeptId      = null;
+            $ticketSolicitante = null;
+            $ticketDescripcion = null;
 
             if ($id_ticket) {
-                $ticketDeptId = \App\Models\Ticket::where('id_ticket', (int)$id_ticket)->value('id_departamento');
+                $ticket = \App\Models\Ticket::find((int) $id_ticket);
+                $ticketDeptId      = $ticket?->id_departamento;
+                $ticketSolicitante = $ticket?->solicitante;
+                $ticketDescripcion = $ticket?->descripcion;
             }
 
             return view('admin.formatos.formato_b' , compact(
                 'departamentos',
                 'id_servicio',
                 'id_ticket',
-                'ticketDeptId'
+                'ticketDeptId',
+                'ticketSolicitante',
+                'ticketDescripcion'
             ));
 
         }
@@ -137,18 +151,25 @@
             $id_ticket = $request->query('id_ticket');
 
 
-            //jala el id_departamento del ticket
-            $ticketDeptId = null;
+            //jala datos del ticket para precargar el formato
+            $ticketDeptId      = null;
+            $ticketSolicitante = null;
+            $ticketDescripcion = null;
 
             if ($id_ticket) {
-                $ticketDeptId = \App\Models\Ticket::where('id_ticket', (int)$id_ticket)->value('id_departamento');
+                $ticket = \App\Models\Ticket::find((int) $id_ticket);
+                $ticketDeptId      = $ticket?->id_departamento;
+                $ticketSolicitante = $ticket?->solicitante;
+                $ticketDescripcion = $ticket?->descripcion;
             }
 
             return view('admin.formatos.formato_c'  , compact(
                 'departamentos',
                 'id_servicio',
                 'id_ticket',
-                'ticketDeptId'));
+                'ticketDeptId',
+                'ticketSolicitante',
+                'ticketDescripcion'));
         }
 
         public function formatoD(Request $request)
@@ -159,17 +180,21 @@
             $id_ticket = $request->query('id_ticket');
 
 
-            //jala el id_departamento del ticket
-            $ticketDeptId = null;
+            //jala datos del ticket para precargar el formato
+            $ticketDeptId      = null;
+            $ticketSolicitante = null;
 
             if ($id_ticket) {
-                $ticketDeptId = \App\Models\Ticket::where('id_ticket', (int)$id_ticket)->value('id_departamento');
+                $ticket = \App\Models\Ticket::find((int) $id_ticket);
+                $ticketDeptId      = $ticket?->id_departamento;
+                $ticketSolicitante = $ticket?->solicitante;
             }
             return view('admin.formatos.formato_d'  , compact(
                 'departamentos',
                 'id_servicio',
                 'id_ticket',
-                'ticketDeptId'
+                'ticketDeptId',
+                'ticketSolicitante'
             ));
         }
 

@@ -30,13 +30,16 @@
                     {{ $disponibles->count() }} Disponibles
                 </span>
             </div>
+
+
+
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light small text-uppercase text-muted">
                         <tr>
                             <th class="ps-4">Folio</th>
-                            <th>Título / Solicitante</th>
+                            <th>Título / Información</th>
                             <th>Formato</th>
                             <th>Creado por</th>
                             <th>Fecha Registro</th>
@@ -50,7 +53,11 @@
                                 <td>
                                     <div class="fw-bold text-dark small">{{ $t->titulo }}</div>
                                     <div class="text-muted small"><i class="fas fa-user-edit me-1 small"></i>{{ $t->solicitante }}</div>
+                                    <div class="text-muted small"><i class="fas fa-building me-1 small"></i>{{ $t->departamento?->nombre ?? 'Sin departamento' }}</div>
                                 </td>
+
+
+
                                 <td>
                                     <span class="badge bg-secondary-subtle text-secondary border px-2">
                                         TIPO {{ strtoupper($t->tipo_formato) }}
@@ -115,6 +122,7 @@
                                 <td>
                                     <div class="fw-bold text-dark small">{{ $t->titulo }}</div>
                                     <div class="text-muted small">Formato {{ strtoupper($t->tipo_formato) }}</div>
+                                    <div class="text-muted small"><i class="fas fa-building me-1 small"></i>{{ $t->departamento?->nombre ?? 'Sin departamento' }}</div>
                                 </td>
                                 <td>
                                     @php
@@ -351,6 +359,7 @@
                 <td>
                     <div class="fw-bold text-dark small">${escU(t.titulo)}</div>
                     <div class="text-muted small"><i class="fas fa-user-edit me-1 small"></i>${escU(t.solicitante ?? '')}</div>
+                    <div class="text-muted small"><i class="fas fa-building me-1 small"></i>${escU(t.departamento ?? 'Sin departamento')}</div>
                 </td>
                 <td>
                     <span class="badge bg-secondary-subtle text-secondary border px-2">
@@ -399,6 +408,7 @@
                 <td>
                     <div class="fw-bold text-dark small">${escU(t.titulo)}</div>
                     <div class="text-muted small">Formato ${escU(String(t.tipo_formato ?? '').toUpperCase())}</div>
+                    <div class="text-muted small"><i class="fas fa-building me-1 small"></i>${escU(t.departamento ?? 'Sin departamento')}</div>
                 </td>
                 <td>${estadoBadgeU(t.estado)}</td>
                 <td class="small">

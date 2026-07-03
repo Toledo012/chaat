@@ -1,0 +1,278 @@
+/* =====================================================================
+   Estilo "Humanismo que Transforma" — Gobierno de Chiapas 2024-2030
+   Hoja de estilos compartida para los manuales SEMAHN.TICKETS
+   ===================================================================== */
+
+:root {
+  --color-jade:     #009887;
+  --color-magenta:  #c90166;
+  --color-cinabrio: #ae192d;
+  --color-arena:    #d3c2b4;
+  --color-negro:    #000000;
+
+  --color-fondo:       #f7f5f2;
+  --color-superficie:  #ffffff;
+  --color-texto:       #1f2933;
+  --color-texto-suave: #6b7280;
+  --color-borde:       #e5e7eb;
+
+  --shadow-soft: 0 10px 30px rgba(0,0,0,0.06);
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.08);
+  --radius-card: 18px;
+  --radius-input: 12px;
+  --radius-badge: 6px;
+
+  --font-primary: 'Oswald', 'Arial Narrow', Arial, sans-serif;
+  --font-secondary: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+@page {
+  size: Letter;
+  margin: 20mm 18mm 22mm 18mm;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font-family: var(--font-secondary);
+  font-size: 11.5px;
+  line-height: 1.6;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ---------- Portada ---------- */
+.cover {
+  height: 246mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  page-break-after: always;
+  position: relative;
+  overflow: hidden;
+}
+.cover-band {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 8mm;
+  background: linear-gradient(90deg,
+    var(--color-jade) 0%, var(--color-jade) 55%,
+    var(--color-magenta) 55%, var(--color-magenta) 78%,
+    var(--color-cinabrio) 78%, var(--color-cinabrio) 100%);
+}
+.cover-top { padding-top: 20mm; }
+.cover-logo { display: flex; align-items: center; gap: 14px; }
+.cover-logo svg { width: 88px; height: 74px; }
+.cover-logo-img { width: 150px; height: auto; }
+.cover-wordmark { line-height: 1.05; }
+.cover-wordmark .w1 { font-family: var(--font-primary); font-weight: 400; font-size: 20px; letter-spacing: 2px; color: var(--color-jade); }
+.cover-wordmark .w2 { font-family: var(--font-primary); font-weight: 700; font-size: 24px; letter-spacing: 2px; color: var(--color-cinabrio); }
+.cover-wordmark .w3 { font-family: var(--font-secondary); font-size: 10px; letter-spacing: 3px; color: var(--color-texto-suave); margin-top: 3px; }
+
+.cover-center { }
+.cover-kicker {
+  font-family: var(--font-primary);
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--color-magenta);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.cover-title {
+  font-family: var(--font-primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 46px;
+  line-height: 1.05;
+  letter-spacing: 1px;
+  color: var(--color-texto);
+  margin: 0;
+}
+.cover-title .accent { color: var(--color-jade); }
+.cover-sub {
+  margin-top: 16px;
+  font-size: 15px;
+  color: var(--color-texto-suave);
+  max-width: 130mm;
+}
+.cover-rule {
+  height: 5px; width: 90mm;
+  background: var(--color-jade);
+  border-radius: 4px;
+  margin: 22px 0;
+}
+.cover-rule .diamond { display: inline-block; }
+
+.cover-meta {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--color-borde);
+  padding-top: 14px;
+}
+.cover-meta .item .k { font-family: var(--font-primary); letter-spacing: 2px; text-transform: uppercase; font-size: 9px; color: var(--color-texto-suave); }
+.cover-meta .item .v { font-size: 12px; font-weight: 600; color: var(--color-texto); }
+
+/* ---------- Cabecera de sección corriente ---------- */
+.running {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--color-jade);
+  padding-bottom: 6px;
+  margin-bottom: 18px;
+}
+.running .brand { font-family: var(--font-primary); letter-spacing: 2px; font-size: 11px; color: var(--color-jade); text-transform: uppercase; }
+.running .doc { font-size: 9.5px; color: var(--color-texto-suave); letter-spacing: 1px; text-transform: uppercase; }
+
+/* ---------- Índice ---------- */
+.toc { page-break-after: always; }
+.toc h2 { border: none; }
+.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+.toc li {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px dotted var(--color-borde);
+  counter-increment: toc;
+}
+.toc li::before {
+  content: counter(toc, decimal-leading-zero);
+  font-family: var(--font-primary);
+  color: var(--color-magenta);
+  font-weight: 600;
+  font-size: 12px;
+  min-width: 26px;
+}
+.toc li .t { flex: 1; font-weight: 600; }
+.toc li .sub { color: var(--color-texto-suave); font-weight: 400; }
+
+/* ---------- Tipografía de contenido ---------- */
+h1, h2, h3, h4 { font-family: var(--font-primary); color: var(--color-texto); letter-spacing: 0.5px; }
+h2 {
+  font-size: 20px;
+  text-transform: uppercase;
+  color: var(--color-texto);
+  border-left: 6px solid var(--color-jade);
+  padding-left: 12px;
+  margin: 30px 0 14px;
+  page-break-after: avoid;
+}
+h2 .num { color: var(--color-jade); margin-right: 8px; }
+h3 {
+  font-size: 14.5px;
+  text-transform: uppercase;
+  color: var(--color-cinabrio);
+  margin: 20px 0 8px;
+  letter-spacing: 1px;
+  page-break-after: avoid;
+}
+h4 { font-size: 12.5px; color: var(--color-jade); text-transform: uppercase; margin: 14px 0 6px; letter-spacing: 1px; }
+p { margin: 8px 0; }
+strong { color: var(--color-texto); }
+code {
+  font-family: 'SF Mono', Consolas, 'Liberation Mono', monospace;
+  background: #eef1f0;
+  color: var(--color-cinabrio);
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 10.5px;
+}
+ul, ol { margin: 8px 0; padding-left: 20px; }
+li { margin: 4px 0; }
+.section { page-break-before: always; }
+
+/* ---------- Tablas ---------- */
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 10.5px; page-break-inside: avoid; }
+thead th {
+  background: var(--color-jade);
+  color: #fff;
+  text-align: left;
+  padding: 9px 11px;
+  font-family: var(--font-primary);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  font-size: 10px;
+}
+tbody td { padding: 8px 11px; border-bottom: 1px solid var(--color-borde); vertical-align: top; }
+tbody tr:nth-child(even) { background: #faf9f7; }
+
+/* ---------- Badges ---------- */
+.badge { display: inline-block; border-radius: var(--radius-badge); padding: 2px 9px; font-size: 9.5px; font-weight: 700; letter-spacing: 0.4px; }
+.badge-activo    { background: #e6f7f5; color: var(--color-jade); }
+.badge-pendiente { background: #fff3e0; color: #e65100; }
+.badge-critico   { background: #fdecea; color: var(--color-cinabrio); }
+.badge-especial  { background: #fce4f1; color: var(--color-magenta); }
+.badge-neutro    { background: #eef1f0; color: var(--color-texto-suave); }
+
+/* ---------- Callouts ---------- */
+.callout {
+  border-radius: var(--radius-input);
+  padding: 12px 16px;
+  margin: 14px 0;
+  border-left: 5px solid var(--color-jade);
+  background: #f0faf8;
+  page-break-inside: avoid;
+}
+.callout.tip    { border-color: var(--color-jade); background: #f0faf8; }
+.callout.warn   { border-color: var(--color-cinabrio); background: #fdf2f2; }
+.callout.note   { border-color: var(--color-magenta); background: #fdf1f7; }
+.callout .c-title { font-family: var(--font-primary); text-transform: uppercase; letter-spacing: 1px; font-size: 10.5px; font-weight: 700; margin-bottom: 3px; }
+.callout.tip .c-title { color: var(--color-jade); }
+.callout.warn .c-title { color: var(--color-cinabrio); }
+.callout.note .c-title { color: var(--color-magenta); }
+.callout p { margin: 3px 0; }
+
+/* ---------- Pasos numerados ---------- */
+.steps { counter-reset: step; list-style: none; padding: 0; margin: 14px 0; }
+.steps li {
+  position: relative;
+  padding: 4px 0 12px 44px;
+  counter-increment: step;
+  page-break-inside: avoid;
+}
+.steps li::before {
+  content: counter(step);
+  position: absolute; left: 0; top: 0;
+  width: 30px; height: 30px;
+  background: var(--color-jade);
+  color: #fff;
+  border-radius: 50%;
+  font-family: var(--font-primary);
+  font-weight: 700;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+.steps li strong { display: block; color: var(--color-texto); margin-bottom: 1px; }
+
+/* ---------- Tarjetas de datos ---------- */
+.cards { display: flex; flex-wrap: wrap; gap: 12px; margin: 14px 0; }
+.card {
+  flex: 1 1 45%;
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  page-break-inside: avoid;
+}
+.card .card-k { font-family: var(--font-primary); text-transform: uppercase; letter-spacing: 1px; font-size: 10px; color: var(--color-jade); }
+.card p { margin: 5px 0 0; font-size: 10.5px; }
+
+/* ---------- Divisor de parte ---------- */
+.part-divider {
+  page-break-before: always;
+  height: 246mm;
+  display: flex; flex-direction: column; justify-content: center;
+  text-align: center;
+}
+.part-divider .kicker { font-family: var(--font-primary); letter-spacing: 6px; color: var(--color-magenta); font-size: 13px; text-transform: uppercase; }
+.part-divider .ptitle { font-family: var(--font-primary); font-weight: 700; text-transform: uppercase; font-size: 40px; color: var(--color-texto); margin: 10px 0; }
+.part-divider .pdesc { color: var(--color-texto-suave); max-width: 120mm; margin: 0 auto; font-size: 13px; }
+.part-divider .pbar { height: 6px; width: 70mm; margin: 22px auto; background: var(--color-jade); border-radius: 4px; }
+
+.diamond-sep { color: var(--color-magenta); font-weight: 700; }
+.small { font-size: 9.5px; color: var(--color-texto-suave); }

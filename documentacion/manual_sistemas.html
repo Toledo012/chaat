@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Manual de Usuarios de Sistemas — SEMAHN Tickets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="humanismo.css">
+</head>
+<body>
+
+<!-- ============================= PORTADA ============================= -->
+<section class="cover">
+  <div class="cover-band"></div>
+  <div class="cover-top">
+    <div class="cover-logo">
+      <img src="logo_humanismo.png" alt="Humanismo que Transforma — Gobierno de Chiapas 2024-2030" class="cover-logo-img">
+    </div>
+  </div>
+
+  <div class="cover-center">
+    <div class="cover-kicker">Documentación del Sistema</div>
+    <h1 class="cover-title">Manual de<br><span class="accent">Sistemas</span></h1>
+    <div class="cover-rule"></div>
+    <div class="cover-sub">
+      Sistema de Gestión de Tickets y Formatos de Servicio — SEMAHN.
+      Guía para el personal técnico del área de sistemas: atención de tickets y llenado de formatos.
+    </div>
+  </div>
+
+  <div class="cover-meta">
+    <div class="item"><div class="k">Dependencia</div><div class="v">SEMAHN</div></div>
+    <div class="item"><div class="k">Sistema</div><div class="v">SEMAHN.TICKETS</div></div>
+    <div class="item"><div class="k">Perfil</div><div class="v">Usuario / Técnico</div></div>
+    <div class="item"><div class="k">Plataforma</div><div class="v">Web</div></div>
+    <div class="item"><div class="k">Versión doc.</div><div class="v">1.0</div></div>
+  </div>
+</section>
+
+<!-- ============================= ÍNDICE ============================= -->
+<section class="toc">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual de Sistemas</span></div>
+  <h2>Contenido</h2>
+  <ol>
+    <li><span class="t">Tu rol en el sistema <span class="sub">— qué haces como técnico</span></span></li>
+    <li><span class="t">Acceso y contraseña <span class="sub">— ingresar y cambiar tu clave</span></span></li>
+    <li><span class="t">Tu bandeja de trabajo <span class="sub">— disponibles y mis tickets</span></span></li>
+    <li><span class="t">Tomar un ticket <span class="sub">— asignártelo</span></span></li>
+    <li><span class="t">Crear un ticket <span class="sub">— registrar una solicitud</span></span></li>
+    <li><span class="t">Completar un ticket <span class="sub">— llenar el formato de servicio</span></span></li>
+    <li><span class="t">Los tipos de formato <span class="sub">— A, B, C, D y Recepción</span></span></li>
+    <li><span class="t">Vista previa y PDF <span class="sub">— consultar e imprimir</span></span></li>
+    <li><span class="t">Editar tickets <span class="sub">— corregir información</span></span></li>
+    <li><span class="t">Preguntas frecuentes <span class="sub">— dudas comunes</span></span></li>
+  </ol>
+</section>
+
+<!-- ============================= 1 ROL ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual de Sistemas</span></div>
+  <h2><span class="num">01</span> Tu rol en el sistema</h2>
+  <p>Como <strong>usuario de sistemas (técnico)</strong> eres quien atiende las solicitudes de servicio.
+  Tu trabajo diario gira en torno a tu <strong>bandeja de tickets</strong>: tomas los que están disponibles,
+  ejecutas el servicio y lo documentas llenando el <strong>formato</strong> correspondiente.</p>
+  <div class="cards">
+    <div class="card"><div class="card-k">Tomas</div><p>Eliges tickets del listado de disponibles para atenderlos.</p></div>
+    <div class="card"><div class="card-k">Atiendes</div><p>Realizas el soporte, mantenimiento o desarrollo solicitado.</p></div>
+    <div class="card"><div class="card-k">Documentas</div><p>Completas el formato de servicio, que queda como respaldo oficial en PDF.</p></div>
+  </div>
+</section>
+
+<!-- ============================= 2 ACCESO ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual de Sistemas</span></div>
+  <h2><span class="num">02</span> Acceso y contraseña</h2>
+  <ol class="steps">
+    <li><strong>Ingresa</strong> con tu usuario y contraseña en la pantalla de acceso.</li>
+    <li><strong>Serás dirigido</strong> a tu panel de técnico automáticamente.</li>
+    <li><strong>Cambia tu contraseña</strong> cuando lo necesites desde tu perfil (opción "Cambiar contraseña").</li>
+  </ol>
+  <div class="callout warn">
+    <div class="c-title">Si no puedes entrar</div>
+    <p>Si tu acceso fue desactivado por el administrador, el sistema no te dejará ingresar aunque la
+    contraseña sea correcta. Solicita al administrador que reactive tu cuenta.</p>
+  </div>
+</section>
+
+<!-- ============================= 3 BANDEJA ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual de Sistemas</span></div>
+  <h2><span class="num">03</span> Tu bandeja de trabajo</h2>
+  <p>La pantalla de <strong>Tickets</strong> se divide en dos áreas:</p>
+  <table>
+    <thead><tr><th>Sección</th><th>Qué muestra</th><th>Qué puedes hacer</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Tickets disponibles</strong></td><td>Solicitudes en estado <span class="badge badge-especial">NUEVO</span> sin técnico asignado.</td><td>Ver folio, título, solicitante, <strong>departamento de origen</strong> y tomar el ticket.</td></tr>
+      <tr><td><strong>Mi bandeja de trabajo</strong></td><td>Los tickets que ya son tuyos.</td><td>Ver su estado, gestionarlos y completarlos.</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <div class="c-title">Departamento de origen</div>
+    <p>Cada ticket muestra el <strong>departamento</strong> del que proviene la solicitud, para que sepas
+    de inmediato a qué área pertenece el servicio.</p>
+  </div>
+  <p class="small">La bandeja se actualiza automáticamente para reflejar nuevos tickets sin recargar la página.</p>
+</section>
+
+<!-- ============================= 4 TOMAR ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual de Sistemas</span></div>
+  <h2><span class="num">04</span> Tomar un ticket</h2>
+  <p>Tomar un ticket significa hacerte responsable de él. Pasa de tu lista de disponibles a
+  <strong>tu bandeja</strong>.</p>
+  <ol class="steps">
+    <li><strong>Ubica el ticket</strong> en "Tickets disponibles".</li>
+    <li><strong>Pulsa "Tomar".</strong> El ticket cambia a estado <span class="badge badge-neutro">ASIGNADO</span> a tu nombre.</li>
+    <li><strong>Aparece en "Mi bandeja"</strong>, listo para que lo atiendas y completes.</li>
+  </ol>
+  <div class="callout warn">
+    <div class="c-title">Solo un técnico por ticket</div>
+    <p>Si dos técnicos intentan tomar el mismo ticket, el sistema lo asigna únicamente al primero. Al
+    segundo le avisará que el ticket ya fue tomado.</p>
+  </div>
+</section>
+
+<!-- ============================= 5 CREAR ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual de Sistemas</span></div>
+  <h2><span class="num">05</span> Crear un ticket</h2>
+  <p>También puedes registrar tú mismo una solicitud, por ejemplo cuando atiendes algo directamente.</p>
+  <ol class="steps">
+    <li><strong>Pulsa "Crear Ticket".</strong></li>
+    <li><strong>Captura:</strong> título, solicitante, descripción, tipo de formato y departamento.</li>
+    <li><strong>Guarda.</strong> El ticket se genera con su folio y prioridad <code>media</code> por defecto.</li>
+  </ol>
+</section>
+
+<!-- ============================= 6 COMPLETAR ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual de Sistemas</span></div>
+  <h2><span class="num">06</span> Completar un ticket</h2>
+  <p>Completar es el paso más importante: documenta el servicio realizado. Al hacerlo, el sistema crea el
+  <strong>servicio</strong> y te lleva al <strong>formato</strong> que corresponde al tipo del ticket.</p>
+  <ol class="steps">
+    <li><strong>En "Mi bandeja", abre el ticket</strong> y pulsa "Completar".</li>
+    <li><strong>El sistema te redirige al formato</strong> (A, B, C o D según el ticket) y crea el servicio con su folio institucional.</li>
+    <li><strong>Revisa los datos precargados</strong> — departamento, nombre del solicitante y descripción ya vienen llenos desde el ticket.</li>
+    <li><strong>Completa el resto del formato</strong> con el detalle del trabajo realizado.</li>
+    <li><strong>Guarda.</strong> El ticket queda <span class="badge badge-activo">COMPLETADO</span> y se notifica por correo a quien lo creó.</li>
+  </ol>
+  <div class="callout tip">
+    <div class="c-title">Autollenado desde el ticket</div>
+    <p>Para ahorrarte tiempo, el formato precarga automáticamente:</p>
+    <p>• <strong>Departamento</strong> del ticket &nbsp; • <strong>Nombre del solicitante</strong> &nbsp; • <strong>Descripción</strong> del ticket como <strong>Petición / Descripción del servicio</strong>.</p>
+    <p>Todos los campos quedan <strong>editables</strong> por si necesitas corregir algo.</p>
+  </div>
+</section>
+
+<!-- ============================= 7 TIPOS ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual de Sistemas</span></div>
+  <h2><span class="num">07</span> Los tipos de formato</h2>
+  <p>El tipo de formato lo define el ticket. Cada uno documenta un tipo de servicio distinto:</p>
+  <table>
+    <thead><tr><th>Formato</th><th>Cuándo se usa</th><th>Campos especiales</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-especial">A</span> Soporte y Desarrollo</td><td>Soporte técnico o desarrollo institucional.</td><td>Subtipo, petición, tipo de servicio, trabajo realizado, conclusión.</td></tr>
+      <tr><td><span class="badge badge-especial">B</span> Equipo de cómputo</td><td>Mantenimiento/diagnóstico de equipos.</td><td>Datos del equipo, diagnóstico, materiales utilizados.</td></tr>
+      <tr><td><span class="badge badge-especial">C</span> Redes / Telefonía</td><td>Servicios de red o telefonía.</td><td>Tipo de red, tipo de servicio, materiales.</td></tr>
+      <tr><td><span class="badge badge-especial">D</span> Resguardo / Entrega</td><td>Entrega o resguardo de equipo.</td><td>Datos del equipo, observaciones.</td></tr>
+      <tr><td><span class="badge badge-neutro">R</span> Recepción</td><td>Conformidad del servicio.</td><td>Descripción y firmas.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Tipo de atención y número de memo</h3>
+  <p>En los formatos indicas cómo se solicitó el servicio en <strong>Tipo de atención</strong>:
+  <em>Memo, Teléfono, Jefe o Usuario</em>. Si eliges <strong>Memo</strong>, se habilita el campo
+  <strong>Número de memo</strong>, donde capturas el folio del memorándum de referencia.</p>
+
+  <h3>Firmas</h3>
+  <p>Los formatos incluyen las firmas de <strong>Solicitante</strong>, <strong>Técnico responsable</strong>
+  (tu nombre, precargado) y <strong>Jefe de Área</strong>. En B y C también registras los
+  <strong>materiales utilizados</strong> desde el catálogo.</p>
+</section>
+
+<!-- ============================= 8 PDF ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual de Sistemas</span></div>
+  <h2><span class="num">08</span> Vista previa y PDF</h2>
+  <p>Una vez guardado el formato puedes:</p>
+  <ul>
+    <li><strong>Ver la vista previa</strong> del formato en pantalla.</li>
+    <li><strong>Generar el PDF</strong> oficial para imprimir o archivar.</li>
+  </ul>
+  <div class="callout note">
+    <div class="c-title">Desde "Mi bandeja"</div>
+    <p>Al gestionar un ticket ya completado, dispones de accesos directos a la vista previa y al PDF del
+    servicio asociado.</p>
+  </div>
+</section>
+
+<!-- ============================= 9 EDITAR ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual de Sistemas</span></div>
+  <h2><span class="num">09</span> Editar tickets</h2>
+  <p>Puedes editar la información de un ticket que esté <strong>asignado a ti</strong> mientras no esté
+  cancelado ni completado. Se editan título, solicitante, descripción, tipo de formato y departamento.</p>
+  <div class="callout warn">
+    <div class="c-title">Restricción</div>
+    <p>No es posible editar tickets cancelados o completados. Si detectas un error después de cerrar,
+    coméntalo con el administrador.</p>
+  </div>
+</section>
+
+<!-- ============================= 10 FAQ ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual de Sistemas</span></div>
+  <h2><span class="num">10</span> Preguntas frecuentes</h2>
+  <h4>¿Por qué ya no veo un ticket que estaba disponible?</h4>
+  <p>Probablemente otro técnico lo tomó. Los tickets tomados salen del listado de disponibles.</p>
+  <h4>Tomé un ticket por error, ¿puedo soltarlo?</h4>
+  <p>Coméntalo con el administrador para que lo reasigne; él puede editar la asignación.</p>
+  <h4>El nombre o el departamento del formato no coincide.</h4>
+  <p>Los campos precargados son editables: corrígelos antes de guardar. El departamento del formato se
+  toma del departamento del ticket.</p>
+  <h4>¿Cuándo se envía el correo al solicitante?</h4>
+  <p>Al guardar el formato (completar el ticket), el sistema notifica por correo a quien creó la solicitud.</p>
+
+  <p class="small" style="margin-top:30px; text-align:center;">
+    <span class="diamond-sep">◆</span> &nbsp; SEMAHN.TICKETS · Humanismo que Transforma · Gobierno de Chiapas 2024–2030 &nbsp; <span class="diamond-sep">◆</span>
+  </p>
+</section>
+
+</body>
+</html>

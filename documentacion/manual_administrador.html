@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Manual del Administrador — SEMAHN Tickets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="humanismo.css">
+</head>
+<body>
+
+<!-- ============================= PORTADA ============================= -->
+<section class="cover">
+  <div class="cover-band"></div>
+  <div class="cover-top">
+    <div class="cover-logo">
+      <img src="logo_humanismo.png" alt="Humanismo que Transforma — Gobierno de Chiapas 2024-2030" class="cover-logo-img">
+    </div>
+  </div>
+
+  <div class="cover-center">
+    <div class="cover-kicker">Documentación del Sistema</div>
+    <h1 class="cover-title">Manual del<br><span class="accent">Administrador</span></h1>
+    <div class="cover-rule"></div>
+    <div class="cover-sub">
+      Sistema de Gestión de Tickets y Formatos de Servicio — SEMAHN.
+      Guía operativa completa de administración, más el <strong>Manual Técnico</strong>
+      del funcionamiento interno del sistema.
+    </div>
+  </div>
+
+  <div class="cover-meta">
+    <div class="item"><div class="k">Dependencia</div><div class="v">SEMAHN</div></div>
+    <div class="item"><div class="k">Sistema</div><div class="v">SEMAHN.TICKETS</div></div>
+    <div class="item"><div class="k">Perfil</div><div class="v">Administrador</div></div>
+    <div class="item"><div class="k">Plataforma</div><div class="v">Laravel 12 · Web</div></div>
+    <div class="item"><div class="k">Versión doc.</div><div class="v">1.0</div></div>
+  </div>
+</section>
+
+<!-- ============================= ÍNDICE ============================= -->
+<section class="toc">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual del Administrador</span></div>
+  <h2>Contenido</h2>
+  <ol>
+    <li><span class="t">Introducción <span class="sub">— qué es el sistema y para qué sirve</span></span></li>
+    <li><span class="t">Acceso y perfiles de usuario <span class="sub">— roles y sesión</span></span></li>
+    <li><span class="t">Panel de administración <span class="sub">— dashboard e indicadores</span></span></li>
+    <li><span class="t">Gestión de usuarios <span class="sub">— altas, roles y permisos</span></span></li>
+    <li><span class="t">Gestión de departamentos <span class="sub">— catálogo institucional</span></span></li>
+    <li><span class="t">Gestión de tickets <span class="sub">— crear, asignar, completar, cancelar</span></span></li>
+    <li><span class="t">Formatos y reportes <span class="sub">— A, B, C, D, Recepción y PDF</span></span></li>
+    <li><span class="t">Catálogo de materiales <span class="sub">— insumos utilizados</span></span></li>
+    <li><span class="t">Auditoría de movimientos <span class="sub">— trazabilidad</span></span></li>
+    <li><span class="t">MANUAL TÉCNICO <span class="sub">— arquitectura, variables y funcionamiento</span></span></li>
+  </ol>
+</section>
+
+<!-- ============================= 1. INTRODUCCIÓN ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual del Administrador</span></div>
+  <h2><span class="num">01</span> Introducción</h2>
+  <p>
+    <strong>SEMAHN.TICKETS</strong> es el sistema institucional para solicitar, atender y documentar
+    los servicios de tecnología (soporte, desarrollo, redes, mantenimiento) dentro de la SEMAHN.
+    Cada solicitud se registra como un <strong>ticket</strong>, se asigna a un técnico del área de
+    sistemas y, al concluir, se respalda con un <strong>formato de servicio</strong> oficial en PDF.
+  </p>
+  <p>El sistema conecta a tres actores:</p>
+  <div class="cards">
+    <div class="card"><div class="card-k">Departamentos</div><p>Levantan solicitudes de servicio (tickets) y les dan seguimiento hasta su cierre.</p></div>
+    <div class="card"><div class="card-k">Sistemas / Técnicos</div><p>Toman los tickets, ejecutan el trabajo y llenan el formato de servicio correspondiente.</p></div>
+    <div class="card"><div class="card-k">Administrador</div><p>Supervisa todo el proceso, gestiona usuarios, asigna tickets y controla catálogos y reportes.</p></div>
+  </div>
+  <div class="callout tip">
+    <div class="c-title">Como administrador</div>
+    <p>Tienes acceso total: creas y administras cuentas, asignas tickets a técnicos, gestionas
+    departamentos y materiales, y generas reportes globales de servicios.</p>
+  </div>
+</section>
+
+<!-- ============================= 2. ACCESO ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual del Administrador</span></div>
+  <h2><span class="num">02</span> Acceso y perfiles de usuario</h2>
+  <p>El ingreso se realiza mediante <strong>nombre de usuario</strong> y <strong>contraseña</strong>.
+  Según el rol de la cuenta, el sistema redirige al panel correspondiente.</p>
+
+  <h3>Roles del sistema</h3>
+  <table>
+    <thead><tr><th>ID</th><th>Rol</th><th>Panel de inicio</th><th>Función principal</th></tr></thead>
+    <tbody>
+      <tr><td><code>1</code></td><td>Administrador</td><td><code>/admin/dashboard</code></td><td>Control total del sistema</td></tr>
+      <tr><td><code>2</code></td><td>Usuario (Sistemas / Técnico)</td><td><code>/user/dashboard</code></td><td>Atención de tickets y formatos</td></tr>
+      <tr><td><code>3</code></td><td>Departamento</td><td><code>/departamento/dashboard</code></td><td>Solicitud de servicios</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout warn">
+    <div class="c-title">Cuentas inactivas</div>
+    <p>Una cuenta con estado <span class="badge badge-critico">INACTIVO</span> no puede iniciar sesión,
+    aunque la contraseña sea correcta. El administrador activa o desactiva cuentas desde Gestión de usuarios.</p>
+  </div>
+</section>
+
+<!-- ============================= 3. DASHBOARD ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual del Administrador</span></div>
+  <h2><span class="num">03</span> Panel de administración</h2>
+  <p>Al iniciar sesión como administrador se muestra el <strong>dashboard</strong> con los indicadores
+  (KPIs) del sistema: totales de usuarios, servicios y tickets, junto con accesos rápidos a las
+  distintas secciones desde la barra lateral.</p>
+  <h3>Navegación</h3>
+  <ul>
+    <li><strong>Tickets</strong> — bandeja global de solicitudes.</li>
+    <li><strong>Usuarios</strong> — administración de cuentas, roles y permisos.</li>
+    <li><strong>Departamentos</strong> — catálogo de áreas de la dependencia.</li>
+    <li><strong>Formatos</strong> — registro y consulta de formatos de servicio y reportes.</li>
+    <li><strong>Materiales</strong> — catálogo de insumos.</li>
+    <li><strong>Movimientos</strong> — auditoría de acciones.</li>
+  </ul>
+</section>
+
+<!-- ============================= 4. USUARIOS ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual del Administrador</span></div>
+  <h2><span class="num">04</span> Gestión de usuarios</h2>
+  <p>Desde <strong>Usuarios</strong> administras las cuentas de acceso. Cada cuenta se compone de un
+  <strong>usuario</strong> (datos de la persona: nombre, puesto, departamento, extensión, correo) y una
+  <strong>cuenta</strong> (credenciales, rol y estado).</p>
+
+  <h3>Crear un usuario</h3>
+  <ol class="steps">
+    <li><strong>Abre "Nuevo usuario"</strong> en la sección Usuarios.</li>
+    <li><strong>Captura los datos</strong> de la persona y asigna su departamento.</li>
+    <li><strong>Define el usuario y la contraseña</strong> de acceso.</li>
+    <li><strong>Selecciona el rol</strong> (Administrador, Usuario o Departamento).</li>
+    <li><strong>Guarda.</strong> La cuenta queda <span class="badge badge-activo">ACTIVA</span> y lista para ingresar.</li>
+  </ol>
+
+  <h3>Acciones disponibles sobre cada cuenta</h3>
+  <table>
+    <thead><tr><th>Acción</th><th>Permiso requerido</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td>Ver usuarios</td><td><code>gestion_usuarios</code></td><td>Consultar el listado de cuentas.</td></tr>
+      <tr><td>Crear</td><td><code>crear_usuarios</code></td><td>Registrar nuevas cuentas.</td></tr>
+      <tr><td>Editar</td><td><code>editar_usuarios</code></td><td>Modificar datos de la persona/cuenta.</td></tr>
+      <tr><td>Eliminar</td><td><code>eliminar_usuarios</code></td><td>Dar de baja una cuenta.</td></tr>
+      <tr><td>Cambiar rol / permisos</td><td><code>cambiar_roles</code></td><td>Reasignar rol o ajustar permisos.</td></tr>
+      <tr><td>Activar / desactivar</td><td><code>activar_cuentas</code></td><td>Bloquear o habilitar el acceso.</td></tr>
+      <tr><td>Restablecer contraseña</td><td><code>cambiar_roles</code></td><td>Generar una nueva contraseña.</td></tr>
+    </tbody>
+  </table>
+  <div class="callout note">
+    <div class="c-title">Permisos por rol</div>
+    <p>Los permisos se otorgan al <strong>rol</strong> (no a la persona individual) mediante la tabla
+    <code>rol_permiso</code>. El Administrador siempre tiene todos los permisos de forma implícita.</p>
+  </div>
+</section>
+
+<!-- ============================= 5. DEPARTAMENTOS ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual del Administrador</span></div>
+  <h2><span class="num">05</span> Gestión de departamentos</h2>
+  <p>El catálogo de <strong>departamentos</strong> representa las áreas de la dependencia que pueden
+  solicitar servicios. Cada ticket y cada formato quedan asociados a un departamento. La administración
+  del catálogo (crear/editar) está reservada al <strong>Administrador</strong>.</p>
+  <ul>
+    <li><strong>Nombre</strong> — nombre del área (ej. "Recursos Humanos").</li>
+    <li><strong>Descripción</strong> — referencia opcional.</li>
+    <li><strong>Activo</strong> — solo los departamentos activos aparecen en los formularios.</li>
+  </ul>
+  <div class="callout tip">
+    <div class="c-title">Creación rápida</div>
+    <p>Los formularios de formato incluyen un botón "Nuevo" que permite dar de alta un departamento sin
+    salir de la pantalla (función <em>quick-store</em>).</p>
+  </div>
+</section>
+
+<!-- ============================= 6. TICKETS ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual del Administrador</span></div>
+  <h2><span class="num">06</span> Gestión de tickets</h2>
+  <p>El ticket es el corazón del sistema. Registra una solicitud de servicio desde que nace hasta que se
+  cierra con su formato. Como administrador ves <strong>todos</strong> los tickets y controlas su ciclo de vida.</p>
+
+  <h3>Ciclo de vida de un ticket</h3>
+  <table>
+    <thead><tr><th>Estado</th><th>Significado</th><th>Quién lo provoca</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-especial">NUEVO</span></td><td>Recién creado, sin técnico asignado.</td><td>Departamento / Admin / Técnico</td></tr>
+      <tr><td><span class="badge badge-neutro">ASIGNADO</span></td><td>Ya tiene un técnico responsable.</td><td>Admin (asigna) o Técnico (toma)</td></tr>
+      <tr><td><span class="badge badge-pendiente">EN PROCESO</span></td><td>El técnico inició la atención y se creó el servicio.</td><td>Técnico (al dar "Completar")</td></tr>
+      <tr><td><span class="badge badge-neutro">EN ESPERA</span></td><td>Atención pausada temporalmente.</td><td>Admin</td></tr>
+      <tr><td><span class="badge badge-activo">COMPLETADO</span></td><td>Formato guardado; servicio documentado.</td><td>Técnico (al guardar formato)</td></tr>
+      <tr><td><span class="badge badge-critico">CANCELADO</span></td><td>Solicitud anulada.</td><td>Admin o dueño del ticket</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Prioridades</h3>
+  <p>
+    <span class="badge badge-activo">BAJA</span>&nbsp;&nbsp;
+    <span class="badge badge-pendiente">MEDIA</span>&nbsp;&nbsp;
+    <span class="badge badge-critico">ALTA</span>
+    &nbsp;— Los tickets creados por departamentos o técnicos toman <code>media</code> por defecto;
+    el administrador puede fijar la prioridad al crear o editar.
+  </p>
+
+  <h3>Acciones del administrador</h3>
+  <ol class="steps">
+    <li><strong>Crear ticket</strong> — captura título, solicitante, descripción, prioridad, tipo de formato y departamento.</li>
+    <li><strong>Asignar</strong> — designa a un técnico responsable; el ticket pasa a <code>asignado</code> y se notifica por correo.</li>
+    <li><strong>Completar</strong> — deriva al llenado del formato de servicio correspondiente.</li>
+    <li><strong>Cancelar</strong> — anula la solicitud (no aplica a tickets ya completados).</li>
+    <li><strong>Editar</strong> — ajusta datos, prioridad o estado.</li>
+  </ol>
+
+  <h3>Folio del ticket</h3>
+  <p>El folio se genera automáticamente con el patrón
+  <code>TCK-AAAAMMDD-SIGLA-NN</code>, donde <em>SIGLA</em> son las iniciales del departamento y <em>NN</em>
+  es el consecutivo del día para ese departamento. Ejemplo: <code>TCK-20260703-RH-01</code>.</p>
+</section>
+
+<!-- ============================= 7. FORMATOS ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual del Administrador</span></div>
+  <h2><span class="num">07</span> Formatos y reportes</h2>
+  <p>Al completar un ticket se genera un <strong>servicio</strong> que se documenta con un
+  <strong>formato</strong>. Existen cuatro tipos de formato de servicio más el de recepción:</p>
+  <table>
+    <thead><tr><th>Tipo</th><th>Uso</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-especial">A</span> Soporte y Desarrollo</td><td>Servicios de soporte técnico o desarrollo institucional.</td></tr>
+      <tr><td><span class="badge badge-especial">B</span> Equipo de cómputo</td><td>Mantenimiento y diagnóstico de equipos (con materiales).</td></tr>
+      <tr><td><span class="badge badge-especial">C</span> Redes / Telefonía</td><td>Servicios de red y telefonía (con materiales).</td></tr>
+      <tr><td><span class="badge badge-especial">D</span> Resguardo / Entrega</td><td>Entrega o resguardo de equipo.</td></tr>
+      <tr><td><span class="badge badge-neutro">R</span> Recepción</td><td>Formato de recepción/conformidad del servicio.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Consulta, vista previa y PDF</h3>
+  <ul>
+    <li><strong>Listado de formatos</strong> con filtros por tipo, técnico y rango de fechas.</li>
+    <li><strong>Vista previa</strong> en pantalla antes de imprimir.</li>
+    <li><strong>PDF individual</strong> por formato (motor DomPDF), con nombre <code>FormatoX_&lt;folio&gt;.pdf</code>.</li>
+    <li><strong>Reporte general</strong> en PDF con estadísticas por técnico, tipo y mes.</li>
+  </ul>
+  <div class="callout tip">
+    <div class="c-title">Folio de servicio</div>
+    <p>Cada servicio recibe un folio institucional global con el patrón <code>SEMAHN-&lt;TIPO&gt;-00001</code>
+    (ej. <code>SEMAHN-A-00042</code>), independiente del folio del ticket.</p>
+  </div>
+</section>
+
+<!-- ============================= 8. MATERIALES ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual del Administrador</span></div>
+  <h2><span class="num">08</span> Catálogo de materiales</h2>
+  <p>Los formatos B y C permiten registrar los <strong>materiales utilizados</strong> en el servicio.
+  El catálogo de materiales define los insumos disponibles.</p>
+  <ul>
+    <li><strong>Nombre</strong> del material y <strong>unidad sugerida</strong>.</li>
+    <li>Alta rápida desde el propio formato (<em>quick-store</em>).</li>
+    <li>Eliminación individual o múltiple.</li>
+  </ul>
+  <div class="callout note">
+    <div class="c-title">Acceso</div>
+    <p>El catálogo de materiales está disponible para Administrador y Sistemas; queda bloqueado para el perfil Departamento.</p>
+  </div>
+</section>
+
+<!-- ============================= 9. MOVIMIENTOS ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Humanismo que Transforma</span><span class="doc">Manual del Administrador</span></div>
+  <h2><span class="num">09</span> Auditoría de movimientos</h2>
+  <p>La sección <strong>Movimientos</strong> ofrece trazabilidad de las acciones relevantes del sistema,
+  útil para revisión y control interno. Requiere el permiso <code>gestion_usuarios</code>.</p>
+</section>
+
+<!-- ============================= DIVISOR: MANUAL TÉCNICO ============================= -->
+<section class="part-divider">
+  <div class="kicker">Parte II</div>
+  <div class="ptitle">Manual Técnico</div>
+  <div class="pbar"></div>
+  <div class="pdesc">Arquitectura, base de datos, variables y funcionamiento interno del sistema
+  SEMAHN.TICKETS. Dirigido a personal de sistemas responsable del mantenimiento.</div>
+</section>
+
+<!-- ============================= T1 ARQUITECTURA ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Manual Técnico</span><span class="doc">SEMAHN.TICKETS</span></div>
+  <h2><span class="num">10</span> Arquitectura y stack</h2>
+  <p>El sistema está construido sobre <strong>Laravel 12</strong> siguiendo el patrón <strong>MVC</strong>,
+  con una capa adicional de <strong>servicios</strong> que centraliza la lógica de negocio.</p>
+  <table>
+    <thead><tr><th>Capa</th><th>Tecnología</th><th>Rol</th></tr></thead>
+    <tbody>
+      <tr><td>Backend</td><td>Laravel 12 · PHP 8.2</td><td>Lógica, rutas, controladores, servicios.</td></tr>
+      <tr><td>Vistas</td><td>Blade · Bootstrap 5.3 · Font Awesome</td><td>Interfaz de usuario.</td></tr>
+      <tr><td>Assets</td><td>Vite · Tailwind 4</td><td>Compilación de CSS/JS.</td></tr>
+      <tr><td>PDF</td><td>barryvdh/laravel-dompdf</td><td>Generación de formatos y reportes.</td></tr>
+      <tr><td>Correo</td><td>Laravel Mail</td><td>Notificaciones de ticket.</td></tr>
+      <tr><td>Base de datos</td><td>MySQL / MariaDB</td><td>Persistencia.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Organización del código</h3>
+  <ul>
+    <li><code>app/Models</code> — modelos Eloquent (Ticket, Cuenta, Usuario, Departamento, Servicio, etc.).</li>
+    <li><code>app/Http/Controllers</code> — controladores por dominio (tickets, formatos, usuarios, materiales).</li>
+    <li><code>app/Services</code> — <code>TicketService</code> y <code>ServicioService</code> (lógica central).</li>
+    <li><code>app/Http/Middleware</code> — <code>EnsureRole</code> (<code>rol:</code>) y <code>EnsurePermission</code> (<code>perm:</code>).</li>
+    <li><code>resources/views</code> — Blades organizados por rol y por sección.</li>
+    <li><code>routes/web.php</code> — definición de rutas y middlewares.</li>
+  </ul>
+</section>
+
+<!-- ============================= T2 BASE DE DATOS ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Manual Técnico</span><span class="doc">SEMAHN.TICKETS</span></div>
+  <h2><span class="num">11</span> Base de datos y modelos</h2>
+  <p>Tablas principales y su función:</p>
+  <table>
+    <thead><tr><th>Tabla</th><th>PK</th><th>Contenido</th></tr></thead>
+    <tbody>
+      <tr><td><code>usuarios_formatos</code></td><td>id_usuario</td><td>Datos de la persona (nombre, puesto, departamento, extensión, email).</td></tr>
+      <tr><td><code>cuentas</code></td><td>id_cuenta</td><td>Credenciales, estado, id_usuario, id_rol.</td></tr>
+      <tr><td><code>roles</code></td><td>id_rol</td><td>Administrador (1), Usuario (2), Departamento (3).</td></tr>
+      <tr><td><code>permisos</code> / <code>rol_permiso</code></td><td>—</td><td>Catálogo de permisos y su asignación por rol.</td></tr>
+      <tr><td><code>departamentos</code></td><td>id_departamento</td><td>Áreas de la dependencia.</td></tr>
+      <tr><td><code>tickets</code></td><td>id_ticket</td><td>Solicitudes de servicio y su estado.</td></tr>
+      <tr><td><code>servicios</code></td><td>id_servicio</td><td>Servicio ejecutado; enlaza ticket con formato.</td></tr>
+      <tr><td><code>formato_a/b/c/d</code></td><td>id_formatoX</td><td>Detalle del formato según su tipo.</td></tr>
+      <tr><td><code>formato_recepcion</code></td><td>id_formato_r</td><td>Formato de recepción/conformidad.</td></tr>
+      <tr><td><code>catalogo_materiales</code> / <code>materiales_utilizados</code></td><td>id_material</td><td>Insumos y su consumo por servicio.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Relaciones clave (Eloquent)</h3>
+  <ul>
+    <li><code>Cuenta</code> ⟶ pertenece a <code>Usuario</code> y a <code>Rol</code>.</li>
+    <li><code>Ticket</code> ⟶ <code>creadoPor</code>, <code>asignadoA</code>, <code>asignadoPor</code> (todas a <code>Cuenta</code>), <code>departamento</code> y <code>servicio</code>.</li>
+    <li><code>Servicio</code> ⟶ pertenece a <code>Usuario</code> y tiene un <code>FormatoA/B/C/D</code> o <code>FormatoRecepcion</code>.</li>
+    <li><code>Departamento</code> ⟶ tiene muchos <code>Servicio</code> y <code>Usuario</code>.</li>
+  </ul>
+</section>
+
+<!-- ============================= T3 VARIABLES ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Manual Técnico</span><span class="doc">SEMAHN.TICKETS</span></div>
+  <h2><span class="num">12</span> Variables del sistema y su uso</h2>
+  <p>Estas son las variables (campos) de control que rigen el comportamiento del sistema. Comprenderlas
+  es esencial para dar mantenimiento.</p>
+
+  <h3>Campo <code>estado</code> (tabla tickets)</h3>
+  <p>Controla el ciclo de vida. Valores: <code>nuevo</code>, <code>asignado</code>, <code>en_proceso</code>,
+  <code>en_espera</code>, <code>completado</code>, <code>cancelado</code>. Las transiciones las gobierna
+  <code>TicketService</code>: un ticket <code>completado</code> o <code>cancelado</code> no puede asignarse,
+  tomarse ni editarse.</p>
+
+  <h3>Campo <code>prioridad</code></h3>
+  <p>Valores <code>baja</code>, <code>media</code>, <code>alta</code>. Por defecto <code>media</code> en
+  creación por técnico/departamento. Define el color/urgencia en la interfaz.</p>
+
+  <h3>Campo <code>tipo_formato</code></h3>
+  <p>Valores <code>a</code>, <code>b</code>, <code>c</code>, <code>d</code>. Determina a qué formulario de
+  formato se redirige al completar el ticket y qué tabla de detalle se usa.</p>
+
+  <h3>Campo <code>tipo_atencion</code> y <code>num_memo</code> (formatos)</h3>
+  <p><code>tipo_atencion</code> indica cómo se solicitó el servicio: <code>Memo</code>, <code>Teléfono</code>,
+  <code>Jefe</code> o <code>Usuario</code>. Cuando es <code>Memo</code>, se habilita y exige el campo
+  <code>num_memo</code> (número/folio del memorándum de referencia).</p>
+
+  <h3>Roles y permisos</h3>
+  <table>
+    <thead><tr><th>ID permiso</th><th>Nombre interno</th><th>Habilita</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><code>gestion_usuarios</code></td><td>Ver usuarios y auditoría.</td></tr>
+      <tr><td>2</td><td><code>gestion_formatos</code></td><td>Acceso a formatos y reportes.</td></tr>
+      <tr><td>3</td><td><code>crear_usuarios</code></td><td>Alta de cuentas.</td></tr>
+      <tr><td>4</td><td><code>editar_usuarios</code></td><td>Edición de cuentas.</td></tr>
+      <tr><td>5</td><td><code>eliminar_usuarios</code></td><td>Baja de cuentas.</td></tr>
+      <tr><td>6</td><td><code>cambiar_roles</code></td><td>Cambio de rol/permisos y reset de contraseña.</td></tr>
+      <tr><td>7</td><td><code>activar_cuentas</code></td><td>Activar/desactivar acceso.</td></tr>
+    </tbody>
+  </table>
+  <p class="small">El Administrador (rol 1) tiene todos los permisos de forma implícita
+  (<code>Cuenta::tienePermiso()</code>). Middlewares: <code>rol:&lt;Rol&gt;</code> valida el rol;
+  <code>perm:&lt;permiso&gt;</code> o <code>perm:any,&lt;p1&gt;,&lt;p2&gt;</code> valida permisos.</p>
+
+  <h3>Folios</h3>
+  <ul>
+    <li><strong>Ticket:</strong> <code>TCK-AAAAMMDD-SIGLA-NN</code> — consecutivo por día y departamento, con reintento ante colisión (<code>TicketService::generarFolio</code>).</li>
+    <li><strong>Servicio:</strong> <code>SEMAHN-&lt;TIPO&gt;-00001</code> — consecutivo global con <code>lockForUpdate()</code> (<code>ServicioService::obtenerOCrearServicio</code>).</li>
+  </ul>
+</section>
+
+<!-- ============================= T4 FLUJO Y SERVICIOS ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Manual Técnico</span><span class="doc">SEMAHN.TICKETS</span></div>
+  <h2><span class="num">13</span> Flujo de datos y servicios</h2>
+  <h3>Recorrido ticket → servicio → formato</h3>
+  <ol class="steps">
+    <li><strong>Creación</strong> — <code>TicketService::crearComo{Admin|Usuario|Departamento}()</code> genera el folio, guarda el ticket en estado <code>nuevo</code> y dispara <code>TicketCreadoMail</code>.</li>
+    <li><strong>Asignación / toma</strong> — <code>asignarComoAdmin()</code> o <code>tomarComoUsuario()</code> pasan el ticket a <code>asignado</code>. La toma usa un <code>update</code> condicional para evitar carreras entre técnicos.</li>
+    <li><strong>Inicio de atención</strong> — al "Completar", <code>iniciarAtencionYCrearServicioSiFalta()</code> crea el <code>servicio</code> (folio institucional) y pasa el ticket a <code>en_proceso</code>.</li>
+    <li><strong>Llenado de formato</strong> — <code>FormatoController::formato{A..D}()</code> muestra el formulario, precargando departamento, solicitante y descripción del ticket.</li>
+    <li><strong>Cierre</strong> — <code>store{A..D}()</code> guarda el detalle y llama a <code>ServicioService::completarTicketPorId()</code>, que marca el ticket como <code>completado</code> y envía <code>TicketCompletadoMail</code>.</li>
+  </ol>
+
+  <h3>Servicios de negocio</h3>
+  <div class="cards">
+    <div class="card"><div class="card-k">TicketService</div><p>Creación con folio único, asignación, toma, cancelación, edición por rol y notificaciones de creado/asignado.</p></div>
+    <div class="card"><div class="card-k">ServicioService</div><p>Alta de servicios con folio global, y cierre del ticket + notificación de completado.</p></div>
+  </div>
+
+  <h3>Notificaciones por correo</h3>
+  <table>
+    <thead><tr><th>Evento</th><th>Mail</th><th>Destinatario</th></tr></thead>
+    <tbody>
+      <tr><td>Ticket creado</td><td><code>TicketCreadoMail</code></td><td>Cuentas rol 1 y 2 con email.</td></tr>
+      <tr><td>Ticket asignado</td><td><code>TicketAsignadoMail</code></td><td>Técnico asignado.</td></tr>
+      <tr><td>Ticket completado</td><td><code>TicketCompletadoMail</code></td><td>Quien creó el ticket.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============================= T5 MANTENIMIENTO ============================= -->
+<section class="section">
+  <div class="running"><span class="brand">Manual Técnico</span><span class="doc">SEMAHN.TICKETS</span></div>
+  <h2><span class="num">14</span> Despliegue y mantenimiento</h2>
+  <h3>Instalación</h3>
+  <ol class="steps">
+    <li><strong>Dependencias PHP</strong> — <code>composer install</code>.</li>
+    <li><strong>Dependencias front</strong> — <code>npm install</code>.</li>
+    <li><strong>Entorno</strong> — copiar <code>.env</code>, configurar base de datos y correo, <code>php artisan key:generate</code>.</li>
+    <li><strong>Base de datos</strong> — <code>php artisan migrate</code> (y <em>seeders</em> de roles/permisos).</li>
+    <li><strong>Ejecución</strong> — <code>composer run dev</code> levanta servidor, colas, logs y Vite.</li>
+  </ol>
+  <div class="callout warn">
+    <div class="c-title">Notas de mantenimiento</div>
+    <p>Las rutas <code>/test-mail</code> son de prueba de correo y deben deshabilitarse en producción.
+    Verifica la configuración SMTP en <code>.env</code> para que lleguen las notificaciones.</p>
+  </div>
+  <div class="callout tip">
+    <div class="c-title">Zona horaria</div>
+    <p>El sistema opera en <code>America/Mexico_City</code>. Las fechas visibles se formatean a esa zona.</p>
+  </div>
+
+  <p class="small" style="margin-top:30px; text-align:center;">
+    <span class="diamond-sep">◆</span> &nbsp; SEMAHN.TICKETS · Humanismo que Transforma · Gobierno de Chiapas 2024–2030 &nbsp; <span class="diamond-sep">◆</span>
+  </p>
+</section>
+
+</body>
+</html>

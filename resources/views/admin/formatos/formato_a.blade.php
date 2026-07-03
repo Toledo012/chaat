@@ -111,6 +111,7 @@
                 <div class="mb-3">
                     <label class="form-label">Petición <span class="text-danger">*</span></label>
                     <input type="text" name="peticion" class="form-control"
+                           value="{{ old('peticion', $ticketDescripcion ?? '') }}"
                            placeholder="Describe brevemente la solicitud" required>
                 </div>
 
@@ -174,6 +175,7 @@
                     <div class="col-md-4">
                         <label class="form-label">Solicitante <span class="text-danger">*</span></label>
                         <input id="firmaSolicitante" name="firma_usuario"
+                               value="{{ old('firma_usuario', $ticketSolicitante ?? '') }}"
                                placeholder="Nombre de quien solicita"
                                class="form-control" required>
                     </div>

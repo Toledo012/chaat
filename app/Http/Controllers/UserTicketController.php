@@ -17,13 +17,13 @@ class UserTicketController extends Controller
 
         $departamentos = Departamento::orderBy('nombre')->get();
 
-        $disponibles = Ticket::with('creadoPor.usuario')
+        $disponibles = Ticket::with('creadoPor.usuario', 'departamento')
             ->whereNull('asignado_a')
             ->where('estado', 'nuevo')
             ->orderByDesc('id_ticket')
             ->get();
 
-        $misTickets = Ticket::with('creadoPor.usuario')
+        $misTickets = Ticket::with('creadoPor.usuario', 'departamento')
             ->where('asignado_a', $cuentaId)
             ->orderByDesc('id_ticket')
             ->get();
@@ -35,26 +35,27 @@ class UserTicketController extends Controller
     {
         $cuentaId = auth()->user()->id_cuenta;
 
-        $disponibles = Ticket::with(['creadoPor:id_cuenta,username'])
+        $disponibles = Ticket::with(['creadoPor:id_cuenta,username', 'departamento:id_departamento,nombre'])
             ->whereNull('asignado_a')
             ->where('estado', 'nuevo')
             ->orderByDesc('id_ticket')
             ->get()
             ->map(function ($ticket) {
                 return [
-                    'id_ticket'       => $ticket->id_ticket,
-                    'folio'           => $ticket->folio,
-                    'titulo'          => $ticket->titulo,
-                    'solicitante'     => $ticket->solicitante,
-                    'descripcion'     => $ticket->descripcion,
-                    'prioridad'       => $ticket->prioridad,
-                    'tipo_formato'    => $ticket->tipo_formato,
-                    'estado'          => $ticket->estado,
-                    'id_servicio'     => $ticket->id_servicio,
-                    'id_departamento' => $ticket->id_departamento,
-                    'created_at'      => $ticket->created_at,
-                    'updated_at'      => $ticket->updated_at,
-                    'creado_por'      => $ticket->creadoPor ? [
+                    'id_ticket'         => $ticket->id_ticket,
+                    'folio'             => $ticket->folio,
+                    'titulo'            => $ticket->titulo,
+                    'solicitante'       => $ticket->solicitante,
+                    'descripcion'       => $ticket->descripcion,
+                    'prioridad'         => $ticket->prioridad,
+                    'tipo_formato'      => $ticket->tipo_formato,
+                    'estado'            => $ticket->estado,
+                    'id_servicio'       => $ticket->id_servicio,
+                    'id_departamento'   => $ticket->id_departamento,
+                    'departamento'      => $ticket->departamento?->nombre,
+                    'created_at'        => $ticket->created_at,
+                    'updated_at'        => $ticket->updated_at,
+                    'creado_por'        => $ticket->creadoPor ? [
                         'id_cuenta' => $ticket->creadoPor->id_cuenta,
                         'username'  => $ticket->creadoPor->username,
                     ] : null,
@@ -62,25 +63,26 @@ class UserTicketController extends Controller
             })
             ->values();
 
-        $misTickets = Ticket::with(['creadoPor:id_cuenta,username'])
+        $misTickets = Ticket::with(['creadoPor:id_cuenta,username', 'departamento:id_departamento,nombre'])
             ->where('asignado_a', $cuentaId)
             ->orderByDesc('id_ticket')
             ->get()
             ->map(function ($ticket) {
                 return [
-                    'id_ticket'       => $ticket->id_ticket,
-                    'folio'           => $ticket->folio,
-                    'titulo'          => $ticket->titulo,
-                    'solicitante'     => $ticket->solicitante,
-                    'descripcion'     => $ticket->descripcion,
-                    'prioridad'       => $ticket->prioridad,
-                    'tipo_formato'    => $ticket->tipo_formato,
-                    'estado'          => $ticket->estado,
-                    'id_servicio'     => $ticket->id_servicio,
-                    'id_departamento' => $ticket->id_departamento,
-                    'created_at'      => $ticket->created_at,
-                    'updated_at'      => $ticket->updated_at,
-                    'creado_por'      => $ticket->creadoPor ? [
+                    'id_ticket'         => $ticket->id_ticket,
+                    'folio'             => $ticket->folio,
+                    'titulo'            => $ticket->titulo,
+                    'solicitante'       => $ticket->solicitante,
+                    'descripcion'       => $ticket->descripcion,
+                    'prioridad'         => $ticket->prioridad,
+                    'tipo_formato'      => $ticket->tipo_formato,
+                    'estado'            => $ticket->estado,
+                    'id_servicio'       => $ticket->id_servicio,
+                    'id_departamento'   => $ticket->id_departamento,
+                    'departamento'      => $ticket->departamento?->nombre,
+                    'created_at'        => $ticket->created_at,
+                    'updated_at'        => $ticket->updated_at,
+                    'creado_por'        => $ticket->creadoPor ? [
                         'id_cuenta' => $ticket->creadoPor->id_cuenta,
                         'username'  => $ticket->creadoPor->username,
                     ] : null,
