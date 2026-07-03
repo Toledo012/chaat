@@ -194,6 +194,10 @@ class AdminController extends Controller
 
         $usuario = Usuario::find($id);
 
+        if (!$usuario) {
+            return redirect()->route('admin.users.index')->with('error', 'Usuario no encontrado');
+        }
+
         if ($usuario->cuenta && $usuario->cuenta->id_rol == 1 && auth()->user()->id_usuario != 1) {
             return redirect()->route('admin.users.index')->with('error', 'Solo el Super Admin puede editar Administradores.');
         }
