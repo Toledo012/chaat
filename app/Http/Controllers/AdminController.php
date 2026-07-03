@@ -212,7 +212,7 @@ class AdminController extends Controller
                 'nombre' => 'required|string|max:50',
                 'id_departamento' => 'required|exists:departamentos,id_departamento',
                 'puesto' => 'nullable|string|max:50',
-                'email' => 'nullable|email|max:50|unique:usuarios,email,' . $id . ',id_usuario',
+                'email' => 'nullable|email|max:50|unique:usuarios_formatos,email,' . $id . ',id_usuario',
                 'username' => $usernameRule,
             ]);
 
