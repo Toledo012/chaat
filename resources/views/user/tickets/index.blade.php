@@ -127,7 +127,7 @@
                                 <td>
                                     @php
                                         $stClass = match($t->estado) {
-                                            'en proceso' => 'text-bg-warning text-dark',
+                                            'en_proceso' => 'text-bg-warning text-dark',
                                             'completado' => 'text-bg-success',
                                             'cancelado'  => 'text-bg-danger',
                                             default      => 'text-bg-info',
@@ -311,7 +311,7 @@
 
         function estadoBadgeU(estado) {
             const clases = {
-                en proceso: 'text-bg-warning text-dark',
+                en_proceso: 'text-bg-warning text-dark',
                 completado: 'text-bg-success',
                 cancelado:  'text-bg-danger',
                 asignado:   'text-bg-info',
@@ -438,7 +438,7 @@
                 const pdfUrl     = t.id_servicio ? `/admin/formatos/${tipo}/${t.id_servicio}/pdf` : '';
 
                 return `
-            {{-- Modal gestionar --}}
+
                 <div class="modal fade" id="modalGestionUser${t.id_ticket}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered shadow-lg">
                     <div class="modal-content border-0 shadow-lg">
@@ -503,7 +503,6 @@
                 </div>
             </div>
 
-            {{-- Modal editar --}}
                 ${!bloqueado ? `
                 <div class="modal fade" id="modalEditarTicketUser${t.id_ticket}" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
