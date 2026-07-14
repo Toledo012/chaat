@@ -15,10 +15,31 @@ class Cuenta extends Authenticatable
         'password',
         'estado',
         'id_usuario',
-        'id_rol'
+        'id_rol',
+        'preferencias_correo',
     ];
 
     protected $hidden = ['password'];
+
+    protected $casts = [
+        'preferencias_correo' => 'array',
+    ];
+
+    /**
+     * Tipos de correo configurables por usuario (modelo opt-out).
+     */
+    public const TIPOS_CORREO = ['nuevos', 'asignados', 'concluidos'];
+
+    /**
+     * ¿La cuenta quiere recibir este tipo de correo?
+     * Opt-out: por defecto TODOS habilitados; solo se excluye si está
+     * explícitamente en false dentro de preferencias_correo.
+     */
+    public function quiereCorreo(string $tipo): bool
+    {
+        $prefs = $this->preferencias_correo ?? [];
+        return ($prefs[$tipo] ?? true) !== false;
+    }
 
     // Deshabilitar remember_token
     public function getRememberToken() { return null; }
@@ -34,6 +55,23 @@ class Cuenta extends Authenticatable
     public function rol()
     {
         return $this->belongsTo(Rol::class, 'id_rol');
+    }
+
+    /**
+     * Nombre a mostrar de la cuenta: nombre real del usuario si existe,
+     * si no, el username. Centraliza la presentación para vistas/JSON.
+     */
+    public function getNombreMostradoAttribute(): string
+    {
+        return $this->usuario?->nombre ?? $this->username ?? 'Sistema';
+    }
+
+    /**
+     * Nombre del departamento/área del usuario ligado a la cuenta (si aplica).
+     */
+    public function getDepartamentoNombreAttribute(): ?string
+    {
+        return $this->usuario?->departamentos?->nombre ?? null;
     }
 
     public function isAdmin()

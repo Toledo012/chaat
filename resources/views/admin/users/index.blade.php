@@ -77,6 +77,10 @@
                         data-username="{{ optional($usuario->cuenta)->username }}" 
                         data-estado="{{ optional($usuario->cuenta)->estado }}"
                         data-permisos='@json($usuario->cuenta ? ($usuario->cuenta->permisosArray() ?? []) : [])'
+                        data-tiene-cuenta="{{ $usuario->cuenta ? 1 : 0 }}"
+                        data-pref-nuevos="{{ (optional($usuario->cuenta)->quiereCorreo('nuevos') ?? true) ? 1 : 0 }}"
+                        data-pref-asignados="{{ (optional($usuario->cuenta)->quiereCorreo('asignados') ?? true) ? 1 : 0 }}"
+                        data-pref-concluidos="{{ (optional($usuario->cuenta)->quiereCorreo('concluidos') ?? true) ? 1 : 0 }}"
                     >
                         <td class="ps-4">
                             <div class="d-flex align-items-center gap-3">
@@ -376,6 +380,25 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div class="col-6"><label class="modal-label-header">Email</label><input type="email" name="email" class="form-control shadow-sm" value="${tr.dataset.email}" required></div>
                         <div class="col-6"><label class="modal-label-header text-primary">Username</label><input type="text" name="username" class="form-control border-primary shadow-sm" value="${tr.dataset.username || ''}" required></div>
                     </div>
+                    ${tr.dataset.tieneCuenta === '1' ? `
+                    <div class="mt-3 pt-3 border-top">
+                        <label class="modal-label-header d-block mb-2"><i class="fas fa-envelope me-1 text-primary"></i> Notificaciones por correo</label>
+                        <div class="d-flex flex-wrap gap-3">
+                            <div class="form-check">
+                                <input type="checkbox" name="pref_nuevos" value="1" class="form-check-input" id="prefNuevos" ${tr.dataset.prefNuevos === '1' ? 'checked' : ''}>
+                                <label class="form-check-label small" for="prefNuevos">Tickets nuevos</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="pref_asignados" value="1" class="form-check-input" id="prefAsignados" ${tr.dataset.prefAsignados === '1' ? 'checked' : ''}>
+                                <label class="form-check-label small" for="prefAsignados">Asignados a mí</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="pref_concluidos" value="1" class="form-check-input" id="prefConcluidos" ${tr.dataset.prefConcluidos === '1' ? 'checked' : ''}>
+                                <label class="form-check-label small" for="prefConcluidos">Tickets concluidos</label>
+                            </div>
+                        </div>
+                        <small class="text-muted d-block mt-1" style="font-size:0.7rem;">Desmarca para dejar de recibir ese tipo de correo. Por defecto todos están activos.</small>
+                    </div>` : ''}
                 </div>
                 <div class="modal-footer border-0 bg-light"><button type="submit" class="btn btn-primary btn-sm fw-bold px-3 shadow-sm">Guardar Cambios</button></div>
             </form>

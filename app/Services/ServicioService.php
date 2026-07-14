@@ -105,9 +105,11 @@ class ServicioService
 
     private function notificarTicketCompletado(Ticket $ticket): void
     {
-        $email = $ticket?->creadoPor?->usuario?->email;
+        $cuenta = $ticket?->creadoPor;
+        $email  = $cuenta?->usuario?->email;
 
-        if ($email) {
+        // Fase 4: respetar preferencia opt-out del creador (correos "concluidos")
+        if ($email && $cuenta->quiereCorreo('concluidos')) {
             Mail::to($email)->send(new TicketCompletadoMail($ticket));
         }
     }

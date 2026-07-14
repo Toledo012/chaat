@@ -111,7 +111,7 @@
                 <div class="mb-3">
                     <label class="form-label">Petición <span class="text-danger">*</span></label>
                     <input type="text" name="peticion" class="form-control"
-                           value="{{ old('peticion', $ticketDescripcion ?? '') }}"
+                           value="{{ old('peticion', $ticketTitulo ?? '') }}"
                            placeholder="Describe brevemente la solicitud" required>
                 </div>
 
@@ -157,7 +157,7 @@
                 {{-- ── DETALLE REALIZADO ── --}}
                 <div class="mb-3">
                     <label class="form-label">Trabajo Específico Realizado <span class="text-danger">*</span></label>
-                    <textarea name="detalle_realizado" class="form-control" rows="3" required></textarea>
+                    <textarea name="detalle_realizado" class="form-control" rows="3" required>{{ old('detalle_realizado', $ticketDescripcion ?? '') }}</textarea>
                 </div>
 
                 {{-- ── OBSERVACIONES ── --}}

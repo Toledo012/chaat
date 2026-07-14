@@ -27,6 +27,25 @@
         .tabla-detalle th { text-align: left; width: 20%; background: #f2f2f2; }
         .tabla-detalle td { text-align: left; width: 30%; }
         .tipo-text { font-weight: bold; color: #0d6efd; }
+
+        /* ===== Detalle Técnico (jerarquía mejorada) ===== */
+        .detalle-card { border: 1px solid #cfe0dd; margin: 10px 0 14px 0; page-break-inside: avoid; }
+        .detalle-head { margin-top: 0; background-color: #399e91; }
+        .detalle-head td { border: none; color: #ffffff; padding: 6px 10px; vertical-align: middle; }
+        .detalle-head .folio { text-align: left; font-size: 11px; font-weight: bold; letter-spacing: 0.3px; }
+        .detalle-head .tipo { text-align: right; }
+        .detalle-head .tipo-badge { border: 1px solid #ffffff; padding: 1px 8px; font-size: 8px; font-weight: bold; }
+        .detalle-meta { margin-top: 0; }
+        .detalle-meta td { border: none; border-bottom: 1px solid #eeeeee; padding: 5px 10px; text-align: left; font-size: 9px; vertical-align: top; }
+        .detalle-meta .lbl { color: #6c757d; text-transform: uppercase; font-size: 7px; font-weight: bold; }
+        .bloque { padding: 7px 10px; }
+        .bloque .titulo { font-size: 8px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+        .bloque .texto { font-size: 9px; color: #212529; line-height: 1.4; text-align: justify; }
+        .bloque-desc { border-left: 3px solid #399e91; background-color: #f4faf9; }
+        .bloque-desc .titulo { color: #2c7a70; }
+        .bloque-obs { border-left: 3px solid #c9a227; background-color: #fdfaf0; }
+        .bloque-obs .titulo { color: #9c7a10; }
+        .text-empty { color: #adb5bd; font-style: italic; }
     </style>
 </head>
 <body>
@@ -144,33 +163,61 @@
 </div>
 
 @foreach($formatos as $f)
-    <table class="tabla-detalle">
-        <tr>
-            <th>Folio</th><td>{{ $f->folio ?? 'ID-'.$f->id_servicio }}</td>
-            <th>Tipo</th><td class="tipo-text">Formato {{ $f->tipo_formato }}</td>
-        </tr>
-        <tr>
-            <th>Usuario.</th>
-            <td>{{ $f->usuarios_formatos}} <br></td>
-            <th>Fecha</th><td>{{ \Carbon\Carbon::parse($f->fecha)->format('d/m/Y') }}</td>
-        </tr>
-        <tr>
-            <th>Info Detallada</th>
-            <td colspan="3">
-                @if($f->tipo_formato == 'A')
-                    <strong>Solicitante:</strong> {{ $f->firma_usuario ?? 'N/A' }} | <strong>Área:</strong> {{ $f->departamento_nombre ?? 'N/A' }}
-                @elseif($f->tipo_formato == 'B')
-                    <strong>Equipo:</strong> {{ $f->equipo ?? 'N/A' }} | <strong>Marca:</strong> {{ $f->marca ?? 'N/A' }} | <strong>Serie:</strong> {{ $f->numero_serie ?? 'N/A' }}
-                @elseif($f->tipo_formato == 'C')
-                    <strong>Nodo:</strong> {{ $f->numero_nodo ?? 'N/A' }} | <strong>Ubicación:</strong> {{ $f->ubicacion ?? 'N/A' }}
-                @endif
-            </td>
-        </tr>
-        <tr>
-            <th>Descripción</th>
-            <td colspan="3">{{ $f->descripcion_servicio ?? $f->observaciones ?? 'Sin descripción' }}</td>
-        </tr>
-    </table>
+    @php
+        // Cada formato nombra distinto su campo principal (ver plantillas
+        // pdf_formato_*). Mapeamos la "descripción" según el tipo:
+        //   A      -> peticion (Petición del Servicio); fallback: trabajo_realizado
+        //   B / C  -> descripcion_servicio
+        //   R      -> descripcion (Recepción)
+        //   D      -> no tiene descripción (solo observaciones)
+        $tf = strtoupper($f->tipo_formato ?? '');
+        $descripcion = match ($tf) {
+            'A'      => $f->peticion ?? $f->trabajo_realizado ?? null,
+            'B', 'C' => $f->descripcion_servicio ?? null,
+            'R'      => $f->descripcion ?? null,
+            default  => null,
+        };
+        $observacion = $f->observaciones ?? null;
+    @endphp
+    <div class="detalle-card">
+        <table class="detalle-head">
+            <tr>
+                <td class="folio">{{ $f->folio ?? 'ID-'.$f->id_servicio }}</td>
+                <td class="tipo"><span class="tipo-badge">FORMATO {{ strtoupper($f->tipo_formato) }}</span></td>
+            </tr>
+        </table>
+
+        <table class="detalle-meta">
+            <tr>
+                <td width="50%"><span class="lbl">Usuario técnico</span><br>{{ $f->usuarios_formatos ?: 'N/A' }}</td>
+                <td width="50%"><span class="lbl">Fecha</span><br>{{ \Carbon\Carbon::parse($f->fecha)->format('d/m/Y') }}</td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <span class="lbl">Información</span><br>
+                    @if($f->tipo_formato == 'A')
+                        <strong>Solicitante:</strong> {{ $f->firma_usuario ?? 'N/A' }} &nbsp;|&nbsp; <strong>Área:</strong> {{ $f->departamento_nombre ?? 'N/A' }}
+                    @elseif($f->tipo_formato == 'B')
+                        <strong>Equipo:</strong> {{ $f->equipo ?? 'N/A' }} &nbsp;|&nbsp; <strong>Marca:</strong> {{ $f->marca ?? 'N/A' }} &nbsp;|&nbsp; <strong>Serie:</strong> {{ $f->numero_serie ?? 'N/A' }}
+                    @elseif($f->tipo_formato == 'C')
+                        <strong>Nodo:</strong> {{ $f->numero_nodo ?? 'N/A' }} &nbsp;|&nbsp; <strong>Ubicación:</strong> {{ $f->ubicacion ?? 'N/A' }}
+                    @else
+                        <strong>Área:</strong> {{ $f->departamento_nombre ?? 'N/A' }}
+                    @endif
+                </td>
+            </tr>
+        </table>
+
+        <div class="bloque bloque-desc">
+            <div class="titulo">Descripción del servicio</div>
+            <div class="texto {{ $descripcion ? '' : 'text-empty' }}">{{ $descripcion ?: 'Sin descripción registrada.' }}</div>
+        </div>
+
+        <div class="bloque bloque-obs">
+            <div class="titulo">Observaciones</div>
+            <div class="texto {{ $observacion ? '' : 'text-empty' }}">{{ $observacion ?: 'Sin observaciones registradas.' }}</div>
+        </div>
+    </div>
 @endforeach
 
 <div class="footer">

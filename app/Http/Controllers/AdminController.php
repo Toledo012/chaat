@@ -228,6 +228,18 @@ class AdminController extends Controller
                 $usuario->cuenta->update(['username' => $request->username]);
             }
 
+            // Fase 4: preferencias de correo (opt-out). Las casillas del modal de
+            // edición siempre viajan; una casilla desmarcada = false (no envía).
+            if ($usuario->cuenta) {
+                $usuario->cuenta->update([
+                    'preferencias_correo' => [
+                        'nuevos'     => $request->boolean('pref_nuevos'),
+                        'asignados'  => $request->boolean('pref_asignados'),
+                        'concluidos' => $request->boolean('pref_concluidos'),
+                    ],
+                ]);
+            }
+
             return redirect()->route('admin.users.index')->with('success', 'Usuario actualizado correctamente');
         }
 

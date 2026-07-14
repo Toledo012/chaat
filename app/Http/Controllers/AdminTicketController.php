@@ -24,7 +24,11 @@ class AdminTicketController extends Controller
         $qBuscar    = $request->get('buscar');
 
 
-        $query = Ticket::with(['asignadoA', 'creadoPor'])
+        $query = Ticket::with([
+            'asignadoA.usuario.departamentos',
+            'creadoPor.usuario.departamentos',
+            'departamento',
+        ])
             ->orderByDesc('id_ticket');
 
         if ($qEstado) $query->where('estado', $qEstado);
@@ -66,8 +70,9 @@ class AdminTicketController extends Controller
         $qBuscar    = $request->get('buscar');
 
         $query = Ticket::with([
-            'asignadoA:id_cuenta,username',
-            'creadoPor:id_cuenta,username',
+            'asignadoA.usuario.departamentos',
+            'creadoPor.usuario.departamentos',
+            'departamento',
         ])->orderByDesc('id_ticket');
 
         if ($qEstado) {
@@ -103,15 +108,20 @@ class AdminTicketController extends Controller
                 'estado'           => $ticket->estado,
                 'id_servicio'      => $ticket->id_servicio,
                 'id_departamento'  => $ticket->id_departamento,
+                'area'             => $ticket->departamento?->nombre,
                 'created_at'       => $ticket->created_at,
                 'updated_at'       => $ticket->updated_at,
                 'creado_por'       => $ticket->creadoPor ? [
-                    'id_cuenta' => $ticket->creadoPor->id_cuenta,
-                    'username'  => $ticket->creadoPor->username,
+                    'id_cuenta'    => $ticket->creadoPor->id_cuenta,
+                    'username'     => $ticket->creadoPor->username,
+                    'nombre'       => $ticket->creadoPor->nombre_mostrado,
+                    'departamento' => $ticket->creadoPor->departamento_nombre,
                 ] : null,
                 'asignado_a'       => $ticket->asignadoA ? [
-                    'id_cuenta' => $ticket->asignadoA->id_cuenta,
-                    'username'  => $ticket->asignadoA->username,
+                    'id_cuenta'    => $ticket->asignadoA->id_cuenta,
+                    'username'     => $ticket->asignadoA->username,
+                    'nombre'       => $ticket->asignadoA->nombre_mostrado,
+                    'departamento' => $ticket->asignadoA->departamento_nombre,
                 ] : null,
             ];
         });
@@ -145,35 +155,25 @@ class AdminTicketController extends Controller
             'prioridad'    => 'required|in:baja,media,alta',
             'tipo_formato' => 'required|in:a,b,c,d',
             'id_departamento' => 'required|integer|exists:departamentos,id_departamento',
+            'asignado_a'   => 'nullable|integer|exists:cuentas,id_cuenta',
         ]);
 
-        $cuenta = auth()->user();
+        // Fase 0: la creación se centraliza en TicketService::crearComoAdmin,
+        // que ya genera el folio estándar (TCK-fecha-SIGLA-consecutivo),
+        // maneja la transacción y dispara la notificación.
+        // Fase 3: si se elige técnico, el ticket nace 'asignado' y se envía
+        // SOLO el correo de asignación (se omite el de "ticket nuevo").
+        $ticket = $this->tickets->crearComoAdmin(
+            auth()->user(),
+            $data,
+            $data['asignado_a'] ?? null
+        );
 
-        $ticket = DB::transaction(function () use ($data, $cuenta) {
+        $msg = $ticket->asignado_a
+            ? 'Ticket creado y asignado correctamente. 📥'
+            : 'Ticket creado correctamente. 📥';
 
-            $folio = 'TCK-' . now()->format('YmdHis') . '-' . strtoupper($data['tipo_formato']);
-
-            $ticket = Ticket::create([
-                'folio'        => $folio,
-                'titulo'       => $data['titulo'],
-                'solicitante'  => $data['solicitante'],
-                'descripcion'  => $data['descripcion'] ?? null,
-                'prioridad'    => $data['prioridad'],
-                'tipo_formato' => $data['tipo_formato'],
-                'estado'       => 'nuevo',
-                'creado_por'   => $cuenta->id_cuenta,
-                'asignado_a'   => null,
-                'asignado_por' => null,
-                'id_servicio'  => null,
-                'id_departamento' => $data['id_departamento'],
-            ]);
-
-            $this->tickets->notificarTicketCreado($ticket);
-
-            return $ticket;
-        });
-
-        return back()->with('Creado', 'Ticket creado correctamente. 📥');
+        return back()->with('Creado', $msg);
     }
 
     public function completar(Ticket $ticket)

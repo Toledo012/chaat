@@ -115,6 +115,16 @@
                             <span class="badge badge-tipo rounded-pill px-3 py-2 badge-{{ strtolower($t) }}">
                                 <i class="fas fa-file-alt me-1"></i> FORMATO {{ $t }}
                             </span>
+                            <div class="mt-2 lh-sm">
+                                <div class="text-muted" style="font-size: 0.7rem;">
+                                    <i class="fas fa-user me-1 opacity-75"></i>
+                                    <span class="fw-semibold">Solicitante:</span> {{ $formato->solicitante ?: 'N/A' }}
+                                </div>
+                                <div class="text-muted" style="font-size: 0.7rem;">
+                                    <i class="fas fa-building me-1 opacity-75"></i>
+                                    <span class="fw-semibold">Área:</span> {{ $formato->area ?: 'N/A' }}
+                                </div>
+                            </div>
                         </td>
 
                         <td>

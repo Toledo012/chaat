@@ -85,7 +85,9 @@
                         <tbody id="ticketsTableBody">
                         @forelse($tickets as $t)
                             <tr>
-                                <td class="ps-4 fw-bold text-primary">#{{ $t->folio }}</td>
+                                <td class="ps-4">
+                                    <span class="fw-bold text-primary font-monospace text-break" style="font-size:0.72rem; letter-spacing:-0.2px;">{{ $t->folio }}</span>
+                                </td>
                                 <td>
                                     <div class="fw-bold text-dark small">{{ $t->titulo }}</div>
                                     <div class="d-flex align-items-center gap-2 mt-1 small text-muted">
@@ -117,9 +119,7 @@
                                     </small>
                                 </td>
                                 <td>
-                                    <span class="small fw-semibold text-dark">
-                                        <i class="fas fa-pen-nib me-1 text-muted small"></i>{{ $t->creador->username ?? 'Sistema' }}
-                                    </span>
+                                    <x-user-chip :cuenta="$t->creadoPor" icon="fa-pen-nib" fallback="Sistema" :departamento="$t->departamento?->nombre" />
                                 </td>
                                 <td class="small">
                                     <div class="text-muted small">
@@ -134,13 +134,7 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if($t->asignadoA)
-                                        <span class="fw-semibold small text-dark">
-                                            <i class="fas fa-user-cog me-1 text-primary small"></i>{{ $t->asignadoA->username }}
-                                        </span>
-                                    @else
-                                        <span class="text-muted small italic">Sin asignar</span>
-                                    @endif
+                                    <x-user-chip :cuenta="$t->asignadoA" icon="fa-user-cog" fallback="Sin asignar" />
                                 </td>
                                 <td class="text-end pe-4">
                                     <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold shadow-sm"
@@ -226,6 +220,16 @@
                                         <option value="{{ $k }}" @selected(old('tipo_formato')===$k)>Formato {{ $v }}</option>
                                     @endforeach
                                 </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Asignar a (opcional)</label>
+                                <select name="asignado_a" class="form-select shadow-sm">
+                                    <option value="">— Sin asignar —</option>
+                                    @foreach($tecnicos as $tec)
+                                        <option value="{{ $tec->id_cuenta }}" @selected(old('asignado_a') == $tec->id_cuenta)>{{ $tec->username }}</option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted d-block mt-1">Si asignas un técnico, el ticket nace "asignado" y solo se le envía a él el correo de asignación.</small>
                             </div>
                             <div class="col-12">
                                 <label class="form-label small fw-bold text-muted text-uppercase">Descripción de la Falla / Requerimiento</label>
@@ -316,6 +320,30 @@
             return { alta:'text-danger', media:'text-warning', baja:'text-success' }[p] ?? 'text-success';
         }
 
+        // Replica el componente Blade x-user-chip para el render por polling
+        function userChip(persona, icon, fallback, deptoOverride = null) {
+            if (!persona) {
+                return `<span class="text-muted small italic">${esc(fallback)}</span>`;
+            }
+            const nombre = persona.nombre || persona.username || 'Sistema';
+            const inicial = esc(nombre.charAt(0).toUpperCase());
+            const deptoNombre = deptoOverride ?? persona.departamento;
+            const depto = deptoNombre
+                ? `<span class="text-muted" style="font-size: 0.68rem;"><i class="fas fa-building me-1 opacity-75"></i>${esc(deptoNombre)}</span>`
+                : '';
+            return `
+                <div class="d-flex align-items-start gap-2">
+                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 28px; height: 28px; font-size: 0.7rem; font-weight: bold; color: #399e91; border: 1px solid #dee2e6;">
+                        ${inicial}
+                    </div>
+                    <div class="lh-sm">
+                        <span class="small fw-semibold text-dark d-block"><i class="fas ${icon} me-1 text-muted small"></i>${esc(nombre)}</span>
+                        ${depto}
+                    </div>
+                </div>`;
+        }
+
         function opcionesTecnicos(asignadoId) {
             return '<option value="">Seleccionar técnico...</option>' +
                 TECNICOS.map(t => `<option value="${t.id_cuenta}" ${Number(asignadoId) === Number(t.id_cuenta) ? 'selected' : ''}>${esc(t.username)}</option>`).join('');
@@ -359,7 +387,9 @@
 
                 return `
             <tr>
-                <td class="ps-4 fw-bold text-primary">#${esc(t.folio)}</td>
+                <td class="ps-4">
+                    <span class="fw-bold text-primary font-monospace text-break" style="font-size:0.72rem; letter-spacing:-0.2px;">${esc(t.folio)}</span>
+                </td>
                 <td>
                     <div class="fw-bold text-dark small">${esc(t.titulo)}</div>
                     <div class="d-flex align-items-center gap-2 mt-1 small text-muted">
@@ -375,15 +405,12 @@
                         <i class="fas fa-flag me-1"></i>${esc(prioridad)}
                     </small>
                 </td>
-                <td><span class="small fw-semibold text-dark"><i class="fas fa-pen-nib me-1 text-muted small"></i>${esc(t.creado_por?.username ?? 'Sistema')}</span></td>
+                <td>${userChip(t.creado_por, 'fa-pen-nib', 'Sistema', t.area)}</td>
                 <td class="small">
                     <div class="text-muted small"><i class="fas fa-calendar-plus me-1 text-primary small"></i>${fechaMX(t.created_at)}</div>
                     ${fechaCierre}
                 </td>
-                <td>${t.asignado_a?.username
-                    ? `<span class="fw-semibold small text-dark"><i class="fas fa-user-cog me-1 text-primary small"></i>${esc(t.asignado_a.username)}</span>`
-                    : `<span class="text-muted small italic">Sin asignar</span>`}
-                </td>
+                <td>${userChip(t.asignado_a, 'fa-user-cog', 'Sin asignar')}</td>
                 <td class="text-end pe-4">
                     <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold shadow-sm"
                             data-bs-toggle="modal" data-bs-target="#modalDetalle${t.id_ticket}">

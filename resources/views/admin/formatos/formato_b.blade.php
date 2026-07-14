@@ -145,7 +145,10 @@
                                 <option value="">Seleccionar</option>
                                 <option>1 GB</option><option>2 GB</option><option>4 GB</option>  <option>6 GB</option><option>8 GB</option><option>16 GB</option>
                                 <option>32 GB</option><option>64 GB</option>
+                                <option value="otro">Otro…</option>
                             </select>
+                            <input type="text" name="ram_otro" id="inputRamOtro"
+                                   class="form-control mt-2" placeholder="Especifique la memoria RAM" style="display: none;">
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -156,16 +159,21 @@
                                 <option>HDD 100 GB</option><option>HDD 180 GB</option><option>HDD 240 GB</option><option>HDD 500 GB</option><option>HDD 1 TB</option>
                                 <option>HDD 2 TB</option><option>HDD 3 TB</option><option>SSD 240 GB</option><option>SSD 480 GB</option><option>SSD 1 TB</option>
                                 <option>SSD 2 TB</option>
+                                <option value="otro">Otro…</option>
                             </select>
+                            <input type="text" name="disco_duro_otro" id="inputDiscoOtro"
+                                   class="form-control mt-2" placeholder="Especifique el disco duro" style="display: none;">
                         </div>
                         <div class="col-md-6">
                             <label>Sistema operativo <span class="text-danger">*</span></label>
                             <select name="sistema_operativo" id="selectSO" class="form-select">
                                 <option value="">Seleccionar</option>
-                                <option value="">Seleccionar</option>
                                 <option>Windows 7</option><option>Windows 8/8.1</option><option>Windows 10</option> <option>Windows 11</option>
-                                <option>Linux</option><option>MacOS</option><option>Otro</option>
+                                <option>Linux</option><option>MacOS</option>
+                                <option value="otro">Otro…</option>
                             </select>
+                            <input type="text" name="sistema_operativo_otro" id="inputSOOtro"
+                                   class="form-control mt-2" placeholder="Especifique el sistema operativo" style="display: none;">
                         </div>
                     </div>
                 </div>
@@ -382,6 +390,29 @@
                     const el = document.getElementById(id);
                     el.required = this.value === 'Computadora';
                     if (this.value !== 'Computadora') el.value = '';
+                });
+
+                // Reiniciar los inputs "Otro" de RAM / Disco / SO al cambiar el subtipo
+                ['inputRamOtro', 'inputDiscoOtro', 'inputSOOtro'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) { el.style.display = 'none'; el.required = false; el.value = ''; }
+                });
+            });
+
+            // ----- Opción "Otro" en RAM / Disco / Sistema operativo -----
+            [
+                ['selectRam',   'inputRamOtro'],
+                ['selectDisco', 'inputDiscoOtro'],
+                ['selectSO',    'inputSOOtro'],
+            ].forEach(([selId, inpId]) => {
+                const sel = document.getElementById(selId);
+                const inp = document.getElementById(inpId);
+                if (!sel || !inp) return;
+                sel.addEventListener('change', function() {
+                    const show = this.value === 'otro';
+                    inp.style.display = show ? 'block' : 'none';
+                    inp.required = show;
+                    if (!show) inp.value = '';
                 });
             });
 

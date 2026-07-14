@@ -127,7 +127,7 @@
                                 <td>
                                     @php
                                         $stClass = match($t->estado) {
-                                            'en_proceso' => 'text-bg-warning text-dark',
+                                            'en proceso' => 'text-bg-warning text-dark',
                                             'completado' => 'text-bg-success',
                                             'cancelado'  => 'text-bg-danger',
                                             default      => 'text-bg-info',
@@ -311,7 +311,7 @@
 
         function estadoBadgeU(estado) {
             const clases = {
-                en_proceso: 'text-bg-warning text-dark',
+                en proceso: 'text-bg-warning text-dark',
                 completado: 'text-bg-success',
                 cancelado:  'text-bg-danger',
                 asignado:   'text-bg-info',

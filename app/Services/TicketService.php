@@ -113,7 +113,7 @@ class TicketService
     // CREACIÓN CENTRALIZADA
     // ==========================================================
 
-    public function crearComoAdmin(Cuenta $admin, array $data): Ticket
+    public function crearComoAdmin(Cuenta $admin, array $data, ?int $asignadoAIdCuenta = null): Ticket
     {
         if (!method_exists($admin, 'isAdmin') || !$admin->isAdmin()) {
             throw new HttpException(403, 'Solo Admin puede crear tickets en este flujo.');
@@ -122,7 +122,10 @@ class TicketService
         $idDepartamento = (int) $data['id_departamento'];
         $tipoFormato = $data['tipo_formato'];
 
-        return DB::transaction(function () use ($admin, $data, $idDepartamento, $tipoFormato) {
+        // Normalizamos: 0 / "" => null (sin asignar)
+        $asignadoAIdCuenta = $asignadoAIdCuenta ?: null;
+
+        return DB::transaction(function () use ($admin, $data, $idDepartamento, $tipoFormato, $asignadoAIdCuenta) {
 
             $folio = $this->generarFolio($tipoFormato, $idDepartamento);
 
@@ -133,15 +136,22 @@ class TicketService
                 'descripcion'     => $data['descripcion'] ?? null,
                 'prioridad'       => $data['prioridad'],
                 'tipo_formato'    => $tipoFormato,
-                'estado'          => 'nuevo',
+                'estado'          => $asignadoAIdCuenta ? 'asignado' : 'nuevo',
                 'creado_por'      => $admin->id_cuenta,
-                'asignado_a'      => null,
-                'asignado_por'    => null,
+                'asignado_a'      => $asignadoAIdCuenta,
+                'asignado_por'    => $asignadoAIdCuenta ? $admin->id_cuenta : null,
                 'id_servicio'     => null,
                 'id_departamento' => $idDepartamento,
             ], $tipoFormato, $idDepartamento);
 
-            $this->notificarTicketCreado($ticket);
+            // Si se asigna al momento: se envía SOLO el correo de asignación al
+            // técnico (se omite el de "ticket nuevo"). Si no, notificación normal.
+            if ($asignadoAIdCuenta) {
+                $ticket->load('asignadoA.usuario');
+                $this->notificarTicketAsignado($ticket);
+            } else {
+                $this->notificarTicketCreado($ticket);
+            }
 
             return $ticket;
         });
@@ -484,6 +494,8 @@ class TicketService
             ->whereHas('usuario', fn($q) => $q->whereNotNull('email')->where('email', '!=', ''))
             ->with('usuario:id_usuario,email')
             ->get()
+            // Fase 4: respetar preferencia opt-out por cuenta (correos "nuevos")
+            ->filter(fn(Cuenta $c) => $c->quiereCorreo('nuevos'))
             ->pluck('usuario.email')
             ->unique()
             ->values()
@@ -503,9 +515,11 @@ class TicketService
 
     private function notificarTicketAsignado(Ticket $ticket): void
     {
-        $email = $ticket->asignadoA?->usuario?->email;
+        $cuenta = $ticket->asignadoA;
+        $email  = $cuenta?->usuario?->email;
 
-        if ($email) {
+        // Fase 4: respetar preferencia opt-out del técnico (correos "asignados")
+        if ($email && $cuenta->quiereCorreo('asignados')) {
             Mail::to($email)->send(new TicketAsignadoMail($ticket));
         }
     }

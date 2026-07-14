@@ -56,6 +56,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Sistema URL (enlaces en correos)
+    |--------------------------------------------------------------------------
+    |
+    | URL pública del sistema a la que apuntan los botones de los correos
+    | (Ingresar / Atender / Ver detalle). Se define en .env como SISTEMA_URL
+    | para poder cambiarla por entorno sin tocar el código. Si no se define,
+    | cae en APP_URL.
+    |
+    */
+
+    'sistema_url' => env('SISTEMA_URL', env('APP_URL', 'http://localhost')),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

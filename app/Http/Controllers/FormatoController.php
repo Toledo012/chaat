@@ -28,11 +28,18 @@
 
             $query = DB::table('servicios')
                 ->leftJoin('usuarios_formatos', 'usuarios_formatos.id_usuario', '=', 'servicios.id_usuario')
+                ->leftJoin('departamentos', 'departamentos.id_departamento', '=', 'servicios.id_departamento')
+                ->leftJoin('formato_a', 'formato_a.id_servicio', '=', 'servicios.id_servicio')
+                ->leftJoin('formato_b', 'formato_b.id_servicio', '=', 'servicios.id_servicio')
+                ->leftJoin('formato_c', 'formato_c.id_servicio', '=', 'servicios.id_servicio')
+                ->leftJoin('formato_recepcion', 'formato_recepcion.id_servicio', '=', 'servicios.id_servicio')
                 ->select(
                     'servicios.id_servicio',
                     'servicios.tipo_formato as tipo',
                     'servicios.fecha',
-                    'usuarios_formatos.nombre'
+                    'usuarios_formatos.nombre',
+                    'departamentos.nombre as area',
+                    DB::raw('COALESCE(formato_a.firma_usuario, formato_b.firma_usuario, formato_c.firma_usuario, formato_recepcion.firma_usuario) as solicitante')
                 )
                 ->orderByDesc('servicios.id_servicio');
 
@@ -93,12 +100,14 @@
         $ticketDeptId      = null;
         $ticketSolicitante = null;
         $ticketDescripcion = null;
+        $ticketTitulo      = null;
 
         if ($id_ticket) {
             $ticket = \App\Models\Ticket::find((int) $id_ticket);
             $ticketDeptId      = $ticket?->id_departamento;
             $ticketSolicitante = $ticket?->solicitante;
             $ticketDescripcion = $ticket?->descripcion;
+            $ticketTitulo      = $ticket?->titulo;
         }
 
 
@@ -108,7 +117,8 @@
             'id_ticket',
             'ticketDeptId',
             'ticketSolicitante',
-            'ticketDescripcion'
+            'ticketDescripcion',
+            'ticketTitulo'
         ));
     }
 
@@ -353,8 +363,11 @@
                 'numero_serie' => 'nullable|string',
                 'procesador' => 'nullable|string',
                 'ram' => 'nullable|string',
+                'ram_otro' => 'nullable|required_if:ram,otro|string',
                 'disco_duro' => 'nullable|string',
+                'disco_duro_otro' => 'nullable|required_if:disco_duro,otro|string',
                 'sistema_operativo' => 'nullable|string',
+                'sistema_operativo_otro' => 'nullable|required_if:sistema_operativo,otro|string',
 
                 'tipo_servicio' => 'nullable|in:Preventivo,Correctivo,Instalación,Corrección,Diagnóstico',
                 'diagnostico' => 'nullable|string',
@@ -380,6 +393,17 @@
 
             // Lógica para asignar el subtipo real
             $subtipoFinal = ($data['subtipo'] === 'otro') ? $data['subtipo_otro'] : $data['subtipo'];
+
+            // Normaliza los campos con opción "Otro" (RAM / Disco / Sistema operativo)
+            if (($data['ram'] ?? null) === 'otro') {
+                $data['ram'] = $data['ram_otro'] ?? null;
+            }
+            if (($data['disco_duro'] ?? null) === 'otro') {
+                $data['disco_duro'] = $data['disco_duro_otro'] ?? null;
+            }
+            if (($data['sistema_operativo'] ?? null) === 'otro') {
+                $data['sistema_operativo'] = $data['sistema_operativo_otro'] ?? null;
+            }
 
             $idServicioFromRequest = $data['id_servicio'] ?? null;
             $idTicketFromRequest   = $data['id_ticket'] ?? null;
@@ -1387,11 +1411,12 @@
             // 3. Unión de detalles específicos
             $formatos = collect();
             foreach ($servicios as $s) {
-                $detalle = match ($s->tipo_formato) {
+                $detalle = match (strtoupper($s->tipo_formato)) {
                     'A' => DB::table('formato_a')->where('id_servicio', $s->id_servicio)->first(),
                     'B' => DB::table('formato_b')->where('id_servicio', $s->id_servicio)->first(),
                     'C' => DB::table('formato_c')->where('id_servicio', $s->id_servicio)->first(),
                     'D' => DB::table('formato_d')->where('id_servicio', $s->id_servicio)->first(),
+                    'R' => DB::table('formato_recepcion')->where('id_servicio', $s->id_servicio)->first(),
                     default => null,
                 };
 

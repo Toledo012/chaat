@@ -59,7 +59,7 @@
         </div>
 
         <div class="btn-container">
-            <a href="http://4.155.249.140/" class="btn">Ingresar al Sistema</a>
+            <a href="{{ config('app.sistema_url') }}" class="btn">Ingresar al Sistema</a>
         </div>
     </div>
 

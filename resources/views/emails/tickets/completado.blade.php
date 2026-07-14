@@ -47,7 +47,7 @@
         </div>
 
         <center>
-            <a href="http://4.155.249.140/" class="btn">Ver Detalle</a>
+            <a href="{{ config('app.sistema_url') }}" class="btn">Ver Detalle</a>
         </center>
 
     </div>
