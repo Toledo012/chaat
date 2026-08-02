@@ -47,7 +47,7 @@
                         </tr>
                         </thead>
                         <tbody id="ticketsDisponiblesBody">
-                        @forelse($disponibles as $t)
+                        @forelse($disponibles->take(10) as $t)
                             <tr>
                                 <td class="ps-4 fw-bold text-primary">#{{ $t->folio }}</td>
                                 <td>
@@ -94,6 +94,11 @@
                     </table>
                 </div>
             </div>
+            <div class="card-footer bg-white py-2 border-top-0 d-flex align-items-center justify-content-between d-none"
+                 id="footerDisponibles">
+                <small class="text-muted" id="infoDisponibles"></small>
+                <div id="paginadorDisponibles"></div>
+            </div>
         </div>
 
         {{-- MIS TICKETS --}}
@@ -116,11 +121,12 @@
                         </tr>
                         </thead>
                         <tbody id="misTicketsBody">
-                        @forelse($misTickets as $t)
+                        @forelse($misTickets->take(10) as $t)
                             <tr>
                                 <td class="ps-4 fw-bold text-primary">#{{ $t->folio }}</td>
                                 <td>
                                     <div class="fw-bold text-dark small">{{ $t->titulo }}</div>
+                                    <div class="text-muted small"><i class="fas fa-user-edit me-1 small"></i>{{ $t->solicitante ?: 'Sin solicitante' }}</div>
                                     <div class="text-muted small">Formato {{ strtoupper($t->tipo_formato) }}</div>
                                     <div class="text-muted small"><i class="fas fa-building me-1 small"></i>{{ $t->departamento?->nombre ?? 'Sin departamento' }}</div>
                                 </td>
@@ -166,6 +172,11 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+            <div class="card-footer bg-white py-2 border-top-0 d-flex align-items-center justify-content-between d-none"
+                 id="footerMisTickets">
+                <small class="text-muted" id="infoMisTickets"></small>
+                <div id="paginadorMisTickets"></div>
             </div>
         </div>
 
@@ -323,6 +334,62 @@
         </span>`;
         }
 
+        // ── Paginación en cliente ─────────────────────────────────────────────────
+
+        const POR_PAGINA_USER = 10;
+
+        let paginaDisponibles = 1;
+        let paginaMisTickets  = 1;
+        let ultimosDisponibles = [];
+        let ultimosMisTickets  = [];
+
+        function paginarU(items, pagina) {
+            const totalPaginas = Math.max(1, Math.ceil(items.length / POR_PAGINA_USER));
+            const actual = Math.min(Math.max(1, pagina), totalPaginas);
+            const desde = (actual - 1) * POR_PAGINA_USER;
+            return {
+                actual,
+                totalPaginas,
+                desde,
+                hasta: Math.min(desde + POR_PAGINA_USER, items.length),
+                pagina: items.slice(desde, desde + POR_PAGINA_USER)
+            };
+        }
+
+        function renderPaginadorU(prefijo, info, total) {
+            const footer = document.getElementById(`footer${prefijo}`);
+            const nav    = document.getElementById(`paginador${prefijo}`);
+            const label  = document.getElementById(`info${prefijo}`);
+            if (!footer || !nav || !label) return;
+
+            footer.classList.toggle('d-none', total <= POR_PAGINA_USER);
+            if (total <= POR_PAGINA_USER) { nav.innerHTML = ''; label.textContent = ''; return; }
+
+            label.textContent = `Mostrando ${info.desde + 1}–${info.hasta} de ${total}`;
+
+            // Ventana de máximo 5 páginas alrededor de la actual
+            let inicio = Math.max(1, info.actual - 2);
+            let fin = Math.min(info.totalPaginas, inicio + 4);
+            inicio = Math.max(1, fin - 4);
+
+            let numeros = '';
+            for (let p = inicio; p <= fin; p++) {
+                numeros += `<li class="page-item ${p === info.actual ? 'active' : ''}">
+                    <button type="button" class="page-link" data-pagina="${p}">${p}</button>
+                </li>`;
+            }
+
+            nav.innerHTML = `<ul class="pagination pagination-sm mb-0">
+                <li class="page-item ${info.actual === 1 ? 'disabled' : ''}">
+                    <button type="button" class="page-link" data-pagina="${info.actual - 1}">&laquo;</button>
+                </li>
+                ${numeros}
+                <li class="page-item ${info.actual === info.totalPaginas ? 'disabled' : ''}">
+                    <button type="button" class="page-link" data-pagina="${info.actual + 1}">&raquo;</button>
+                </li>
+            </ul>`;
+        }
+
         function opcionesDeptoU(selId) {
             return '<option value="">Selecciona un departamento</option>' +
                 DEPARTAMENTOS_USER.map(d =>
@@ -346,14 +413,20 @@
             const badge = document.getElementById('badgeDisponibles');
             if (!tbody) return;
 
+            ultimosDisponibles = disponibles;
+
             if (badge) badge.textContent = `${disponibles.length} Disponibles`;
 
             if (!disponibles.length) {
                 tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted small italic">No hay tickets libres por ahora.</td></tr>`;
+                renderPaginadorU('Disponibles', paginarU([], 1), 0);
                 return;
             }
 
-            tbody.innerHTML = disponibles.map(t => `
+            const info = paginarU(disponibles, paginaDisponibles);
+            paginaDisponibles = info.actual;
+
+            tbody.innerHTML = info.pagina.map(t => `
             <tr>
                 <td class="ps-4 fw-bold text-primary">#${escU(t.folio)}</td>
                 <td>
@@ -386,6 +459,8 @@
                 </td>
             </tr>
         `).join('');
+
+            renderPaginadorU('Disponibles', info, disponibles.length);
         }
 
         // ── Renderizar tabla mis tickets ──────────────────────────────────────────
@@ -394,12 +469,18 @@
             const tbody = document.getElementById('misTicketsBody');
             if (!tbody) return;
 
+            ultimosMisTickets = misTickets;
+
             if (!misTickets.length) {
                 tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-muted opacity-50 small italic">No tienes tickets asignados en tu bandeja personal.</td></tr>`;
+                renderPaginadorU('MisTickets', paginarU([], 1), 0);
                 return;
             }
 
-            tbody.innerHTML = misTickets.map(t => {
+            const info = paginarU(misTickets, paginaMisTickets);
+            paginaMisTickets = info.actual;
+
+            tbody.innerHTML = info.pagina.map(t => {
                 const fechaCierre = ['completado','cancelado'].includes(t.estado)
                     ? `<div class="text-success fw-semibold small mt-1"><i class="fas fa-calendar-check me-1 small"></i>${fechaMXU(t.updated_at)}</div>` : '';
                 return `
@@ -407,6 +488,7 @@
                 <td class="ps-4 fw-bold text-primary">#${escU(t.folio)}</td>
                 <td>
                     <div class="fw-bold text-dark small">${escU(t.titulo)}</div>
+                    <div class="text-muted small"><i class="fas fa-user-edit me-1 small"></i>${escU(t.solicitante || 'Sin solicitante')}</div>
                     <div class="text-muted small">Formato ${escU(String(t.tipo_formato ?? '').toUpperCase())}</div>
                     <div class="text-muted small"><i class="fas fa-building me-1 small"></i>${escU(t.departamento ?? 'Sin departamento')}</div>
                 </td>
@@ -423,6 +505,8 @@
                 </td>
             </tr>`;
             }).join('');
+
+            renderPaginadorU('MisTickets', info, misTickets.length);
         }
 
         // ── Renderizar modales dinámicos ──────────────────────────────────────────
@@ -583,6 +667,20 @@
         document.addEventListener('DOMContentLoaded', () => {
             actualizarUser();
             setInterval(actualizarUser, 6000);
+
+            document.getElementById('paginadorDisponibles')?.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-pagina]');
+                if (!btn) return;
+                paginaDisponibles = Number(btn.dataset.pagina);
+                renderDisponibles(ultimosDisponibles);
+            });
+
+            document.getElementById('paginadorMisTickets')?.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-pagina]');
+                if (!btn) return;
+                paginaMisTickets = Number(btn.dataset.pagina);
+                renderMisTickets(ultimosMisTickets);
+            });
 
             // quickStore Departamento
             const formDepto = document.getElementById('formCrearDepartamentoUser');

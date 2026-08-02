@@ -229,7 +229,7 @@
                                         <option value="{{ $tec->id_cuenta }}" @selected(old('asignado_a') == $tec->id_cuenta)>{{ $tec->username }}</option>
                                     @endforeach
                                 </select>
-                                <small class="text-muted d-block mt-1">Si asignas un técnico, el ticket nace "asignado" y solo se le envía a él el correo de asignación.</small>
+                                <small class="text-muted d-block mt-1">Si eliges a un técnico, solo se le notificará por correo a quien asignaste.</small>
                             </div>
                             <div class="col-12">
                                 <label class="form-label small fw-bold text-muted text-uppercase">Descripción de la Falla / Requerimiento</label>

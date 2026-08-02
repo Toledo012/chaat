@@ -23,8 +23,7 @@ class UserController extends Controller
             ->take(5)
             ->get();
 
-        // 2. Obtenemos los tickets asignados a este usuario
-        // Nota: Asegúrate de que la columna se llame 'id_asignado' en tu tabla
+        // 2. Obtenemos los tickets asignados a este usuario    
         $misTickets = Ticket::where('asignado_a', $user->id_cuenta)
             ->orderBy('created_at', 'desc')
             ->get();

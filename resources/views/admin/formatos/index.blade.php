@@ -75,12 +75,22 @@
                     <input type="date" name="fecha_fin" class="form-control form-control-sm shadow-none" value="{{ request('fecha_fin') }}">
                 </div>
 
-                <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-dark btn-sm flex-fill fw-bold rounded-pill shadow-sm">
+                <div class="col-12 d-flex flex-wrap gap-2 justify-content-end">
+                    <button type="submit" class="btn btn-dark btn-sm fw-bold rounded-pill shadow-sm px-4">
                         <i class="fa-solid fa-filter me-1"></i> Filtrar
                     </button>
-                    <a href="{{ route('admin.formatos.index') }}" class="btn btn-outline-secondary btn-sm flex-fill fw-bold rounded-pill">
+                    <a href="{{ route('admin.formatos.index') }}" class="btn btn-outline-secondary btn-sm fw-bold rounded-pill px-4">
                         Limpiar
+                    </a>
+                    <a href="{{ route('admin.formatos.reporte.general', [
+                        'tipo' => $tipo,
+                        'usuario' => $usuario,
+                        'fecha_inicio' => request('fecha_inicio'),
+                        'fecha_fin' => request('fecha_fin')
+                    ]) }}"
+                       class="btn btn-warning btn-sm shadow-sm fw-bold px-4 rounded-pill text-dark border-0">
+                        <i class="fa-solid fa-chart-column me-1"></i>
+                        Generar Reporte Consolidado
                     </a>
                 </div>
             </form>
@@ -107,7 +117,7 @@
                     <tr>
                         <td class="ps-4">
                             <div class="fw-bold text-dark small">ID #{{ $formato->id_servicio }}</div>
-                            <div class="text-muted italic" style="font-size: 0.65rem;">Item {{ $loop->iteration }}</div>
+                            <div class="text-muted italic" style="font-size: 0.65rem;">Item {{ $formatos->firstItem() + $loop->index }}</div>
                         </td>
 
                         <td>
@@ -173,20 +183,12 @@
                 </tbody>
             </table>
         </div>
-    </div>
 
-    {{-- ================= REPORTE GENERAL ================= --}}
-    <div class="mt-4 text-center">
-        <a href="{{ route('admin.formatos.reporte.general', [
-            'tipo' => $tipo,
-            'usuario' => $usuario,
-            'fecha_inicio' => request('fecha_inicio'),
-            'fecha_fin' => request('fecha_fin')
-        ]) }}"
-           class="btn btn-warning shadow-sm fw-bold px-5 rounded-pill text-dark border-0">
-            <i class="fa-solid fa-chart-column me-2"></i>
-            Generar Reporte Consolidado
-        </a>
+        @if($formatos->hasPages())
+            <div class="card-footer bg-white py-3 border-top-0 d-flex justify-content-center">
+                {!! $formatos->links('pagination::bootstrap-5') !!}
+            </div>
+        @endif
     </div>
 
 </div>

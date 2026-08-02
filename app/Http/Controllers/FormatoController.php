@@ -71,7 +71,7 @@
                 $query->where('servicios.id_usuario', $cuenta->id_usuario);
             }
 
-            $formatos = $query->get();
+            $formatos = $query->paginate(15)->withQueryString();
 
             // Pasamos las variables a la vista para que los campos no se vacíen al filtrar
             return view('admin.formatos.index', compact('formatos', 'tipo', 'usuario', 'fecha_inicio', 'fecha_fin'));
