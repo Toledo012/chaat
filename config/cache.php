@@ -17,6 +17,12 @@ return [
 
     'default' => env('CACHE_STORE', 'database'),
 
+    // Store del rate limiter (middleware throttle). La tabla `cache` no existe en la BD,
+    // así que el limitador usa archivos en storage/framework/cache.
+    // ponytail: el store 'file' es por servidor; con varias instancias detrás de un balanceador,
+    // upgrade path: `php artisan make:cache-table`, migrar y quitar esta línea.
+    'limiter' => env('CACHE_LIMITER', 'file'),
+
     /*
     |--------------------------------------------------------------------------
     | Cache Stores

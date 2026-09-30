@@ -25,5 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
         
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Registra el fallo en la tabla `errores` y avisa a los admins.
+        // Corre ADEMÁS del log de Laravel: si la BD está caída, el log de archivo sigue.
+        $exceptions->report(function (\Throwable $e) {
+            app(\App\Services\RegistroErroresService::class)->registrar($e, request());
+        });
     })->create();

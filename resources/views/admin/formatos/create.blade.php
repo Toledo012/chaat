@@ -54,13 +54,13 @@
         .format-title {
             font-weight: 800;
             letter-spacing: -0.5px;
-            color: #2d3748;
+            color: var(--text-color);
             margin-bottom: 5px;
         }
 
         .format-desc {
             font-size: 0.85rem;
-            color: #718096;
+            color: var(--secondary-color);
             line-height: 1.4;
         }
 
@@ -166,7 +166,7 @@
 
         {{-- BOTÓN VOLVER --}}
         <div class="text-center mt-5">
-            <a href="{{ route('admin.formatos.index') }}" class="btn btn-link text-muted text-decoration-none small fw-bold">
+            <a href="{{ route('admin.formatos.index') }}" class="btn btn-link text-body-secondary text-decoration-none small fw-bold">
                 <i class="fas fa-arrow-left me-2"></i> Volver al Listado General
             </a>
         </div>

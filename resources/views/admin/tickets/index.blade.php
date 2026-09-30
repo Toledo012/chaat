@@ -11,7 +11,7 @@
             <i class="fas fa-ticket-alt text-primary fa-2x"></i>
             <div>
                 <h4 class="mb-0 fw-bold">Tickets</h4>
-                <p class="text-muted mb-0 small">Bandeja principal del Admin</p>
+                <p class="text-body-secondary mb-0 small">Bandeja principal del Admin</p>
             </div>
         </div>
 
@@ -21,7 +21,7 @@
                 <form method="GET" class="row g-2 align-items-center">
                     <div class="col-md-3">
                         <div class="input-group input-group-sm">
-                            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                            <span class="input-group-text bg-body border-end-0"><i class="fas fa-search text-body-secondary"></i></span>
                             <input type="text" name="buscar" class="form-control border-start-0"
                                    placeholder="Folio o título..." value="{{ $qBuscar ?? '' }}">
                         </div>
@@ -71,7 +71,7 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light small text-uppercase text-muted">
+                        <thead class="app-table-head small text-uppercase text-body-secondary">
                         <tr>
                             <th class="ps-4">Folio</th>
                             <th>Ticket / Registro</th>
@@ -89,8 +89,8 @@
                                     <span class="fw-bold text-primary font-monospace text-break" style="font-size:0.72rem; letter-spacing:-0.2px;">{{ $t->folio }}</span>
                                 </td>
                                 <td>
-                                    <div class="fw-bold text-dark small">{{ $t->titulo }}</div>
-                                    <div class="d-flex align-items-center gap-2 mt-1 small text-muted">
+                                    <div class="fw-bold text-body small">{{ $t->titulo }}</div>
+                                    <div class="d-flex align-items-center gap-2 mt-1 small text-body-secondary">
                                         <span class="badge bg-secondary-subtle text-secondary border">Formato {{ strtoupper($t->tipo_formato) }}</span>
                                         <span><i class="fas fa-user-edit me-1 small"></i>{{ $t->solicitante ?? 'N/A' }}</span>
                                     </div>
@@ -122,7 +122,7 @@
                                     <x-user-chip :cuenta="$t->creadoPor" icon="fa-pen-nib" fallback="Sistema" :departamento="$t->departamento?->nombre" />
                                 </td>
                                 <td class="small">
-                                    <div class="text-muted small">
+                                    <div class="text-body-secondary small">
                                         <i class="fas fa-calendar-plus me-1 text-primary small"></i>
                                         {{ \Carbon\Carbon::parse($t->created_at)->timezone('America/Mexico_City')->format('d/m/Y h:i A') }}
                                     </div>
@@ -145,7 +145,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-5 text-muted opacity-50 small italic">
+                                <td colspan="8" class="text-center py-5 text-body-secondary opacity-50 small italic">
                                     <i class="fas fa-inbox fa-3x mb-3 d-block"></i> No se encontraron tickets registrados.
                                 </td>
                             </tr>
@@ -159,7 +159,7 @@
             <div id="ticketsModalsContainer"></div>
 
             @if($tickets->hasPages())
-                <div class="card-footer bg-white py-3 border-top-0 d-flex justify-content-center">
+                <div class="card-footer bg-body py-3 border-top-0 d-flex justify-content-center">
                     {!! $tickets->appends(request()->query())->links('pagination::bootstrap-5') !!}
                 </div>
             @endif
@@ -179,11 +179,11 @@
                     <div class="modal-body p-4">
                         <div class="row g-3">
                             <div class="col-md-8">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Título del Asunto *</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Título del Asunto *</label>
                                 <input type="text" name="titulo" class="form-control shadow-sm" required value="{{ old('titulo') }}">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Departamento *</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Departamento *</label>
                                 <div class="input-group">
                                     <select id="selectDepartamento" name="id_departamento" class="form-select shadow-sm" required>
                                         <option value="">Selecciona un departamento</option>
@@ -199,14 +199,14 @@
                                         <i class="fas fa-plus me-1"></i> Nuevo
                                     </button>
                                 </div>
-                                <small class="text-muted d-block mt-1">Si no existe, crea uno aquí mismo.</small>
+                                <small class="text-body-secondary d-block mt-1">Si no existe, crea uno aquí mismo.</small>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Solicitante *</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Solicitante *</label>
                                 <input type="text" name="solicitante" class="form-control shadow-sm" required value="{{ old('solicitante') }}">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Prioridad Inicial</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Prioridad Inicial</label>
                                 <select name="prioridad" class="form-select shadow-sm" required>
                                     <option value="baja"  @selected(old('prioridad')==='baja') >🟢 Baja</option>
                                     <option value="media" @selected(old('prioridad','media')==='media')>🟡 Media</option>
@@ -214,7 +214,7 @@
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Formato Requerido</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Formato Requerido</label>
                                 <select name="tipo_formato" class="form-select shadow-sm" required>
                                     @foreach(['a'=>'A','b'=>'B','c'=>'C','d'=>'D'] as $k=>$v)
                                         <option value="{{ $k }}" @selected(old('tipo_formato')===$k)>Formato {{ $v }}</option>
@@ -222,22 +222,22 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Asignar a (opcional)</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Asignar a (opcional)</label>
                                 <select name="asignado_a" class="form-select shadow-sm">
                                     <option value="">— Sin asignar —</option>
                                     @foreach($tecnicos as $tec)
                                         <option value="{{ $tec->id_cuenta }}" @selected(old('asignado_a') == $tec->id_cuenta)>{{ $tec->username }}</option>
                                     @endforeach
                                 </select>
-                                <small class="text-muted d-block mt-1">Si eliges a un técnico, solo se le notificará por correo a quien asignaste.</small>
+                                <small class="text-body-secondary d-block mt-1">Si eliges a un técnico, solo se le notificará por correo a quien asignaste.</small>
                             </div>
                             <div class="col-12">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Descripción de la Falla / Requerimiento</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Descripción de la Falla / Requerimiento</label>
                                 <textarea name="descripcion" class="form-control shadow-sm" rows="4">{{ old('descripcion') }}</textarea>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer bg-light border-0 text-center">
+                    <div class="modal-footer bg-body-tertiary border-0 text-center">
                         <!-- DESPUÉS -->
                         <button type="submit"
                                 class="btn btn-success btn-sm fw-bold px-5 rounded-pill shadow-sm mx-auto"
@@ -262,11 +262,11 @@
                     @csrf
                     <div class="modal-body p-4">
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Nombre *</label>
+                            <label class="form-label small fw-bold text-body-secondary text-uppercase">Nombre *</label>
                             <input type="text" name="nombre" class="form-control shadow-sm" required maxlength="50">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Descripción</label>
+                            <label class="form-label small fw-bold text-body-secondary text-uppercase">Descripción</label>
                             <textarea name="descripcion" class="form-control shadow-sm" rows="3"></textarea>
                         </div>
                         <div class="form-check">
@@ -274,7 +274,7 @@
                             <label class="form-check-label" for="activoDepto">Activo</label>
                         </div>
                     </div>
-                    <div class="modal-footer bg-light border-0">
+                    <div class="modal-footer bg-body-tertiary border-0">
                         <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-success btn-sm fw-bold px-4 rounded-pill shadow-sm">Guardar</button>
                     </div>
@@ -323,22 +323,22 @@
         // Replica el componente Blade x-user-chip para el render por polling
         function userChip(persona, icon, fallback, deptoOverride = null) {
             if (!persona) {
-                return `<span class="text-muted small italic">${esc(fallback)}</span>`;
+                return `<span class="text-body-secondary small italic">${esc(fallback)}</span>`;
             }
             const nombre = persona.nombre || persona.username || 'Sistema';
             const inicial = esc(nombre.charAt(0).toUpperCase());
             const deptoNombre = deptoOverride ?? persona.departamento;
             const depto = deptoNombre
-                ? `<span class="text-muted" style="font-size: 0.68rem;"><i class="fas fa-building me-1 opacity-75"></i>${esc(deptoNombre)}</span>`
+                ? `<span class="text-body-secondary" style="font-size: 0.68rem;"><i class="fas fa-building me-1 opacity-75"></i>${esc(deptoNombre)}</span>`
                 : '';
             return `
                 <div class="d-flex align-items-start gap-2">
-                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                    <div class="bg-body-tertiary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
                          style="width: 28px; height: 28px; font-size: 0.7rem; font-weight: bold; color: #399e91; border: 1px solid #dee2e6;">
                         ${inicial}
                     </div>
                     <div class="lh-sm">
-                        <span class="small fw-semibold text-dark d-block"><i class="fas ${icon} me-1 text-muted small"></i>${esc(nombre)}</span>
+                        <span class="small fw-semibold text-body d-block"><i class="fas ${icon} me-1 text-body-secondary small"></i>${esc(nombre)}</span>
                         ${depto}
                     </div>
                 </div>`;
@@ -374,7 +374,7 @@
             if (!tbody) return;
 
             if (!Array.isArray(tickets) || tickets.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted opacity-50 small italic">
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-body-secondary opacity-50 small italic">
                 <i class="fas fa-inbox fa-3x mb-3 d-block"></i> No se encontraron tickets registrados.</td></tr>`;
                 return;
             }
@@ -391,8 +391,8 @@
                     <span class="fw-bold text-primary font-monospace text-break" style="font-size:0.72rem; letter-spacing:-0.2px;">${esc(t.folio)}</span>
                 </td>
                 <td>
-                    <div class="fw-bold text-dark small">${esc(t.titulo)}</div>
-                    <div class="d-flex align-items-center gap-2 mt-1 small text-muted">
+                    <div class="fw-bold text-body small">${esc(t.titulo)}</div>
+                    <div class="d-flex align-items-center gap-2 mt-1 small text-body-secondary">
                         <span class="badge bg-secondary-subtle text-secondary border">Formato ${esc(String(t.tipo_formato ?? '').toUpperCase())}</span>
                         <span><i class="fas fa-user-edit me-1 small"></i>${esc(t.solicitante ?? 'N/A')}</span>
                     </div>
@@ -407,7 +407,7 @@
                 </td>
                 <td>${userChip(t.creado_por, 'fa-pen-nib', 'Sistema', t.area)}</td>
                 <td class="small">
-                    <div class="text-muted small"><i class="fas fa-calendar-plus me-1 text-primary small"></i>${fechaMX(t.created_at)}</div>
+                    <div class="text-body-secondary small"><i class="fas fa-calendar-plus me-1 text-primary small"></i>${fechaMX(t.created_at)}</div>
                     ${fechaCierre}
                 </td>
                 <td>${userChip(t.asignado_a, 'fa-user-cog', 'Sin asignar')}</td>
@@ -439,35 +439,35 @@
                 <div class="modal fade" id="modalDetalle${t.id_ticket}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered shadow-lg">
                     <div class="modal-content border-0">
-                        <div class="modal-header bg-light border-bottom">
-                            <h6 class="modal-title fw-bold text-dark">Administrar Ticket #${esc(t.folio)}</h6>
+                        <div class="modal-header bg-body-tertiary border-bottom">
+                            <h6 class="modal-title fw-bold text-body">Administrar Ticket #${esc(t.folio)}</h6>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body p-4 text-start">
                             <div class="mb-4">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <div>
-                                        <h6 class="text-uppercase text-muted small fw-bold mb-1">Título de la Solicitud</h6>
-                                        <h5 class="fw-bold text-dark mb-0">${esc(t.titulo)}</h5>
+                                        <h6 class="text-uppercase text-body-secondary small fw-bold mb-1">Título de la Solicitud</h6>
+                                        <h5 class="fw-bold text-body mb-0">${esc(t.titulo)}</h5>
                                     </div>
                                     <span class="badge bg-dark">TIPO ${esc(String(t.tipo_formato ?? '').toUpperCase())}</span>
                                 </div>
-                                <p class="bg-light p-3 rounded text-muted border small mb-0">${esc(t.descripcion ?? 'Sin descripción adicional.')}</p>
+                                <p class="bg-body-tertiary p-3 rounded text-body-secondary border small mb-0">${esc(t.descripcion ?? 'Sin descripción adicional.')}</p>
                             </div>
                             <div class="row g-3 mb-4">
                                 <div class="col-6">
-                                    <small class="text-muted d-block small fw-bold text-uppercase">Solicitante:</small>
+                                    <small class="text-body-secondary d-block small fw-bold text-uppercase">Solicitante:</small>
                                     <strong class="text-primary small"><i class="fas fa-user me-1 small"></i>${esc(t.solicitante ?? 'No registrado')}</strong>
                                 </div>
                                 <div class="col-6">
-                                    <small class="text-muted d-block small fw-bold text-uppercase">Registrado por:</small>
-                                    <strong class="text-dark small"><i class="fas fa-pen-nib me-1 small text-muted"></i>${esc(t.creado_por?.username ?? 'Sistema')}</strong>
+                                    <small class="text-body-secondary d-block small fw-bold text-uppercase">Registrado por:</small>
+                                    <strong class="text-body small"><i class="fas fa-pen-nib me-1 small text-body-secondary"></i>${esc(t.creado_por?.username ?? 'Sistema')}</strong>
                                 </div>
                             </div>
                             <hr class="my-4">
                             <form method="POST" action="/admin/tickets/${t.id_ticket}/asignar" class="mb-4">
                                 <input type="hidden" name="_token" value="${CSRF}">
-                                <label class="form-label small fw-bold text-uppercase text-muted">Asignar Responsable</label>
+                                <label class="form-label small fw-bold text-uppercase text-body-secondary">Asignar Responsable</label>
                                 <div class="input-group input-group-sm">
                                     <select name="asignado_a" class="form-select shadow-sm" ${dis}>${opcionesTecnicos(t.asignado_a?.id_cuenta)}</select>
                                     <button class="btn btn-primary fw-bold shadow-sm" ${dis}><i class="fas fa-user-check me-1"></i></button>
@@ -517,19 +517,19 @@
                             <div class="modal-body p-4 text-start">
                                 <div class="row g-3">
                                     <div class="col-md-8">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Título *</label>
+                                        <label class="form-label small fw-bold text-body-secondary text-uppercase">Título *</label>
                                         <input type="text" name="titulo" class="form-control shadow-sm" required maxlength="255" value="${esc(t.titulo)}">
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Solicitante *</label>
+                                        <label class="form-label small fw-bold text-body-secondary text-uppercase">Solicitante *</label>
                                         <input type="text" name="solicitante" class="form-control shadow-sm" required maxlength="150" value="${esc(t.solicitante)}">
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Departamento *</label>
+                                        <label class="form-label small fw-bold text-body-secondary text-uppercase">Departamento *</label>
                                         <select name="id_departamento" class="form-select shadow-sm" required>${opcionesDeptos(t.id_departamento)}</select>
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Prioridad</label>
+                                        <label class="form-label small fw-bold text-body-secondary text-uppercase">Prioridad</label>
                                         <select name="prioridad" class="form-select shadow-sm" required>
                                             <option value="baja"  ${t.prioridad==='baja'  ? 'selected':''}>🟢 Baja</option>
                                             <option value="media" ${t.prioridad==='media' ? 'selected':''}>🟡 Media</option>
@@ -537,13 +537,13 @@
                                         </select>
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Formato</label>
+                                        <label class="form-label small fw-bold text-body-secondary text-uppercase">Formato</label>
                                         <select name="tipo_formato" class="form-select shadow-sm" required>
                                             ${['a','b','c','d'].map(k => `<option value="${k}" ${t.tipo_formato===k?'selected':''}>Formato ${k.toUpperCase()}</option>`).join('')}
                                         </select>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Estado</label>
+                                        <label class="form-label small fw-bold text-body-secondary text-uppercase">Estado</label>
                                         <select name="estado" class="form-select shadow-sm" required>
                                             ${['nuevo','asignado','en_proceso','en_espera','completado','cancelado'].map(s =>
                     `<option value="${s}" ${t.estado===s?'selected':''}>${s.replaceAll('_',' ').replace(/^\w/,c=>c.toUpperCase())}</option>`
@@ -552,12 +552,12 @@
                                     </div>
                                     <input type="hidden" name="asignado_a" value="${t.asignado_a?.id_cuenta ?? ''}">
                                     <div class="col-12">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Descripción</label>
+                                        <label class="form-label small fw-bold text-body-secondary text-uppercase">Descripción</label>
                                         <textarea name="descripcion" class="form-control shadow-sm" rows="4">${esc(t.descripcion ?? '')}</textarea>
                                     </div>
                                 </div>
                             </div>
-                            <div class="modal-footer bg-light border-0">
+                            <div class="modal-footer bg-body-tertiary border-0">
                                 <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cerrar</button>
                                 <button type="submit" class="btn btn-warning btn-sm fw-bold px-4 rounded-pill shadow-sm">Guardar Cambios</button>
                             </div>

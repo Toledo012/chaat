@@ -12,7 +12,7 @@
             <i class="fas fa-ticket-alt text-primary fa-2x"></i>
             <div>
                 <h4 class="mb-0 fw-bold">Tickets</h4>
-                <p class="text-muted mb-0 small text-uppercase">Bandeja de trabajo del usuario</p>
+                <p class="text-body-secondary mb-0 small text-uppercase">Bandeja de trabajo del usuario</p>
             </div>
             <button type="button" class="btn btn-primary ms-auto shadow-sm fw-bold btn-sm px-4 rounded-pill"
                     data-bs-toggle="modal" data-bs-target="#modalCrearTicket">
@@ -22,8 +22,8 @@
 
         {{-- TICKETS DISPONIBLES --}}
         <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
-                <h6 class="mb-0 fw-bold text-dark">
+            <div class="card-header bg-body py-3 border-bottom d-flex align-items-center justify-content-between">
+                <h6 class="mb-0 fw-bold text-body">
                     <i class="fas fa-inbox me-2 text-primary"></i>Tickets disponibles para atención
                 </h6>
                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 rounded-pill small" id="badgeDisponibles">
@@ -36,7 +36,7 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light small text-uppercase text-muted">
+                        <thead class="app-table-head small text-uppercase text-body-secondary">
                         <tr>
                             <th class="ps-4">Folio</th>
                             <th>Título / Información</th>
@@ -51,9 +51,9 @@
                             <tr>
                                 <td class="ps-4 fw-bold text-primary">#{{ $t->folio }}</td>
                                 <td>
-                                    <div class="fw-bold text-dark small">{{ $t->titulo }}</div>
-                                    <div class="text-muted small"><i class="fas fa-user-edit me-1 small"></i>{{ $t->solicitante }}</div>
-                                    <div class="text-muted small"><i class="fas fa-building me-1 small"></i>{{ $t->departamento?->nombre ?? 'Sin departamento' }}</div>
+                                    <div class="fw-bold text-body small">{{ $t->titulo }}</div>
+                                    <div class="text-body-secondary small"><i class="fas fa-user-edit me-1 small"></i>{{ $t->solicitante }}</div>
+                                    <div class="text-body-secondary small"><i class="fas fa-building me-1 small"></i>{{ $t->departamento?->nombre ?? 'Sin departamento' }}</div>
                                 </td>
 
 
@@ -64,11 +64,11 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="small fw-semibold text-dark">
-                                        <i class="fas fa-pen-nib me-1 text-muted small"></i>{{ $t->creador->username ?? 'Sistema' }}
+                                    <span class="small fw-semibold text-body">
+                                        <i class="fas fa-pen-nib me-1 text-body-secondary small"></i>{{ $t->creador->username ?? 'Sistema' }}
                                     </span>
                                 </td>
-                                <td class="small text-muted">
+                                <td class="small text-body-secondary">
                                     <div class="text-nowrap">
                                         <i class="far fa-calendar-plus me-1 text-primary"></i>
                                         {{ \Carbon\Carbon::parse($t->created_at)->timezone('America/Mexico_City')->format('d/m/Y h:i A') }}
@@ -85,7 +85,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-4 text-muted small italic">
+                                <td colspan="6" class="text-center py-4 text-body-secondary small italic">
                                     No hay tickets libres por ahora.
                                 </td>
                             </tr>
@@ -94,24 +94,24 @@
                     </table>
                 </div>
             </div>
-            <div class="card-footer bg-white py-2 border-top-0 d-flex align-items-center justify-content-between d-none"
+            <div class="card-footer bg-body py-2 border-top-0 d-flex align-items-center justify-content-between d-none"
                  id="footerDisponibles">
-                <small class="text-muted" id="infoDisponibles"></small>
+                <small class="text-body-secondary" id="infoDisponibles"></small>
                 <div id="paginadorDisponibles"></div>
             </div>
         </div>
 
         {{-- MIS TICKETS --}}
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 border-bottom">
-                <h6 class="mb-0 fw-bold text-dark">
+            <div class="card-header bg-body py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-body">
                     <i class="fas fa-user-check me-2 text-primary"></i>Mi bandeja de trabajo
                 </h6>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light small text-uppercase text-muted">
+                        <thead class="app-table-head small text-uppercase text-body-secondary">
                         <tr>
                             <th class="ps-4">Folio</th>
                             <th>Título / Información</th>
@@ -125,10 +125,10 @@
                             <tr>
                                 <td class="ps-4 fw-bold text-primary">#{{ $t->folio }}</td>
                                 <td>
-                                    <div class="fw-bold text-dark small">{{ $t->titulo }}</div>
-                                    <div class="text-muted small"><i class="fas fa-user-edit me-1 small"></i>{{ $t->solicitante ?: 'Sin solicitante' }}</div>
-                                    <div class="text-muted small">Formato {{ strtoupper($t->tipo_formato) }}</div>
-                                    <div class="text-muted small"><i class="fas fa-building me-1 small"></i>{{ $t->departamento?->nombre ?? 'Sin departamento' }}</div>
+                                    <div class="fw-bold text-body small">{{ $t->titulo }}</div>
+                                    <div class="text-body-secondary small"><i class="fas fa-user-edit me-1 small"></i>{{ $t->solicitante ?: 'Sin solicitante' }}</div>
+                                    <div class="text-body-secondary small">Formato {{ strtoupper($t->tipo_formato) }}</div>
+                                    <div class="text-body-secondary small"><i class="fas fa-building me-1 small"></i>{{ $t->departamento?->nombre ?? 'Sin departamento' }}</div>
                                 </td>
                                 <td>
                                     @php
@@ -144,7 +144,7 @@
                                     </span>
                                 </td>
                                 <td class="small">
-                                    <div class="text-muted small">
+                                    <div class="text-body-secondary small">
                                         <i class="fas fa-calendar-plus me-1 text-primary small"></i>
                                         {{ \Carbon\Carbon::parse($t->created_at)->timezone('America/Mexico_City')->format('d/m/Y h:i A') }}
                                     </div>
@@ -164,7 +164,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center py-5 text-muted opacity-50 small italic">
+                                <td colspan="5" class="text-center py-5 text-body-secondary opacity-50 small italic">
                                     No tienes tickets asignados en tu bandeja personal.
                                 </td>
                             </tr>
@@ -173,9 +173,9 @@
                     </table>
                 </div>
             </div>
-            <div class="card-footer bg-white py-2 border-top-0 d-flex align-items-center justify-content-between d-none"
+            <div class="card-footer bg-body py-2 border-top-0 d-flex align-items-center justify-content-between d-none"
                  id="footerMisTickets">
-                <small class="text-muted" id="infoMisTickets"></small>
+                <small class="text-body-secondary" id="infoMisTickets"></small>
                 <div id="paginadorMisTickets"></div>
             </div>
         </div>
@@ -200,17 +200,17 @@
                     <div class="modal-body p-4 text-start">
                         <div class="row g-3">
                             <div class="col-md-8">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Título *</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Título *</label>
                                 <input type="text" name="titulo" class="form-control shadow-sm border-light-subtle"
                                        required value="{{ old('titulo') }}" placeholder="Ej: Falla en equipo de red">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Solicitante *</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Solicitante *</label>
                                 <input type="text" name="solicitante" class="form-control shadow-sm border-light-subtle"
                                        required value="{{ old('solicitante') }}" placeholder="Nombre del solicitante">
                             </div>
                             <div class="col-md-8">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Departamento *</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Departamento *</label>
                                 <div class="input-group">
                                     <select id="selectDepartamentoUser" name="id_departamento" class="form-select shadow-sm border-light-subtle" required>
                                         <option value="">Selecciona un departamento</option>
@@ -225,10 +225,10 @@
                                         <i class="fas fa-plus me-1"></i> Nuevo
                                     </button>
                                 </div>
-                                <small class="text-muted d-block mt-1">Si no existe, crea uno aquí mismo.</small>
+                                <small class="text-body-secondary d-block mt-1">Si no existe, crea uno aquí mismo.</small>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Tipo de Formato *</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Tipo de Formato *</label>
                                 <select name="tipo_formato" class="form-select shadow-sm border-light-subtle" required>
                                     <option value="">Seleccionar formato...</option>
                                     @foreach(['a'=>'A','b'=>'B','c'=>'C','d'=>'D'] as $k=>$v)
@@ -237,17 +237,17 @@
                                 </select>
                             </div>
                             <div class="col-12">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Descripción (Máx 200)</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Descripción (Máx 200)</label>
                                 <textarea name="descripcion" class="form-control shadow-sm border-light-subtle"
                                           rows="4" maxlength="200"
                                           placeholder="Explique brevemente los detalles del requerimiento...">{{ old('descripcion') }}</textarea>
                             </div>
                         </div>
-                        <div class="mt-3 small text-muted text-center border-top pt-3">
+                        <div class="mt-3 small text-body-secondary text-center border-top pt-3">
                             <i class="fas fa-info-circle me-1"></i> La prioridad de este ticket será establecida por el administrador.
                         </div>
                     </div>
-                    <div class="modal-footer bg-light border-0 text-center">
+                    <div class="modal-footer bg-body-tertiary border-0 text-center">
                         <button type="submit"
                                 class="btn btn-primary btn-sm fw-bold px-5 rounded-pill shadow-sm mx-auto"
                                 onclick="this.disabled=true; this.innerText='Guardando...'; this.form.submit();">
@@ -271,11 +271,11 @@
                     @csrf
                     <div class="modal-body p-4">
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Nombre *</label>
+                            <label class="form-label small fw-bold text-body-secondary text-uppercase">Nombre *</label>
                             <input type="text" name="nombre" class="form-control shadow-sm" required maxlength="50">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Descripción</label>
+                            <label class="form-label small fw-bold text-body-secondary text-uppercase">Descripción</label>
                             <textarea name="descripcion" class="form-control shadow-sm" rows="3"></textarea>
                         </div>
                         <div class="form-check">
@@ -283,7 +283,7 @@
                             <label class="form-check-label" for="activoDeptoUser">Activo</label>
                         </div>
                     </div>
-                    <div class="modal-footer bg-light border-0">
+                    <div class="modal-footer bg-body-tertiary border-0">
                         <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-success btn-sm fw-bold px-4 rounded-pill shadow-sm">Guardar</button>
                     </div>
@@ -418,7 +418,7 @@
             if (badge) badge.textContent = `${disponibles.length} Disponibles`;
 
             if (!disponibles.length) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted small italic">No hay tickets libres por ahora.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-body-secondary small italic">No hay tickets libres por ahora.</td></tr>`;
                 renderPaginadorU('Disponibles', paginarU([], 1), 0);
                 return;
             }
@@ -430,9 +430,9 @@
             <tr>
                 <td class="ps-4 fw-bold text-primary">#${escU(t.folio)}</td>
                 <td>
-                    <div class="fw-bold text-dark small">${escU(t.titulo)}</div>
-                    <div class="text-muted small"><i class="fas fa-user-edit me-1 small"></i>${escU(t.solicitante ?? '')}</div>
-                    <div class="text-muted small"><i class="fas fa-building me-1 small"></i>${escU(t.departamento ?? 'Sin departamento')}</div>
+                    <div class="fw-bold text-body small">${escU(t.titulo)}</div>
+                    <div class="text-body-secondary small"><i class="fas fa-user-edit me-1 small"></i>${escU(t.solicitante ?? '')}</div>
+                    <div class="text-body-secondary small"><i class="fas fa-building me-1 small"></i>${escU(t.departamento ?? 'Sin departamento')}</div>
                 </td>
                 <td>
                     <span class="badge bg-secondary-subtle text-secondary border px-2">
@@ -440,11 +440,11 @@
                     </span>
                 </td>
                 <td>
-                    <span class="small fw-semibold text-dark">
-                        <i class="fas fa-pen-nib me-1 text-muted small"></i>${escU(t.creado_por?.username ?? 'Sistema')}
+                    <span class="small fw-semibold text-body">
+                        <i class="fas fa-pen-nib me-1 text-body-secondary small"></i>${escU(t.creado_por?.username ?? 'Sistema')}
                     </span>
                 </td>
-                <td class="small text-muted">
+                <td class="small text-body-secondary">
                     <div class="text-nowrap">
                         <i class="far fa-calendar-plus me-1 text-primary"></i>${fechaMXU(t.created_at)}
                     </div>
@@ -472,7 +472,7 @@
             ultimosMisTickets = misTickets;
 
             if (!misTickets.length) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-muted opacity-50 small italic">No tienes tickets asignados en tu bandeja personal.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-body-secondary opacity-50 small italic">No tienes tickets asignados en tu bandeja personal.</td></tr>`;
                 renderPaginadorU('MisTickets', paginarU([], 1), 0);
                 return;
             }
@@ -487,14 +487,14 @@
             <tr>
                 <td class="ps-4 fw-bold text-primary">#${escU(t.folio)}</td>
                 <td>
-                    <div class="fw-bold text-dark small">${escU(t.titulo)}</div>
-                    <div class="text-muted small"><i class="fas fa-user-edit me-1 small"></i>${escU(t.solicitante || 'Sin solicitante')}</div>
-                    <div class="text-muted small">Formato ${escU(String(t.tipo_formato ?? '').toUpperCase())}</div>
-                    <div class="text-muted small"><i class="fas fa-building me-1 small"></i>${escU(t.departamento ?? 'Sin departamento')}</div>
+                    <div class="fw-bold text-body small">${escU(t.titulo)}</div>
+                    <div class="text-body-secondary small"><i class="fas fa-user-edit me-1 small"></i>${escU(t.solicitante || 'Sin solicitante')}</div>
+                    <div class="text-body-secondary small">Formato ${escU(String(t.tipo_formato ?? '').toUpperCase())}</div>
+                    <div class="text-body-secondary small"><i class="fas fa-building me-1 small"></i>${escU(t.departamento ?? 'Sin departamento')}</div>
                 </td>
                 <td>${estadoBadgeU(t.estado)}</td>
                 <td class="small">
-                    <div class="text-muted small"><i class="fas fa-calendar-plus me-1 text-primary small"></i>${fechaMXU(t.created_at)}</div>
+                    <div class="text-body-secondary small"><i class="fas fa-calendar-plus me-1 text-primary small"></i>${fechaMXU(t.created_at)}</div>
                     ${fechaCierre}
                 </td>
                 <td class="text-end pe-4">
@@ -526,34 +526,34 @@
                 <div class="modal fade" id="modalGestionUser${t.id_ticket}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered shadow-lg">
                     <div class="modal-content border-0 shadow-lg">
-                        <div class="modal-header bg-light border-bottom">
+                        <div class="modal-header bg-body-tertiary border-bottom">
                             <h6 class="modal-title fw-bold">Detalles Ticket #${escU(t.folio)}</h6>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body p-4 text-start">
                             <div class="mb-4">
-                                <h6 class="text-uppercase text-muted small fw-bold mb-1">Título de la Solicitud</h6>
-                                <h5 class="fw-bold text-dark">${escU(t.titulo)}</h5>
-                                <div class="bg-light p-3 rounded text-muted border small mb-0">
+                                <h6 class="text-uppercase text-body-secondary small fw-bold mb-1">Título de la Solicitud</h6>
+                                <h5 class="fw-bold text-body">${escU(t.titulo)}</h5>
+                                <div class="bg-body-tertiary p-3 rounded text-body-secondary border small mb-0">
                                     ${escU(t.descripcion ?? 'Sin descripción adicional.')}
                                 </div>
                             </div>
                             <div class="row g-3 mb-4 text-start">
                                 <div class="col-6">
-                                    <small class="text-muted d-block small fw-bold text-uppercase">Solicitante:</small>
+                                    <small class="text-body-secondary d-block small fw-bold text-uppercase">Solicitante:</small>
                                     <strong class="text-primary small"><i class="fas fa-user me-1 small"></i>${escU(t.solicitante ?? '')}</strong>
                                 </div>
                                 <div class="col-6">
-                                    <small class="text-muted d-block small fw-bold text-uppercase">Tipo Formato:</small>
+                                    <small class="text-body-secondary d-block small fw-bold text-uppercase">Tipo Formato:</small>
                                     <span class="badge bg-dark">TIPO ${escU(String(t.tipo_formato ?? '').toUpperCase())}</span>
                                 </div>
                                 <div class="col-6">
-                                    <small class="text-muted d-block small fw-bold text-uppercase">Fecha Apertura:</small>
-                                    <span class="small fw-semibold text-dark">${fechaMXU(t.created_at)}</span>
+                                    <small class="text-body-secondary d-block small fw-bold text-uppercase">Fecha Apertura:</small>
+                                    <span class="small fw-semibold text-body">${fechaMXU(t.created_at)}</span>
                                 </div>
                                 <div class="col-6 text-end">
-                                    <small class="text-muted d-block small fw-bold text-uppercase text-end">Fecha Cierre:</small>
-                                    <span class="small fw-semibold text-dark">
+                                    <small class="text-body-secondary d-block small fw-bold text-uppercase text-end">Fecha Cierre:</small>
+                                    <span class="small fw-semibold text-body">
                                         ${['completado','cancelado'].includes(t.estado) ? fechaMXU(t.updated_at) : 'En proceso'}
                                     </span>
                                 </div>
@@ -600,29 +600,29 @@
                                 <input type="hidden" name="_method" value="PUT">
                                 <div class="modal-body p-4 text-start">
                                     <div class="mb-3">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Título *</label>
+                                        <label class="form-label small fw-bold text-body-secondary text-uppercase">Título *</label>
                                         <input type="text" name="titulo" class="form-control shadow-sm" required maxlength="255" value="${escU(t.titulo)}">
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Solicitante *</label>
+                                        <label class="form-label small fw-bold text-body-secondary text-uppercase">Solicitante *</label>
                                         <input type="text" name="solicitante" class="form-control shadow-sm" required maxlength="150" value="${escU(t.solicitante)}">
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Departamento *</label>
+                                        <label class="form-label small fw-bold text-body-secondary text-uppercase">Departamento *</label>
                                         <select name="id_departamento" class="form-select shadow-sm" required>${opcionesDeptoU(t.id_departamento)}</select>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Formato *</label>
+                                        <label class="form-label small fw-bold text-body-secondary text-uppercase">Formato *</label>
                                         <select name="tipo_formato" class="form-select shadow-sm" required>
                                             ${['a','b','c','d'].map(k => `<option value="${k}" ${t.tipo_formato===k?'selected':''}>Formato ${k.toUpperCase()}</option>`).join('')}
                                         </select>
                                     </div>
                                     <div class="mb-0">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Descripción (Máx 200)</label>
+                                        <label class="form-label small fw-bold text-body-secondary text-uppercase">Descripción (Máx 200)</label>
                                         <textarea name="descripcion" class="form-control shadow-sm" rows="4" maxlength="200">${escU(t.descripcion ?? '')}</textarea>
                                     </div>
                                 </div>
-                                <div class="modal-footer bg-light border-0">
+                                <div class="modal-footer bg-body-tertiary border-0">
                                     <button type="button" class="btn btn-secondary btn-sm rounded-pill" data-bs-dismiss="modal">Cerrar</button>
                                     <button type="submit" class="btn btn-warning btn-sm fw-bold px-4 rounded-pill shadow-sm">Guardar Cambios</button>
                                 </div>

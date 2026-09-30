@@ -9,7 +9,7 @@
     .icon-shape { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
     
     .ticket-row { transition: background 0.2s; }
-    .ticket-row:hover { background-color: #f8fafc; }
+    .ticket-row:hover { background-color: var(--surface-muted); }
     
     .welcome-card {
         background: linear-gradient(135deg, #399e91 0%, #2c7a70 100%);
@@ -62,8 +62,8 @@
                         <i class="fas fa-layer-group fa-lg"></i>
                     </div>
                     <div>
-                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Total Enviados</small>
-                        <h4 class="fw-bold mb-0 text-dark">{{ $stats['total'] }}</h4>
+                        <small class="text-body-secondary text-uppercase fw-bold" style="font-size: 0.65rem;">Total Enviados</small>
+                        <h4 class="fw-bold mb-0 text-body">{{ $stats['total'] }}</h4>
                     </div>
                 </div>
             </div>
@@ -75,8 +75,8 @@
                         <i class="fas fa-clock fa-lg"></i>
                     </div>
                     <div>
-                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">En Seguimiento</small>
-                        <h4 class="fw-bold mb-0 text-dark">{{ $stats['pendientes'] }}</h4>
+                        <small class="text-body-secondary text-uppercase fw-bold" style="font-size: 0.65rem;">En Seguimiento</small>
+                        <h4 class="fw-bold mb-0 text-body">{{ $stats['pendientes'] }}</h4>
                     </div>
                 </div>
             </div>
@@ -88,8 +88,8 @@
                         <i class="fas fa-check-double fa-lg"></i>
                     </div>
                     <div>
-                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Resueltos</small>
-                        <h4 class="fw-bold mb-0 text-dark">{{ $stats['completados'] }}</h4>
+                        <small class="text-body-secondary text-uppercase fw-bold" style="font-size: 0.65rem;">Resueltos</small>
+                        <h4 class="fw-bold mb-0 text-body">{{ $stats['completados'] }}</h4>
                     </div>
                 </div>
             </div>
@@ -107,7 +107,7 @@
                 <div class="card-body px-0 py-2">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light small text-muted">
+                            <thead class="bg-body-tertiary small text-body-secondary">
                                 <tr>
                                     <th class="ps-4 border-0">Folio</th>
                                     <th class="border-0">Título</th>
@@ -119,7 +119,7 @@
                                 @forelse($misSolicitudes->take(5) as $ticket)
                                 <tr class="ticket-row">
                                     <td class="ps-4 fw-bold text-primary small">#{{ $ticket->folio }}</td>
-                                    <td class="small fw-semibold text-dark">{{ \Illuminate\Support\Str::limit($ticket->titulo, 45) }}</td>
+                                    <td class="small fw-semibold text-body">{{ \Illuminate\Support\Str::limit($ticket->titulo, 45) }}</td>
                                     <td class="text-center">
                                         @php
                                             $color = match($ticket->estado) {
@@ -133,11 +133,11 @@
                                             {{ strtoupper($ticket->estado) }}
                                         </span>
                                     </td>
-                                    <td class="text-end pe-4 small text-muted">{{ $ticket->created_at->format('d/m/y') }}</td>
+                                    <td class="text-end pe-4 small text-body-secondary">{{ $ticket->created_at->format('d/m/y') }}</td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="4" class="text-center py-5 text-muted small italic">No hay solicitudes recientes.</td>
+                                    <td colspan="4" class="text-center py-5 text-body-secondary small italic">No hay solicitudes recientes.</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -150,23 +150,23 @@
         {{-- PERFIL Y SEGURIDAD --}}
         <div class="col-lg-4 mb-4">
             <div class="card border-0 shadow-sm rounded-4 h-100 p-4">
-                <h6 class="fw-bold mb-3 text-muted text-uppercase small" style="letter-spacing: 1px;">Mi Perfil</h6>
+                <h6 class="fw-bold mb-3 text-body-secondary text-uppercase small" style="letter-spacing: 1px;">Mi Perfil</h6>
                 <div class="d-flex align-items-center mb-4">
-                    <div class="bg-light p-3 rounded-circle me-3 text-primary shadow-sm">
+                    <div class="bg-body-tertiary p-3 rounded-circle me-3 text-primary shadow-sm">
                         <i class="fas fa-building fa-2x"></i>
                     </div>
                     <div>
-                        <h6 class="fw-bold mb-0 text-dark">{{ $user->usuario->nombre }}</h6>
-                        <small class="text-muted">{{ $user->usuario->puesto }}</small>
+                        <h6 class="fw-bold mb-0 text-body">{{ $user->usuario->nombre }}</h6>
+                        <small class="text-body-secondary">{{ $user->usuario->puesto }}</small>
                     </div>
                 </div>
 
-                <div class="bg-light p-3 rounded-3 mb-4">
+                <div class="bg-body-tertiary p-3 rounded-3 mb-4">
                     <div class="small mb-2">
-                        <span class="text-muted">Username:</span> <span class="fw-bold text-dark">{{ $user->username }}</span>
+                        <span class="text-body-secondary">Username:</span> <span class="fw-bold text-body">{{ $user->username }}</span>
                     </div>
                     <div class="small">
-                        <span class="text-muted">Estado:</span> <span class="badge bg-success px-2 rounded-pill">Activo</span>
+                        <span class="text-body-secondary">Estado:</span> <span class="badge bg-success px-2 rounded-pill">Activo</span>
                     </div>
                 </div>
 

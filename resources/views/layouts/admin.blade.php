@@ -7,6 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin Panel')</title>
+    <script src="{{ asset('js/theme.js') }}"></script>
 
     {{-- CSS principal --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -95,6 +96,11 @@
                     <i class="fas fa-clipboard-list"></i> <span>Movimientos</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link @if(request()->routeIs('admin.errores.*')) active @endif" href="{{ route('admin.errores.index') }}">
+                    <i class="fas fa-bug"></i> <span>Errores del sistema</span>
+                </a>
+            </li>
             @endif
 
 
@@ -134,7 +140,7 @@
         </div>
 
         <div class="d-flex align-items-center gap-3">
-            <button id="darkModeToggle" class="btn btn-sm btn-outline-light" title="Alternar Modo Oscuro">
+            <button type="button" id="darkModeToggle" class="btn btn-sm btn-outline-light" aria-label="Activar modo oscuro" aria-pressed="false">
                 <i class="fas fa-moon"></i>
             </button>
             <div class="user-info">
@@ -168,15 +174,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('navigation');
             const toggleButton = document.getElementById('sidebarToggle');
-            const darkModeToggle = document.getElementById('darkModeToggle');
-            const body = document.body;
-
-            // === Modo oscuro persistente ===
-            const isDarkMode = localStorage.getItem('darkModeEnabled') === 'true';
-            if (isDarkMode) {
-                body.classList.add('dark-mode');
-                darkModeToggle.querySelector('i').className = 'fas fa-sun';
-            }
 
             // === Sidebar persistente ===
             const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
@@ -190,13 +187,6 @@
                 localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
             });
 
-            // Toggle dark mode
-            darkModeToggle?.addEventListener('click', () => {
-                body.classList.toggle('dark-mode');
-                const dark = body.classList.contains('dark-mode');
-                localStorage.setItem('darkModeEnabled', dark);
-                darkModeToggle.querySelector('i').className = dark ? 'fas fa-sun' : 'fas fa-moon';
-            });
         });
     </script>
 

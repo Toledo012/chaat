@@ -6,10 +6,10 @@
 
 @section('styles')
     <style>
-        .card-header { background-color: #399e91; color: white; font-weight: 600; }
+        .card-header { background-color: var(--brand-action); color: white; font-weight: 600; }
         .form-control, .form-select { border-radius: 8px; }
-        .btn-primary { background-color: #399e91; border-color: #399e91; }
-        .btn-primary:hover { background-color: #2f847a; border-color: #2f847a; }
+        .btn-primary { background-color: var(--brand-action); border-color: var(--brand-action); }
+        .btn-primary:hover { background-color: #245f58; border-color: #245f58; }
         .alert-info { background-color: #d1f0eb; border-color: #399e91; color: #25685d; font-weight: 500; }
 
         /* Animación suave del bloque memo */
@@ -40,7 +40,7 @@
 
                     {{-- DEPARTAMENTO --}}
                     <div class="col-md-6">
-                        <label class="form-label small fw-bold text-muted text-uppercase">
+                        <label class="form-label small fw-bold text-body-secondary text-uppercase">
                             Departamento <span class="text-danger">*</span>
                         </label>
                         @php $selectedDept = $ticketDeptId ?? old('id_departamento'); @endphp
@@ -65,7 +65,7 @@
                                     <i class="fas fa-plus me-1"></i> Nuevo
                                 </button>
                             </div>
-                            <small class="text-muted d-block mt-1">Si no existe, crea uno aquí mismo.</small>
+                            <small class="text-body-secondary d-block mt-1">Si no existe, crea uno aquí mismo.</small>
                         @endif
                         @error('id_departamento')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
@@ -96,7 +96,7 @@
                                    class="form-control"
                                    placeholder="Número o folio del memo"
                                    maxlength="100">
-                            <small class="text-muted">Ingresa el número o folio del memo de referencia.</small>
+                            <small class="text-body-secondary">Ingresa el número o folio del memo de referencia.</small>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -154,7 +154,7 @@
                 </div>
 
                 <table class="table table-bordered mb-4" id="tablaMateriales">
-                    <thead class="table-light">
+                    <thead class="app-table-head">
                     <tr><th>Material</th><th width="120">Cantidad</th><th width="90">Acción</th></tr>
                     </thead>
                     <tbody>
@@ -180,11 +180,11 @@
                     </div>
                     <div class="col-md-4">
                         <label>Responsable</label>
-                        <input name="firma_tecnico" readonly class="form-control bg-light" value="{{ Auth::user()->usuario->nombre ?? Auth::user()->name }}">
+                        <input name="firma_tecnico" readonly class="form-control bg-body-tertiary" value="{{ Auth::user()->usuario->nombre ?? Auth::user()->name }}">
                     </div>
                     <div class="col-md-4">
                         <label>Jefe de Área</label>
-                        <input id="firmaJefe" name="firma_jefe_area" readonly class="form-control bg-light"
+                        <input id="firmaJefe" name="firma_jefe_area" readonly class="form-control bg-body-tertiary"
                                value="{{ \App\Models\Usuario::where('puesto','Jefe de Área')->value('nombre') ?? 'Jefe de Área' }}">                    </div>
                 </div>
 
@@ -218,11 +218,11 @@
                         @csrf
                         <div class="modal-body p-4">
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Nombre *</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Nombre *</label>
                                 <input type="text" name="nombre" class="form-control shadow-sm" required maxlength="50">
                             </div>
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Descripción</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Descripción</label>
                                 <textarea name="descripcion" class="form-control shadow-sm" rows="3"></textarea>
                             </div>
                             <div class="form-check">
@@ -230,7 +230,7 @@
                                 <label class="form-check-label" for="activoDeptoFormatoC">Activo</label>
                             </div>
                         </div>
-                        <div class="modal-footer bg-light border-0">
+                        <div class="modal-footer bg-body-tertiary border-0">
                             <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
                             <button type="submit" class="btn btn-success btn-sm fw-bold px-4 rounded-pill shadow-sm">Guardar</button>
                         </div>
@@ -252,11 +252,11 @@
                     @csrf
                     <div class="modal-body p-4">
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Nombre *</label>
+                            <label class="form-label small fw-bold text-body-secondary text-uppercase">Nombre *</label>
                             <input type="text" name="nombre" class="form-control shadow-sm" required maxlength="50">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Unidad sugerida</label>
+                            <label class="form-label small fw-bold text-body-secondary text-uppercase">Unidad sugerida</label>
                             <select name="unidad_sugerida" id="selectUnidadC" class="form-select shadow-sm">
                                 <option value="">Sin unidad</option>
                                 <option value="pza">Pieza</option>
@@ -267,11 +267,11 @@
                             </select>
                         </div>
                         <div class="mb-3" id="unidadOtroCDiv" style="display:none;">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Especificar unidad</label>
+                            <label class="form-label small fw-bold text-body-secondary text-uppercase">Especificar unidad</label>
                             <input type="text" name="unidad_otro" id="unidadOtroC" class="form-control shadow-sm" maxlength="20">
                         </div>
                     </div>
-                    <div class="modal-footer bg-light border-0">
+                    <div class="modal-footer bg-body-tertiary border-0">
                         <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-success btn-sm fw-bold px-4 rounded-pill shadow-sm">Guardar</button>
                     </div>

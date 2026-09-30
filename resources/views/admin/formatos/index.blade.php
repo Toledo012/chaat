@@ -7,7 +7,7 @@
 @section('styles')
 <style>
     .card-main { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .table thead { background-color: #f8f9fa; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .table thead { background-color: var(--surface-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
     .badge-tipo { font-size: 0.7rem; font-weight: 700; border: 1px solid transparent; }
     .badge-a { background-color: #e0f2f1; color: #399e91; border-color: #399e91; }
     .badge-b { background-color: #e3f2fd; color: #17a2b8; border-color: #17a2b8; }
@@ -30,9 +30,14 @@
         </div>
         <div>
             <h4 class="mb-0 fw-bold">Bandeja de Formatos</h4>
-            <p class="text-muted mb-0 small uppercase">Consulta y exportación de servicios concluidos</p>
+            <p class="text-body-secondary mb-0 small uppercase">Consulta y exportación de servicios concluidos</p>
         </div>
-        <a href="{{ route('admin.formatos.create') }}" class="btn btn-primary ms-auto shadow-sm fw-bold px-4 rounded-pill">
+        @if(Auth::user()->isAdmin())
+            <a href="{{ route('admin.leyendas.index') }}" class="btn btn-outline-primary ms-auto shadow-sm fw-bold px-4 rounded-pill">
+                <i class="fa-solid fa-heading me-2"></i> Leyenda del encabezado
+            </a>
+        @endif
+        <a href="{{ route('admin.formatos.create') }}" class="btn btn-primary {{ Auth::user()->isAdmin() ? '' : 'ms-auto' }} shadow-sm fw-bold px-4 rounded-pill">
             <i class="fa-solid fa-plus me-2"></i> Nuevo Registro
         </a>
     </div>
@@ -42,7 +47,7 @@
         <div class="card-body p-3">
             <form method="GET" action="{{ route('admin.formatos.index') }}" class="row g-3 align-items-end">
                 <div class="col-md-2">
-                    <label class="form-label small fw-bold text-muted">TIPO DE FORMATO</label>
+                    <label class="form-label small fw-bold text-body-secondary">TIPO DE FORMATO</label>
                     <select name="tipo" class="form-select form-select-sm shadow-none">
                         <option value="">— Todos —</option>
                         <option value="A" @selected($tipo == 'A')>Formato A</option>
@@ -56,9 +61,9 @@
 
                 @if(Auth::user()->isAdmin())
                     <div class="col-md-3">
-                        <label class="form-label small fw-bold text-muted">TÉCNICO / USUARIO</label>
+                        <label class="form-label small fw-bold text-body-secondary">TÉCNICO / USUARIO</label>
                         <div class="input-group input-group-sm">
-                            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted small"></i></span>
+                            <span class="input-group-text bg-body border-end-0"><i class="fas fa-search text-body-secondary small"></i></span>
                             <input type="text" name="usuario" class="form-control border-start-0 shadow-none" placeholder="Nombre..." value="{{ $usuario }}">
                         </div>
                     </div>
@@ -66,12 +71,12 @@
 
                 {{-- Campos de Rango de Fechas --}}
                 <div class="col-md-2">
-                    <label class="form-label small fw-bold text-muted">DESDE</label>
+                    <label class="form-label small fw-bold text-body-secondary">DESDE</label>
                     <input type="date" name="fecha_inicio" class="form-control form-control-sm shadow-none" value="{{ request('fecha_inicio') }}">
                 </div>
 
                 <div class="col-md-2">
-                    <label class="form-label small fw-bold text-muted">HASTA</label>
+                    <label class="form-label small fw-bold text-body-secondary">HASTA</label>
                     <input type="date" name="fecha_fin" class="form-control form-control-sm shadow-none" value="{{ request('fecha_fin') }}">
                 </div>
 
@@ -88,7 +93,7 @@
                         'fecha_inicio' => request('fecha_inicio'),
                         'fecha_fin' => request('fecha_fin')
                     ]) }}"
-                       class="btn btn-warning btn-sm shadow-sm fw-bold px-4 rounded-pill text-dark border-0">
+                       class="btn btn-warning btn-sm shadow-sm fw-bold px-4 rounded-pill text-body border-0">
                         <i class="fa-solid fa-chart-column me-1"></i>
                         Generar Reporte Consolidado
                     </a>
@@ -116,8 +121,8 @@
                 @forelse($formatos as $formato)
                     <tr>
                         <td class="ps-4">
-                            <div class="fw-bold text-dark small">ID #{{ $formato->id_servicio }}</div>
-                            <div class="text-muted italic" style="font-size: 0.65rem;">Item {{ $formatos->firstItem() + $loop->index }}</div>
+                            <div class="fw-bold text-body small">ID #{{ $formato->id_servicio }}</div>
+                            <div class="text-body-secondary italic" style="font-size: 0.65rem;">Item {{ $formatos->firstItem() + $loop->index }}</div>
                         </td>
 
                         <td>
@@ -126,11 +131,11 @@
                                 <i class="fas fa-file-alt me-1"></i> FORMATO {{ $t }}
                             </span>
                             <div class="mt-2 lh-sm">
-                                <div class="text-muted" style="font-size: 0.7rem;">
+                                <div class="text-body-secondary" style="font-size: 0.7rem;">
                                     <i class="fas fa-user me-1 opacity-75"></i>
                                     <span class="fw-semibold">Solicitante:</span> {{ $formato->solicitante ?: 'N/A' }}
                                 </div>
-                                <div class="text-muted" style="font-size: 0.7rem;">
+                                <div class="text-body-secondary" style="font-size: 0.7rem;">
                                     <i class="fas fa-building me-1 opacity-75"></i>
                                     <span class="fw-semibold">Área:</span> {{ $formato->area ?: 'N/A' }}
                                 </div>
@@ -139,18 +144,18 @@
 
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                <i class="far fa-calendar-alt text-muted"></i>
-                                <span class="text-muted small fw-semibold">{{ \Carbon\Carbon::parse($formato->fecha)->format('d/m/Y') }}</span>
+                                <i class="far fa-calendar-alt text-body-secondary"></i>
+                                <span class="text-body-secondary small fw-semibold">{{ \Carbon\Carbon::parse($formato->fecha)->format('d/m/Y') }}</span>
                             </div>
                         </td>
 
                         @if(Auth::user()->isAdmin())
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.7rem; font-weight: bold; color: #399e91; border: 1px solid #dee2e6;">
+                                    <div class="bg-body-tertiary rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.7rem; font-weight: bold; color: #399e91; border: 1px solid #dee2e6;">
                                         {{ strtoupper(substr($formato->nombre, 0, 1)) }}
                                     </div>
-                                    <span class="small text-dark fw-bold">{{ $formato->nombre }}</span>
+                                    <span class="small text-body fw-bold">{{ $formato->nombre }}</span>
                                 </div>
                             </td>
                         @endif
@@ -172,7 +177,7 @@
                 @empty
                     <tr>
                         <td colspan="6" class="text-center py-5">
-                            <div class="text-muted opacity-50">
+                            <div class="text-body-secondary opacity-50">
                                 <i class="fa-solid fa-folder-open fa-3x mb-3 d-block"></i>
                                 <p class="mb-0 fw-bold">No se encontraron registros</p>
                                 <small>Intenta ajustando los filtros de búsqueda</small>
@@ -185,7 +190,7 @@
         </div>
 
         @if($formatos->hasPages())
-            <div class="card-footer bg-white py-3 border-top-0 d-flex justify-content-center">
+            <div class="card-footer bg-body py-3 border-top-0 d-flex justify-content-center">
                 {!! $formatos->links('pagination::bootstrap-5') !!}
             </div>
         @endif

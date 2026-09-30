@@ -23,7 +23,7 @@
                 <i class="fa-solid fa-building text-primary fa-lg"></i>
                 <div>
                     <h5 class="mb-0">Departamentos</h5>
-                    <small class="text-muted">
+                    <small class="text-body-secondary">
                         Gestión de áreas internas y usuarios asignados
                     </small>
                 </div>
@@ -56,7 +56,7 @@
 
                             <td>
                                 <div class="fw-semibold">{{ $dep->nombre }}</div>
-                                <small class="text-muted">
+                                <small class="text-body-secondary">
                                     {{ $dep->descripcion ?? 'Sin descripción' }}
                                 </small>
                             </td>
@@ -182,7 +182,7 @@
                                                     <li class="list-group-item d-flex justify-content-between">
                                                         <span>
                                                             {{ $u->nombre }}
-                                                            <small class="text-muted">
+                                                            <small class="text-body-secondary">
                                                                 ({{ $u->puesto }})
                                                             </small>
                                                         </span>
@@ -190,7 +190,7 @@
                                                 @endforeach
                                             </ul>
                                         @else
-                                            <p class="text-muted text-center mb-0">
+                                            <p class="text-body-secondary text-center mb-0">
                                                 No hay usuarios asignados
                                             </p>
                                         @endif
@@ -203,7 +203,7 @@
                     @empty
                         <tr>
                             <td colspan="5"
-                                class="text-center text-muted py-4">
+                                class="text-center text-body-secondary py-4">
                                 <i class="fa-solid fa-circle-info me-1"></i>
                                 No hay departamentos registrados
                             </td>

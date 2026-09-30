@@ -1,45 +1,53 @@
-/* ====== VARIABLES Y GENERAL - MINIMALISTA PURA AJUSTADA ====== */
+/* Tema institucional: superficies neutras, vino y turquesa de SEMAHN. */
 :root {
-    /* Paleta de Colores CLARO (Default) */
-    --primary-color: #399e91; /* Azul primario limpio para acento (se mantiene) */
+    --primary-color: #2c7a70;
+    --brand-action: #2c7a70;
     --secondary-color: #6c757d;
-    --accent-color: #dc3545;
+    --accent-color: #a8364b;
     --dark-color: #343a40;
     --light-color: #f8f9fa;
     --success-color: #28a745;
     --info-color: #17a2b8;
     --warning-color: #ffc107;
     --danger-color: #dc3545;
-    --bg-color: #ffffff; /* Fondo principal blanco puro */
-    --card-bg: white; /* Fondo de tarjetas blanco */
+    --bg-color: #f6f8f7;
+    --card-bg: #ffffff;
+    --surface-muted: #edf2f0;
+    --border-color: #d7e0dd;
     --text-color: var(--dark-color);
     --shadow-light: 0 0.5rem 1rem rgba(0,0,0,0.05); /* Sombra muy sutil */
     --border-radius: 8px;
 
 
-    --sidebar-bg-light: #e9ecef; /* Gris claro para el Sidebar */
-    --header-bg-light: #5f1f1f; /* Rojo oscuro para el Admin Panel */
+    --sidebar-bg-light: #e9ecef;
+    --header-bg-light: #5f1f1f;
+    --header-bg-dark: #401d25;
+    --bs-primary-rgb: 44, 122, 112;
 }
 
-/* Paleta de Colores OSCURO (Minimalista - Sin cambios) */
-.dark-mode {
-    --primary-color: #399e91;
-    --secondary-color: #adb5bd;
-    --accent-color: #ff8a80;
-    --dark-color: #e9ecef;
+[data-bs-theme="dark"] {
+    --primary-color: #79d1c4;
+    --secondary-color: #aebfbb;
+    --accent-color: #d47587;
+    --dark-color: #edf4f1;
     --light-color: #212529;
-    --success-color: #4CAF50;
-    --info-color: #03A9F4;
-    --warning-color: #FFEB3B;
-    --danger-color: #F44336;
-    --bg-color: #1a1e24;
-    --card-bg: #2b3038;
+    --success-color: #65bd82;
+    --info-color: #74c6d3;
+    --warning-color: #e8c875;
+    --danger-color: #e5838d;
+    --bg-color: #151d1e;
+    --card-bg: #222d2e;
+    --surface-muted: #2b3738;
+    --border-color: #3b4b4c;
     --text-color: var(--dark-color);
-    --shadow-light: 0 0.5rem 1rem rgba(0,0,0,0.3);
-
-    /* Colores Específicos del Usuario (Modo Oscuro) */
-    --sidebar-bg-dark: #2b3038;
-    --header-bg-dark: #38a56f; /* Cambiamos el color de header en oscuro para evitar conflicto con el rojo */
+    --shadow-light: 0 0.5rem 1rem rgba(0,0,0,0.18);
+    --sidebar-bg-dark: #1d2829;
+    --bs-body-bg: var(--bg-color);
+    --bs-body-color: var(--text-color);
+    --bs-secondary-color: #aebfbb;
+    --bs-tertiary-bg: var(--surface-muted);
+    --bs-border-color: var(--border-color);
+    --bs-primary-rgb: 44, 122, 112;
 }
 
 body {
@@ -50,19 +58,11 @@ body {
     transition: background 0.3s ease, color 0.3s ease;
 }
 
-a, a:hover, a:focus {
+a, a:hover {
     text-decoration: none;
-    outline: none;
 }
 
-/* Fix para botones de Bootstrap en modo oscuro */
-.dark-mode .btn-outline-light {
-    color: var(--dark-color) !important;
-    border-color: rgba(255, 255, 255, 0.2) !important;
-}
-.dark-mode .admin-header .btn-sm {
-    color: var(--dark-color) !important;
-}
+:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
 
 
 /* ====== SIDEBAR MINIMALISTA Y FUNCIONAL (Fondo Gris Claro) ====== */
@@ -79,14 +79,14 @@ a, a:hover, a:focus {
     transition: all 0.3s ease;
     box-shadow: var(--shadow-light);
     z-index: 1000;
-    border-right: 1px solid #dee2e6;
+    border-right: 1px solid var(--border-color);
     border-radius: 0;
 }
 
-.dark-mode .sidebar {
+[data-bs-theme="dark"] .sidebar {
     background: var(--sidebar-bg-dark);
     color: var(--dark-color);
-    border-right-color: #3e444c;
+    border-right-color: var(--border-color);
 }
 
 
@@ -120,7 +120,7 @@ a, a:hover, a:focus {
     transition: all 0.3s ease;
     border: 1px solid var(--light-color);
 }
-.dark-mode .sidebar {
+[data-bs-theme="dark"] .sidebar {
     background: var(--sidebar-bg-dark);
     color: var(--dark-color);
     border-right-color: #3e444c;
@@ -145,7 +145,7 @@ a, a:hover, a:focus {
 }
 
 /* En modo oscuro, NO queremos que la imagen del logo cambie de fondo */
-.dark-mode .sidebar .logo img {
+[data-bs-theme="dark"] .sidebar .logo img {
     /* ¡IMPORTANTE! Revertimos o especificamos valores para el modo oscuro */
     background-color: white; /* Forzar fondo blanco incluso en modo oscuro */
     border-color: #dee2e6;   /* Borde claro para que no se pierda en el fondo oscuro del sidebar */
@@ -206,13 +206,13 @@ a, a:hover, a:focus {
     background: #e0e0e0;
     color: var(--primary-color);
 }
-.dark-mode .sidebar .nav-link:hover {
-    background: #3e444c;
+[data-bs-theme="dark"] .sidebar .nav-link:hover {
+    background: var(--surface-muted);
     color: var(--primary-color);
 }
 
 .sidebar .nav-link.active {
-    background: rgba(0, 123, 255, 0.1);
+    background: rgba(57, 158, 145, 0.14);
     border-left: 4px solid var(--primary-color);
     color: var(--primary-color);
     font-weight: 600;
@@ -236,11 +236,10 @@ a, a:hover, a:focus {
     transition: margin-left 0.3s ease, background 0.3s ease, color 0.3s ease;
 }
 
-.dark-mode .admin-header {
-    /* Color de Header en Modo Oscuro */
-    background: var(--sidebar-bg-dark); /* Usamos un color oscuro neutro */
-    color: var(--dark-color);
-    border-bottom-color: var(--primary-color);
+[data-bs-theme="dark"] .admin-header {
+    background: var(--header-bg-dark);
+    color: #ffffff;
+    border-bottom-color: var(--accent-color);
 }
 
 
@@ -269,10 +268,10 @@ a, a:hover, a:focus {
     color: white; /* Texto blanco para el user-info en el header oscuro */
 }
 
-.dark-mode .user-info {
-    background: #3e444c;
-    border-color: #555c65;
-    color: var(--dark-color); /* Texto claro para el user-info en el header claro */
+[data-bs-theme="dark"] .user-info {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
 }
 
 .admin-header .btn-outline-light {
@@ -301,7 +300,7 @@ main {
     overflow: hidden;
     position: relative;
 }
-.dark-mode .stats-card {
+[data-bs-theme="dark"] .stats-card {
     border-color: #3e444c;
 }
 .stats-card::before {
@@ -322,7 +321,7 @@ main {
     margin-bottom: 0;
     color: var(--dark-color);
 }
-.dark-mode .stats-number {
+[data-bs-theme="dark"] .stats-number {
      color: var(--text-color);
 }
 .stats-label {
@@ -334,11 +333,11 @@ main {
 }
 
 /* Colores de texto en modo oscuro */
-.dark-mode .stats-label { color: #adb5bd; }
-.dark-mode .text-primary { color: var(--primary-color) !important; }
-.dark-mode .text-success { color: var(--success-color) !important; }
-.dark-mode .text-info { color: var(--info-color) !important; }
-.dark-mode .text-warning { color: var(--warning-color) !important; }
+[data-bs-theme="dark"] .stats-label { color: #adb5bd; }
+.text-primary { color: var(--primary-color) !important; }
+[data-bs-theme="dark"] .text-success { color: var(--success-color) !important; }
+[data-bs-theme="dark"] .text-info { color: var(--info-color) !important; }
+[data-bs-theme="dark"] .text-warning { color: var(--warning-color) !important; }
 
 /* ====== ACCIONES RÁPIDAS (Se mantienen colores sólidos de Bootstrap) ====== */
 .quick-actions .btn {
@@ -348,10 +347,35 @@ main {
 .quick-actions .btn:hover {
     transform: translateY(-3px);
 }
-.btn-primary { background: #007bff; border-color: #007bff; color: white;}
+.btn-primary {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: var(--brand-action);
+    --bs-btn-border-color: var(--brand-action);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #245f58;
+    --bs-btn-hover-border-color: #245f58;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #1d504a;
+    --bs-btn-active-border-color: #1d504a;
+    --bs-btn-focus-shadow-rgb: 44, 122, 112;
+}
+.btn-outline-primary {
+    --bs-btn-color: var(--brand-action);
+    --bs-btn-border-color: var(--brand-action);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--brand-action);
+    --bs-btn-hover-border-color: var(--brand-action);
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #245f58;
+    --bs-btn-active-border-color: #245f58;
+}
+[data-bs-theme="dark"] .btn-outline-primary {
+    --bs-btn-color: var(--primary-color);
+    --bs-btn-border-color: var(--primary-color);
+}
 .btn-success { background: var(--success-color); border-color: var(--success-color); color: white;}
 .btn-info { background: var(--info-color); border-color: var(--info-color); color: white;}
-.btn-warning { background: var(--warning-color); border-color: var(--warning-color); color: var(--dark-color); }
+.btn-warning { background: var(--warning-color); border-color: var(--warning-color); color: #212529; }
 .btn-danger { background: var(--danger-color); border-color: var(--danger-color); color: white;}
 .btn-secondary { background: var(--secondary-color); border-color: var(--secondary-color); color: white;}
 
@@ -368,7 +392,7 @@ main {
     border-left-color: var(--success-color);
     color: #155724;
 }
-.dark-mode .alert-success {
+[data-bs-theme="dark"] .alert-success {
     background: #1f4726;
     border-color: #33613b;
     border-left-color: var(--success-color);
@@ -418,44 +442,20 @@ main {
 .loaded { opacity: 1; transform: translateY(0); }
 
 
-/* ===============================
-   DARK MODE - MODALES
-================================ */
+/* Bootstrap components inherit the same surface and border tokens. */
+.card, .modal-content { background-color: var(--card-bg); }
+.modal-content, .card, .app-table-head { border-color: var(--border-color); }
+.app-table-head { --bs-table-bg: var(--surface-muted); --bs-table-color: var(--text-color); }
+.table { --bs-table-bg: transparent; --bs-table-color: var(--text-color); --bs-table-border-color: var(--border-color); }
+.table-hover { --bs-table-hover-bg: rgba(57, 158, 145, 0.08); --bs-table-hover-color: var(--text-color); }
+[data-bs-theme="dark"] .modal-content { --bs-modal-bg: var(--card-bg); }
+[data-bs-theme="dark"] .modal-header, [data-bs-theme="dark"] .modal-footer { border-color: var(--border-color); }
+[data-bs-theme="dark"] .table-responsive { scrollbar-color: #536764 var(--card-bg); }
+[data-bs-theme="dark"] .alert-info { background: #193b3d; border-color: #386a6b; color: #d2eff0; }
+[data-bs-theme="dark"] .border-light { border-color: var(--border-color) !important; }
 
-body.dark-mode .modal-content {
-    background-color: #1e1e2d;
-    color: #e4e6ef;
-    border: 1px solid #2b2b40;
-}
-
-body.dark-mode .modal-header,
-body.dark-mode .modal-footer {
-    border-color: #2b2b40;
-}
-
-body.dark-mode .modal-header .modal-title {
-    color: #ffffff;
-}
-
-body.dark-mode .btn-close {
-    filter: invert(1);
-}
-
-body.dark-mode .modal-body input,
-body.dark-mode .modal-body textarea,
-body.dark-mode .modal-body select {
-    background-color: #2b2b40;
-    color: #e4e6ef;
-    border-color: #3f3f5f;
-}
-
-body.dark-mode .modal-body input::placeholder,
-body.dark-mode .modal-body textarea::placeholder {
-    color: #9da0b3;
-}
-
-body.dark-mode .modal-backdrop.show {
-    background-color: rgba(0, 0, 0, 0.85);
+@media (prefers-reduced-motion: reduce) {
+    body, .card, .stats-card { transition: none; animation: none; }
 }
 
 

@@ -15,7 +15,7 @@
         .scroll-container::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 10px; }
 
         .ticket-feed-item { border-left: 3px solid transparent; transition: background 0.2s; }
-        .ticket-feed-item:hover { background-color: #f8fafc; }
+        .ticket-feed-item:hover { background-color: var(--surface-muted); }
         .border-alta  { border-left-color: #dc3545 !important; }
         .border-media { border-left-color: #ffc107 !important; }
         .border-baja  { border-left-color: #198754 !important; }
@@ -37,7 +37,7 @@
                     <div class="card kpi-card border-0 shadow-sm">
                         <div class="card-body p-3 d-flex align-items-center justify-content-between">
                             <div>
-                                <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">{{ $label }}</small>
+                                <small class="text-body-secondary text-uppercase fw-bold" style="font-size:.65rem;">{{ $label }}</small>
                                 <h4 class="fw-bold mb-0">{{ number_format($value) }}</h4>
                             </div>
                             <div class="kpi-icon-shape {{ $bgClass }}"><i class="fas {{ $icon }}"></i></div>
@@ -58,7 +58,7 @@
                         <div class="mt-4 text-start small">
                             @foreach(['A' => 'primary', 'B' => 'info', 'C' => 'warning', 'D' => 'danger'] as $tipo => $col)
                                 <div class="d-flex justify-content-between mb-2">
-                                    <span class="text-muted">Formato {{ $tipo }}</span>
+                                    <span class="text-body-secondary">Formato {{ $tipo }}</span>
                                     <span class="badge bg-{{ $col }}-subtle text-{{ $col }} rounded-pill">
                                 {{ $formatosPorTipo[$tipo] ?? 0 }}
                             </span>
@@ -82,8 +82,8 @@
                             <div class="card-body p-0">
                                 <div class="table-responsive scroll-container">
                                     <table class="table table-hover align-middle mb-0" style="font-size:.85rem;">
-                                        <thead class="bg-light sticky-top">
-                                        <tr class="text-muted small">
+                                        <thead class="bg-body-tertiary sticky-top">
+                                        <tr class="text-body-secondary small">
                                             <th class="ps-3 py-2 border-0">Nombre</th>
                                             <th class="py-2 border-0">Progreso</th>
                                             <th class="text-center py-2 border-0">A/B/C/D</th>
@@ -129,11 +129,11 @@
                                     @forelse($ticketsRecientes as $tr)
                                         <div class="list-group-item ticket-feed-item border-0 border-bottom px-3 py-2 border-{{ $tr->prioridad }}">
                                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                                <span class="fw-bold text-dark small">#{{ $tr->folio }} - {{ \Illuminate\Support\Str::limit($tr->titulo, 38) }}</span>
-                                                <small class="text-muted" style="font-size:.65rem;">{{ $tr->created_at->diffForHumans() }}</small>
+                                                <span class="fw-bold text-body small">#{{ $tr->folio }} - {{ \Illuminate\Support\Str::limit($tr->titulo, 38) }}</span>
+                                                <small class="text-body-secondary" style="font-size:.65rem;">{{ $tr->created_at->diffForHumans() }}</small>
                                             </div>
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <small class="text-muted"><i class="fas fa-user-edit me-1"></i>{{ $tr->solicitante }}</small>
+                                                <small class="text-body-secondary"><i class="fas fa-user-edit me-1"></i>{{ $tr->solicitante }}</small>
                                                 <div class="d-flex gap-1">
                                             <span class="badge bg-secondary-subtle text-secondary rounded-pill" style="font-size:.55rem;">
                                                 {{ strtoupper($tr->estado) }}
@@ -145,7 +145,7 @@
                                             </div>
                                         </div>
                                     @empty
-                                        <div class="p-3 text-center text-muted small">Sin actividad reciente.</div>
+                                        <div class="p-3 text-center text-body-secondary small">Sin actividad reciente.</div>
                                     @endforelse
                                 </div>
                             </div>
@@ -167,8 +167,8 @@
                         <ul class="list-group list-group-flush px-2">
                             @foreach($materiales as $m)
                                 <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-0 border-0 border-bottom small">
-                                    <span class="text-dark"><i class="fas fa-tag me-2 text-muted"></i>{{ $m->nombre }}</span>
-                                    <span class="text-muted">{{ $m->unidad_sugerida }}</span>
+                                    <span class="text-body"><i class="fas fa-tag me-2 text-body-secondary"></i>{{ $m->nombre }}</span>
+                                    <span class="text-body-secondary">{{ $m->unidad_sugerida }}</span>
                                 </li>
                             @endforeach
                         </ul>
@@ -182,10 +182,10 @@
                     <div class="text-center p-3">
                         <h5 class="fw-bold mb-3 small">Sistema SEMAHN 2026</h5>
                         <div class="d-flex gap-3 justify-content-center">
-                            <div class="bg-white bg-opacity-25 px-3 py-2 rounded-3">
+                            <div class="bg-body bg-opacity-25 px-3 py-2 rounded-3">
                                 <h6 class="mb-0 fw-bold" id="reloj">--:--:--</h6>
                             </div>
-                            <div class="bg-white bg-opacity-25 px-3 py-2 rounded-3">
+                            <div class="bg-body bg-opacity-25 px-3 py-2 rounded-3">
                                 <h6 class="mb-0 fw-bold" id="fecha">--/--/----</h6>
                             </div>
                         </div>

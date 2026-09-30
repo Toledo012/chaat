@@ -12,7 +12,7 @@
             <i class="fas fa-ticket-alt text-primary fa-2x"></i>
             <div>
                 <h4 class="mb-0 fw-bold">Tickets</h4>
-                <p class="text-muted mb-0 small text-uppercase">Bandeja de mi departamento</p>
+                <p class="text-body-secondary mb-0 small text-uppercase">Bandeja de mi departamento</p>
             </div>
             <button type="button" class="btn btn-primary ms-auto shadow-sm fw-bold btn-sm px-4 rounded-pill"
                     data-bs-toggle="modal" data-bs-target="#modalCrearTicket">
@@ -26,7 +26,7 @@
                 <form method="GET" class="row g-2 align-items-center">
                     <div class="col-md-5">
                         <div class="input-group input-group-sm">
-                            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                            <span class="input-group-text bg-body border-end-0"><i class="fas fa-search text-body-secondary"></i></span>
                             <input type="text" name="buscar" class="form-control border-start-0"
                                    placeholder="Buscar por folio, título o solicitante..." value="{{ $qBuscar ?? '' }}">
                         </div>
@@ -61,13 +61,13 @@
 
         {{-- TABLA --}}
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 border-bottom">
-                <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-list me-2 text-primary"></i>Historial de Solicitudes</h6>
+            <div class="card-header bg-body py-3 border-bottom">
+                <h6 class="mb-0 fw-bold text-body"><i class="fas fa-list me-2 text-primary"></i>Historial de Solicitudes</h6>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light small text-uppercase text-muted">
+                        <thead class="app-table-head small text-uppercase text-body-secondary">
                         <tr>
                             <th class="ps-4">Folio</th>
                             <th>Título / Solicitante</th>
@@ -81,8 +81,8 @@
                             <tr>
                                 <td class="ps-4 fw-bold text-primary">#{{ $t->folio }}</td>
                                 <td>
-                                    <div class="fw-bold text-dark small text-truncate" style="max-width:250px;">{{ $t->titulo }}</div>
-                                    <div class="text-muted small"><i class="fas fa-user-edit me-1"></i>{{ $t->solicitante }}</div>
+                                    <div class="fw-bold text-body small text-truncate" style="max-width:250px;">{{ $t->titulo }}</div>
+                                    <div class="text-body-secondary small"><i class="fas fa-user-edit me-1"></i>{{ $t->solicitante }}</div>
                                 </td>
                                 <td class="text-center">
                                     @php
@@ -108,7 +108,7 @@
                                     </small>
                                 </td>
                                 <td class="small">
-                                    <div class="text-muted small">
+                                    <div class="text-body-secondary small">
                                         <i class="fas fa-calendar-plus me-1 text-primary small"></i>
                                         {{ \Carbon\Carbon::parse($t->created_at)->timezone('America/Mexico_City')->format('d/m/Y h:i A') }}
                                     </div>
@@ -129,7 +129,7 @@
                         @empty
                             <tr>
                                 <td colspan="5" class="text-center py-5">
-                                    <div class="text-muted opacity-50 small italic">
+                                    <div class="text-body-secondary opacity-50 small italic">
                                         <i class="fas fa-inbox fa-3x mb-3 d-block"></i> No has enviado solicitudes recientemente.
                                     </div>
                                 </td>
@@ -144,7 +144,7 @@
             <div id="ticketsDeptoModalsContainer"></div>
 
             @if($tickets->hasPages())
-                <div class="card-footer bg-white py-3 border-top-0 d-flex justify-content-center">
+                <div class="card-footer bg-body py-3 border-top-0 d-flex justify-content-center">
                     {!! $tickets->appends(request()->query())->links('pagination::bootstrap-5') !!}
                 </div>
             @endif
@@ -163,22 +163,22 @@
                     </div>
                     <div class="modal-body p-4 text-start">
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Título de la falla o requerimiento *</label>
+                            <label class="form-label small fw-bold text-body-secondary text-uppercase">Título de la falla o requerimiento *</label>
                             <input type="text" name="titulo" class="form-control shadow-sm border-light-subtle" required maxlength="255"
                                    placeholder="Ej: Problemas con el correo institucional">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Nombre del Solicitante *</label>
+                            <label class="form-label small fw-bold text-body-secondary text-uppercase">Nombre del Solicitante *</label>
                             <input type="text" name="solicitante" class="form-control shadow-sm border-light-subtle" required maxlength="150"
                                    value="{{ Auth::user()->nombre }}">
                         </div>
                         <div class="mb-0">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Descripción del problema (Máx. 200 caracteres) *</label>
+                            <label class="form-label small fw-bold text-body-secondary text-uppercase">Descripción del problema (Máx. 200 caracteres) *</label>
                             <textarea name="descripcion" class="form-control shadow-sm border-light-subtle" rows="4" required maxlength="200"
                                       placeholder="Describa brevemente lo ocurrido..."></textarea>
                         </div>
                     </div>
-                    <div class="modal-footer bg-light border-0">
+                    <div class="modal-footer bg-body-tertiary border-0">
                         <button type="submit" class="btn btn-success btn-sm fw-bold px-5 rounded-pill shadow-sm">Enviar Solicitud</button>
                     </div>
                 </form>
@@ -250,7 +250,7 @@
 
             if (!Array.isArray(tickets) || !tickets.length) {
                 tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5">
-                <div class="text-muted opacity-50 small italic">
+                <div class="text-body-secondary opacity-50 small italic">
                     <i class="fas fa-inbox fa-3x mb-3 d-block"></i> No has enviado solicitudes recientemente.
                 </div></td></tr>`;
                 return;
@@ -263,8 +263,8 @@
             <tr>
                 <td class="ps-4 fw-bold text-primary">#${escD(t.folio)}</td>
                 <td>
-                    <div class="fw-bold text-dark small text-truncate" style="max-width:250px;">${escD(t.titulo)}</div>
-                    <div class="text-muted small"><i class="fas fa-user-edit me-1"></i>${escD(t.solicitante)}</div>
+                    <div class="fw-bold text-body small text-truncate" style="max-width:250px;">${escD(t.titulo)}</div>
+                    <div class="text-body-secondary small"><i class="fas fa-user-edit me-1"></i>${escD(t.solicitante)}</div>
                 </td>
                 <td class="text-center">
                     <span class="badge ${estadoClassD(t.estado)} rounded-pill px-3 mb-1 small d-block mx-auto" style="width:fit-content;">
@@ -275,7 +275,7 @@
                     </small>
                 </td>
                 <td class="small">
-                    <div class="text-muted small"><i class="fas fa-calendar-plus me-1 text-primary small"></i>${fechaMXD(t.created_at)}</div>
+                    <div class="text-body-secondary small"><i class="fas fa-calendar-plus me-1 text-primary small"></i>${fechaMXD(t.created_at)}</div>
                     ${fechaCierre}
                 </td>
                 <td class="text-end pe-4">
@@ -305,25 +305,25 @@
                 <div class="modal fade" id="modalDetalle${t.id_ticket}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered shadow-lg">
                     <div class="modal-content border-0">
-                        <div class="modal-header bg-light border-bottom">
+                        <div class="modal-header bg-body-tertiary border-bottom">
                             <h6 class="modal-title fw-bold">Ticket #${escD(t.folio)}</h6>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body p-4 text-start">
                             <div class="mb-4">
-                                <h6 class="text-uppercase text-muted small fw-bold mb-1">Detalles de la Solicitud</h6>
-                                <h5 class="fw-bold text-dark">${escD(t.titulo)}</h5>
-                                <div class="bg-light p-3 rounded text-muted border small mb-0">
+                                <h6 class="text-uppercase text-body-secondary small fw-bold mb-1">Detalles de la Solicitud</h6>
+                                <h5 class="fw-bold text-body">${escD(t.titulo)}</h5>
+                                <div class="bg-body-tertiary p-3 rounded text-body-secondary border small mb-0">
                                     ${escD(t.descripcion ?? 'Sin descripción adicional.')}
                                 </div>
                             </div>
                             <div class="row g-3 mb-4">
                                 <div class="col-6">
-                                    <small class="text-muted d-block small fw-bold text-uppercase">Solicitante:</small>
+                                    <small class="text-body-secondary d-block small fw-bold text-uppercase">Solicitante:</small>
                                     <strong class="text-primary small"><i class="fas fa-user me-1 small"></i>${escD(t.solicitante)}</strong>
                                 </div>
                                 <div class="col-6 text-end">
-                                    <small class="text-muted d-block small fw-bold text-uppercase">Estado:</small>
+                                    <small class="text-body-secondary d-block small fw-bold text-uppercase">Estado:</small>
                                     <span class="badge ${estadoClassD(t.estado)} px-3 rounded-pill">
                                         ${escD(String(t.estado).toUpperCase())}
                                     </span>
@@ -381,19 +381,19 @@
                                 <input type="hidden" name="_method" value="PUT">
                                 <div class="modal-body p-4 text-start">
                                     <div class="mb-3">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Título de la Solicitud *</label>
+                                        <label class="form-label small fw-bold text-body-secondary text-uppercase">Título de la Solicitud *</label>
                                         <input type="text" name="titulo" class="form-control shadow-sm" required maxlength="255" value="${escD(t.titulo)}">
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Nombre del Solicitante *</label>
+                                        <label class="form-label small fw-bold text-body-secondary text-uppercase">Nombre del Solicitante *</label>
                                         <input type="text" name="solicitante" class="form-control shadow-sm" required maxlength="150" value="${escD(t.solicitante)}">
                                     </div>
                                     <div class="mb-0">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Descripción (Máx. 200 caracteres)</label>
+                                        <label class="form-label small fw-bold text-body-secondary text-uppercase">Descripción (Máx. 200 caracteres)</label>
                                         <textarea name="descripcion" class="form-control shadow-sm" rows="4" maxlength="200">${escD(t.descripcion ?? '')}</textarea>
                                     </div>
                                 </div>
-                                <div class="modal-footer bg-light border-0">
+                                <div class="modal-footer bg-body-tertiary border-0">
                                     <button type="button" class="btn btn-secondary btn-sm rounded-pill"
                                             data-bs-toggle="modal" data-bs-target="#modalDetalle${t.id_ticket}">
                                         Volver

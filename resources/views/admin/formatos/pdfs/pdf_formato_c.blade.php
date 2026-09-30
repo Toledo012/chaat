@@ -26,7 +26,7 @@
     <div class="text">
         <strong>SECRETARÍA DE MEDIO AMBIENTE E HISTORIA NATURAL</strong><br>
         UNIDAD DE APOYO ADMINISTRATIVO — ÁREA DE INFORMÁTICA<br>
-        <em>"2025, Año de Rosario Castellanos Figueroa"</em>
+        <x-leyenda-anual :fecha="$servicio->fecha" />
     </div>
     <div style="clear:both"></div>
 </div>

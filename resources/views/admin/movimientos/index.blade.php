@@ -16,7 +16,7 @@
                 <i class="fas fa-clipboard-list fa-lg text-primary"></i>
                 <div>
                     <h5 class="mb-0">Historial de Movimientos</h5>
-                    <small class="text-muted">
+                    <small class="text-body-secondary">
                         Registro de inserciones, modificaciones y eliminaciones
                     </small>
                 </div>
@@ -92,7 +92,7 @@
                 <tbody>
                     @forelse($movimientos as $mov)
                         <tr>
-                            <td class="text-muted">
+                            <td class="text-body-secondary">
                                 {{ $mov->fecha }}
                             </td>
 
@@ -131,7 +131,7 @@
                                     <summary class="text-primary" style="cursor:pointer">
                                         Ver datos
                                     </summary>
-                                    <pre class="mt-2 small text-muted">
+                                    <pre class="mt-2 small text-body-secondary">
 {{ json_encode([
     'antes' => $mov->datos_anteriores,
     'despues' => $mov->datos_nuevos
@@ -142,7 +142,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-4">
+                            <td colspan="6" class="text-center text-body-secondary py-4">
                                 No hay movimientos registrados
                             </td>
                         </tr>
@@ -153,7 +153,7 @@
 
         {{-- PAGINACIÓN --}}
         <div class="card-footer d-flex justify-content-between align-items-center">
-            <small class="text-muted">
+            <small class="text-body-secondary">
                 Mostrando {{ $movimientos->count() }} de {{ $movimientos->total() }} registros
             </small>
 

@@ -16,7 +16,7 @@
                 <i class="fa-solid fa-box text-primary fa-lg"></i>
                 <div>
                     <h5 class="mb-0">Materiales</h5>
-                    <small class="text-muted">
+                    <small class="text-body-secondary">
                         Catálogo de materiales disponibles para servicios
                     </small>
                 </div>
@@ -50,7 +50,7 @@
 
                             <td>
                                 <div class="fw-semibold">{{ $m->nombre }}</div>
-                                <small class="text-muted">Material registrado</small>
+                                <small class="text-body-secondary">Material registrado</small>
                             </td>
 
                             <td>
@@ -129,7 +129,7 @@
 
                     @empty
                         <tr>
-                            <td colspan="4" class="text-center text-muted py-4">
+                            <td colspan="4" class="text-center text-body-secondary py-4">
                                 <i class="fa-solid fa-circle-info me-1"></i>
                                 No hay materiales registrados
                             </td>

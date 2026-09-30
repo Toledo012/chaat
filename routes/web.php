@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Mail;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
@@ -11,6 +10,8 @@ use App\Http\Controllers\FormatoController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\DepartamentoController;
 use App\Http\Controllers\DeptoViewController;
+use App\Http\Controllers\ErrorController;
+use App\Http\Controllers\LeyendaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -141,45 +142,44 @@ Route::prefix('admin/formatos')
 */
 Route::prefix('admin/formatos')
     ->name('admin.formatos.')
+    ->middleware(['auth'])
     ->group(function () {
 
-        Route::get('/', [FormatoController::class, 'index'])->name('index');
-        Route::get('/create', [FormatoController::class, 'create'])->name('create');
+        // Captura, edición y reportes: solo Admin y Técnico (Usuario)
+        Route::middleware(['rol:Administrador,Usuario'])->group(function () {
 
-        // Editar / actualizar formato genérico
-        Route::get('/{tipo}/{id}/edit', [FormatoController::class, 'edit'])->name('edit');
-        Route::post('/{tipo}/{id}/update', [FormatoController::class, 'update'])->name('update');
+            Route::get('/', [FormatoController::class, 'index'])->name('index');
+            Route::get('/create', [FormatoController::class, 'create'])->name('create');
 
-        // Reporte general
-        Route::get('/reporte/general/pdf', [FormatoController::class, 'reporteGeneral'])->name('reporte.general');
+            // Editar / actualizar formato genérico (el controlador valida el dueño)
+            Route::get('/{tipo}/{id}/edit', [FormatoController::class, 'edit'])->name('edit');
+            Route::post('/{tipo}/{id}/update', [FormatoController::class, 'update'])->name('update');
 
-        // ── FORMATO A ──
-        Route::get('/a',              [FormatoController::class, 'formatoA'])->name('a');
-        Route::post('/a',             [FormatoController::class, 'storeA'])->name('a.store');
+            // Reporte general
+            Route::get('/reporte/general/pdf', [FormatoController::class, 'reporteGeneral'])->name('reporte.general');
+
+            Route::get('/a',  [FormatoController::class, 'formatoA'])->name('a');
+            Route::post('/a', [FormatoController::class, 'storeA'])->name('a.store');
+            Route::get('/b',  [FormatoController::class, 'formatoB'])->name('b');
+            Route::post('/b', [FormatoController::class, 'storeB'])->name('b.store');
+            Route::get('/c',  [FormatoController::class, 'formatoC'])->name('c');
+            Route::post('/c', [FormatoController::class, 'storeC'])->name('c.store');
+            Route::get('/d',  [FormatoController::class, 'formatoD'])->name('d');
+            Route::post('/d', [FormatoController::class, 'storeD'])->name('d.store');
+            Route::get('/r',  [FormatoController::class, 'formatoRecepcion'])->name('r');
+            Route::post('/r', [FormatoController::class, 'storeRecepcion'])->name('r.store');
+        });
+
+        // Preview y PDF: cualquier rol logueado (Departamento descarga los de sus tickets).
+        // El acceso por registro lo valida FormatoController::autorizarServicio().
         Route::get('/a/{id}/preview', [FormatoController::class, 'previewA'])->name('a.preview');
         Route::get('/a/{id}/pdf',     [FormatoController::class, 'generarPDFA'])->name('a.pdf');
-
-        // ── FORMATO B ──
-        Route::get('/b',              [FormatoController::class, 'formatoB'])->name('b');
-        Route::post('/b',             [FormatoController::class, 'storeB'])->name('b.store');
         Route::get('/b/{id}/preview', [FormatoController::class, 'previewB'])->name('b.preview');
         Route::get('/b/{id}/pdf',     [FormatoController::class, 'generarPDFB'])->name('b.pdf');
-
-        // ── FORMATO C ──
-        Route::get('/c',              [FormatoController::class, 'formatoC'])->name('c');
-        Route::post('/c',             [FormatoController::class, 'storeC'])->name('c.store');
         Route::get('/c/{id}/preview', [FormatoController::class, 'previewC'])->name('c.preview');
         Route::get('/c/{id}/pdf',     [FormatoController::class, 'generarPDFC'])->name('c.pdf');
-
-        // ── FORMATO D ──
-        Route::get('/d',              [FormatoController::class, 'formatoD'])->name('d');
-        Route::post('/d',             [FormatoController::class, 'storeD'])->name('d.store');
         Route::get('/d/{id}/preview', [FormatoController::class, 'previewD'])->name('d.preview');
         Route::get('/d/{id}/pdf',     [FormatoController::class, 'generarPDFD'])->name('d.pdf');
-
-        // ── FORMATO R / RECEPCIÓN ──
-        Route::get('/r',              [FormatoController::class, 'formatoRecepcion'])->name('r');
-        Route::post('/r',             [FormatoController::class, 'storeRecepcion'])->name('r.store');
         Route::get('/r/{id}/preview', [FormatoController::class, 'previewRecepcion'])->name('r.preview');
         Route::get('/r/{id}/pdf',     [FormatoController::class, 'generarPDFRecepcion'])->name('r.pdf');
     });
@@ -189,11 +189,12 @@ Route::prefix('admin/formatos')
 /*
 |--------------------------------------------------------------------------
 | ADMIN: MATERIALES
-| Sin permisos, pero bloqueado solo para Departamento
+| Sin permisos, pero bloqueado para Departamento (solo Admin y Técnico)
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin/materiales')
     ->name('admin.materiales.')
+    ->middleware(['auth', 'rol:Administrador,Usuario'])
     ->group(function () {
 
         Route::get('/', [MaterialController::class, 'index'])->name('index');
@@ -203,13 +204,18 @@ Route::prefix('admin/materiales')
         Route::get('/{id}/edit', [MaterialController::class, 'edit'])->name('edit');
         Route::put('/{id}/edit', [MaterialController::class, 'update'])->name('update');
 
-        Route::delete('/{id}', [MaterialController::class, 'destroy'])->name('destroy');
-
+        // Va antes de /{id} para que no la capture como si fuera un id
         Route::delete('/eliminar-multiples', [MaterialController::class, 'destroyMultiple'])
             ->name('destroy.multiple');
+
+        Route::delete('/{id}', [MaterialController::class, 'destroy'])
+            ->whereNumber('id')
+            ->name('destroy');
     });
 
+// Quick-store: cualquier usuario logueado puede crear (máx. 30 por minuto)
 Route::post('materiales/quick-store', [MaterialController::class, 'quickStore'])
+    ->middleware(['auth', 'throttle:30,1'])
     ->name('admin.materiales.quickStore');
 /*
 |--------------------------------------------------------------------------
@@ -222,6 +228,33 @@ Route::prefix('admin')
         Route::resource('departamentos', DepartamentoController::class)
             ->names('admin.departamentos')
             ->except(['show', 'destroy']);
+    });
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN: LEYENDA ANUAL DEL ENCABEZADO DE FORMATOS (solo Admin real)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('admin/leyendas')
+    ->name('admin.leyendas.')
+    ->middleware(['auth', 'rol:Administrador'])
+    ->group(function () {
+        Route::get('/', [LeyendaController::class, 'index'])->name('index');
+        Route::post('/', [LeyendaController::class, 'guardar'])->name('guardar');
+    });
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN: FALLOS DEL SISTEMA (solo Admin real)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('admin/errores')
+    ->name('admin.errores.')
+    ->middleware(['auth', 'rol:Administrador'])
+    ->group(function () {
+        Route::get('/', [ErrorController::class, 'index'])->name('index');
+        Route::get('/{id}', [ErrorController::class, 'show'])->whereNumber('id')->name('show');
+        Route::put('/{id}/atender', [ErrorController::class, 'atender'])->whereNumber('id')->name('atender');
     });
 
 /*
@@ -320,36 +353,8 @@ Route::prefix('departamento/tickets')
         Route::get('/data', [\App\Http\Controllers\DeptTicketController::class, 'data'])
             ->name('data');
     });
+
+// Quick-store: cualquier usuario logueado puede crear (máx. 30 por minuto)
 Route::post('/admin/departamentos/quick-store', [\App\Http\Controllers\DepartamentoController::class, 'quickStore'])
+    ->middleware(['auth', 'throttle:30,1'])
     ->name('admin.departamentos.quickStore');
-
-/*
-|--------------------------------------------------------------------------
-| TEST MAIL (DEV)
-|--------------------------------------------------------------------------
-*/
-Route::get('/test-mail', function () {
-    Mail::raw('Hola, este es un correo de prueba desde Laravel SEMAHN', function ($msg) {
-        $msg->to('TU_CORREO_DESTINO@gmail.com')
-            ->subject('Prueba de correo - SEMAHN Tickets');
-    });
-
-    return 'Correo enviado (si no llegó, revisa logs).';
-});
-
-/*
-Route::post('/departamentos/quick-store', [DepartamentoController::class, 'quickStore'])
-    ->name('admin.departamentos.quickStore');
-*/
-Route::get('/test-mail2', function () {
-    Mail::raw('PRUEBA DIRECTA', function ($message) {
-        $message->to([
-            'semahn.test.2026@gmail.com',
-            'kevinsanchezalvarez23@gmail.com',
-            'masacregamer23@gmail.com',
-        ])->subject('PRUEBA DIRECTA LARAVEL');
-    });
-    return 'Correo enviado (si no llegó, revisa logs).';
-
-});
-

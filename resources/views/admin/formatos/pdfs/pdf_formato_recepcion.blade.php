@@ -133,7 +133,7 @@
             <img src="{{ public_path('images/logo_semahn2.png') }}" alt="SEMAHN">
             <strong>SECRETARÍA DE MEDIO AMBIENTE E HISTORIA NATURAL</strong><br>
             UNIDAD DE APOYO ADMINISTRATIVO — ÁREA DE INFORMÁTICA<br>
-            <em>"2025, Año de Rosario Castellanos Figueroa"</em>
+            <x-leyenda-anual :fecha="$servicio->fecha" />
         </div>
 
         <div class="titulo">Formato de Recepción</div>

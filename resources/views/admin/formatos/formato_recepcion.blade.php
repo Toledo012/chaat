@@ -4,10 +4,10 @@
 
 @section('styles')
     <style>
-        .card-header { background-color: #399e91; color: white; font-weight: 600; }
+        .card-header { background-color: var(--brand-action); color: white; font-weight: 600; }
         .form-control, .form-select { border-radius: 8px; }
-        .btn-primary { background-color: #399e91; border-color: #399e91; }
-        .btn-primary:hover { background-color: #2f847a; border-color: #2f847a; }
+        .btn-primary { background-color: var(--brand-action); border-color: var(--brand-action); }
+        .btn-primary:hover { background-color: #245f58; border-color: #245f58; }
         .alert-info { background-color: #d1f0eb; border-color: #399e91; color: #25685d; font-weight: 500; }
     </style>
 @endsection
@@ -32,7 +32,7 @@
 
                 <div class="row mb-4">
                     <div class="col-md-6">
-                        <label class="form-label small fw-bold text-muted text-uppercase">
+                        <label class="form-label small fw-bold text-body-secondary text-uppercase">
                             Departamento <span class="text-danger">*</span>
                         </label>
 
@@ -63,7 +63,7 @@
                                     <i class="fas fa-plus me-1"></i> Nuevo
                                 </button>
                             </div>
-                            <small class="text-muted d-block mt-1">Si no existe, crea uno aquí mismo.</small>
+                            <small class="text-body-secondary d-block mt-1">Si no existe, crea uno aquí mismo.</small>
                         @endif
 
                         @error('id_departamento')
@@ -107,7 +107,7 @@
                         <label class="form-label">Técnico responsable</label>
                         <input name="firma_tecnico"
                                readonly
-                               class="form-control bg-light"
+                               class="form-control bg-body-tertiary"
                                value="{{ Auth::user()->usuario->nombre ?? Auth::user()->name }}">
                     </div>
                 </div>
@@ -134,11 +134,11 @@
                         @csrf
                         <div class="modal-body p-4">
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Nombre *</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Nombre *</label>
                                 <input type="text" name="nombre" class="form-control shadow-sm" required maxlength="50">
                             </div>
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Descripción</label>
+                                <label class="form-label small fw-bold text-body-secondary text-uppercase">Descripción</label>
                                 <input type="text" name="descripcion" class="form-control shadow-sm" maxlength="100">
                             </div>
                         </div>

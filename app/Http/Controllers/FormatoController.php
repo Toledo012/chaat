@@ -89,6 +89,51 @@
         private MaterialesService $materiales
     ) {}
 
+    // =============================
+    // ACCESO POR REGISTRO (evita ver formatos ajenos cambiando el id en la URL)
+    // Admin: todos | Técnico: los suyos o los de tickets asignados a él
+    // Departamento: los de tickets que él creó
+    // =============================
+    private function autorizarServicio($idServicio): void
+    {
+        $cuenta = Auth::user();
+
+        if ($cuenta->isAdmin()) {
+            return;
+        }
+
+        $idServicio = (int) $idServicio;
+
+        if ($cuenta->isUser()) {
+            $esSuyo = DB::table('servicios')
+                ->where('id_servicio', $idServicio)
+                ->where('id_usuario', $cuenta->id_usuario)
+                ->exists();
+
+            $esDeTicketAsignado = DB::table('tickets')
+                ->where('id_servicio', $idServicio)
+                ->where('asignado_a', $cuenta->id_cuenta)
+                ->exists();
+
+            if ($esSuyo || $esDeTicketAsignado) {
+                return;
+            }
+        }
+
+        if ($cuenta->isDepartamento()) {
+            $esDeSuTicket = DB::table('tickets')
+                ->where('id_servicio', $idServicio)
+                ->where('creado_por', $cuenta->id_cuenta)
+                ->exists();
+
+            if ($esDeSuTicket) {
+                return;
+            }
+        }
+
+        abort(403, 'No tienes acceso a este formato.');
+    }
+
     public function formatoA(Request $request)
     {
         $departamentos = Departamento::where('activo', 1)->get();
@@ -345,7 +390,6 @@
 
     public function storeB(Request $request)
     {
-        try {
             $data = $request->validate([
                 'id_departamento' => 'required|exists:departamentos,id_departamento',
 
@@ -472,11 +516,6 @@
                 return redirect()->route('admin.formatos.index')
                     ->with('success', 'Formato B guardado correctamente 🫡');
             });
-
-        } catch (\Throwable $e) {
-            \Log::error('Error en storeB: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-            dd('Error en storeB:', $e->getMessage());
-        }
     }
 
 
@@ -730,6 +769,8 @@
     // =============================
     public function previewA($id)
     {
+        $this->autorizarServicio($id);
+
         $servicio = DB::table('servicios')
             ->leftJoin('formato_a', 'formato_a.id_servicio', '=', 'servicios.id_servicio')
             ->select(
@@ -766,6 +807,8 @@
 
     public function previewB($id)
     {
+        $this->autorizarServicio($id);
+
         // Obtener datos principales del servicio + formato B
         $servicio = DB::table('servicios')
             ->leftJoin('formato_b', 'formato_b.id_servicio', '=', 'servicios.id_servicio')
@@ -827,6 +870,8 @@
     // preview formato c
     public function previewC($id)
     {
+        $this->autorizarServicio($id);
+
         $servicio = DB::table('servicios')
             ->leftJoin('formato_c', 'formato_c.id_servicio', '=', 'servicios.id_servicio')
             ->where('servicios.id_servicio', $id)
@@ -874,6 +919,8 @@
 
     public function previewD($id)
     {
+        $this->autorizarServicio($id);
+
         $servicio = DB::table('servicios')
             ->leftJoin('formato_d', 'formato_d.id_servicio', '=', 'servicios.id_servicio')
             ->where('servicios.id_servicio', $id)
@@ -907,6 +954,8 @@
 
         public function previewRecepcion($id)
         {
+            $this->autorizarServicio($id);
+
             $servicio = DB::table('servicios')
                 ->leftJoin('formato_recepcion', 'formato_recepcion.id_servicio', '=', 'servicios.id_servicio')
                 ->where('servicios.id_servicio', $id)
@@ -936,6 +985,8 @@
 
     public function generarPDFA($id)
     {
+        $this->autorizarServicio($id);
+
         $servicio = DB::table('servicios')
             ->leftJoin('formato_a', 'formato_a.id_servicio', '=', 'servicios.id_servicio')
             ->select(
@@ -979,6 +1030,8 @@
 
     public function generarPDFB($id)
     {
+        $this->autorizarServicio($id);
+
         $servicio = DB::table('servicios')
             ->leftJoin('formato_b', 'formato_b.id_servicio', '=', 'servicios.id_servicio')
             ->where('servicios.id_servicio', $id)
@@ -1008,6 +1061,8 @@
 
     public function generarPDFC($id)
     {
+        $this->autorizarServicio($id);
+
         $servicio = DB::table('servicios')
             ->leftJoin('formato_c', 'formato_c.id_servicio', '=', 'servicios.id_servicio')
             ->where('servicios.id_servicio', $id)
@@ -1037,6 +1092,8 @@
     //pdf formato d
     public function generarPDFD($id)
     {
+        $this->autorizarServicio($id);
+
         $servicio = DB::table('servicios')
             ->leftJoin('formato_d', 'formato_d.id_servicio', '=', 'servicios.id_servicio')
             ->where('servicios.id_servicio', $id)
@@ -1056,6 +1113,8 @@
 
         public function generarPDFRecepcion($id)
         {
+            $this->autorizarServicio($id);
+
             $servicio = DB::table('servicios')
                 ->leftJoin('formato_recepcion', 'formato_recepcion.id_servicio', '=', 'servicios.id_servicio')
                 ->where('servicios.id_servicio', $id)
@@ -1084,6 +1143,8 @@
     //editar FORMATO
     public function edit($tipo, $id)
     {
+        $this->autorizarServicio($id);
+
         $servicio = DB::table('servicios')->where('id_servicio', $id)->first();
 
         if (!$servicio) abort(404);
@@ -1139,6 +1200,8 @@
     // ACTUALIZAR FORMATO
     public function update(Request $request, $tipo, $id)
     {
+        $this->autorizarServicio($id);
+
         $data = $request->except('_token');
 
         switch (strtoupper($tipo)) {

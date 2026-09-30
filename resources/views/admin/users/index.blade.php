@@ -8,9 +8,9 @@
 {{-- ======= ESTILOS ESPECÍFICOS ======= --}}
 @section('styles')
 <style>
-    .user-avatar { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background-color: #f0f7f6; color: #399e91; font-weight: bold; border: 1px solid #d1e7e4; }
-    .modal-label-header { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #495057; margin-bottom: 0.2rem; display: block; }
-    .permission-group-title { font-size: 0.85rem; font-weight: bold; color: #399e91; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 10px; }
+    .user-avatar { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background-color: var(--surface-muted); color: var(--primary-color); font-weight: bold; border: 1px solid var(--border-color); }
+    .modal-label-header { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--secondary-color); margin-bottom: 0.2rem; display: block; }
+    .permission-group-title { font-size: 0.85rem; font-weight: bold; color: var(--primary-color); border-bottom: 1px solid var(--border-color); padding-bottom: 5px; margin-bottom: 10px; }
     .input-group-text { cursor: pointer; }
 </style>
 @endsection
@@ -41,7 +41,7 @@
     <i class="fas fa-users-cog text-primary fa-2x"></i>
     <div>
         <h4 class="mb-0 fw-bold">Usuarios</h4>
-        <p class="text-muted mb-0 small text-uppercase">Bandeja principal de gestión de personal</p>
+        <p class="text-body-secondary mb-0 small text-uppercase">Bandeja principal de gestión de personal</p>
     </div>
     @if(Auth::user()->puedeCrearUsuarios())
         <button class="btn btn-primary ms-auto shadow-sm fw-bold btn-sm px-4 rounded-pill" data-bs-toggle="modal" data-bs-target="#createUserModal">
@@ -55,7 +55,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light small text-uppercase text-muted">
+                <thead class="app-table-head small text-uppercase text-body-secondary">
                     <tr>
                         <th class="ps-4">Perfil / Datos</th>
                         <th>Departamento / Cargo</th>
@@ -86,21 +86,21 @@
                             <div class="d-flex align-items-center gap-3">
                                 <div class="user-avatar shadow-sm border">{{ strtoupper(substr($usuario->nombre, 0, 1)) }}</div>
                                 <div>
-                                    <div class="fw-bold text-dark small">{{ $usuario->nombre }} @if($usuario->id_usuario == 1) <span class="badge bg-danger ms-1" style="font-size:0.5rem">SUPER</span> @endif</div>
-                                    <div class="text-muted small" style="font-size: 0.7rem;">{{ $usuario->email }}</div>
+                                    <div class="fw-bold text-body small">{{ $usuario->nombre }} @if($usuario->id_usuario == 1) <span class="badge bg-danger ms-1" style="font-size:0.5rem">SUPER</span> @endif</div>
+                                    <div class="text-body-secondary small" style="font-size: 0.7rem;">{{ $usuario->email }}</div>
                                 </div>
                             </div>
                         </td>
                         <td>
-                            <div class="small fw-semibold text-dark">{{ $usuario->departamentos->nombre ?? 'N/A' }}</div>
-                            <div class="text-muted small" style="font-size: 0.75rem;">{{ $usuario->puesto }} @if($usuario->extension) <span class="ms-1 border-start ps-1 text-primary fw-bold">Ext. {{ $usuario->extension }}</span> @endif</div>
+                            <div class="small fw-semibold text-body">{{ $usuario->departamentos->nombre ?? 'N/A' }}</div>
+                            <div class="text-body-secondary small" style="font-size: 0.75rem;">{{ $usuario->puesto }} @if($usuario->extension) <span class="ms-1 border-start ps-1 text-primary fw-bold">Ext. {{ $usuario->extension }}</span> @endif</div>
                         </td>
                         <td>
                             @if($usuario->cuenta)
-                                <span class="badge bg-white text-primary border border-primary-subtle px-2">{{ $usuario->cuenta->username }}</span><br>
+                                <span class="badge bg-body text-primary border border-primary-subtle px-2">{{ $usuario->cuenta->username }}</span><br>
                                 @php $r = match($usuario->cuenta->id_rol) { 1 => ['Admin', 'bg-danger'], 3 => ['Depto', 'bg-dark text-white'], default => ['Usuario', 'bg-secondary text-white'] }; @endphp
                                 <span class="badge {{ $r[1] }} rounded-pill mt-1" style="font-size: 0.6rem;">{{ $r[0] }}</span>
-                            @else <span class="badge bg-light text-muted border small fw-normal">Sin cuenta activa</span> @endif
+                            @else <span class="badge bg-body-tertiary text-body-secondary border small fw-normal">Sin cuenta activa</span> @endif
                         </td>
                         <td class="text-center">
                             @if($usuario->cuenta) <span class="badge {{ $usuario->cuenta->estado == 'activo' ? 'bg-success' : 'bg-secondary' }} rounded-pill px-3" style="font-size: 0.65rem;">{{ strtoupper($usuario->cuenta->estado) }}</span> @endif
@@ -126,7 +126,7 @@
 <div class="modal fade" id="modalGestionGlobal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-light border-bottom">
+            <div class="modal-header bg-body-tertiary border-bottom">
                 <h6 class="modal-title fw-bold" id="gestionTitle">Administrar Perfil</h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -233,7 +233,7 @@
                             <label class="modal-label-header">Contraseña *</label>
                             <div class="input-group input-group-sm">
                                 <input type="password" class="form-control shadow-sm" name="password" id="passInputNew" required>
-                                <span class="input-group-text bg-white" onclick="togglePass('passInputNew')"><i class="fas fa-eye"></i></span>
+                                <span class="input-group-text bg-body" onclick="togglePass('passInputNew')"><i class="fas fa-eye"></i></span>
                             </div>
                         </div>
                     </div>
@@ -258,7 +258,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer bg-light border-0">
+                <div class="modal-footer bg-body-tertiary border-0">
                     <button type="submit" class="btn btn-primary btn-sm fw-bold px-4 rounded-pill shadow-sm">Guardar Registro</button>
                 </div>
             </form>
@@ -397,10 +397,10 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <label class="form-check-label small" for="prefConcluidos">Tickets concluidos</label>
                             </div>
                         </div>
-                        <small class="text-muted d-block mt-1" style="font-size:0.7rem;">Desmarca para dejar de recibir ese tipo de correo. Por defecto todos están activos.</small>
+                        <small class="text-body-secondary d-block mt-1" style="font-size:0.7rem;">Desmarca para dejar de recibir ese tipo de correo. Por defecto todos están activos.</small>
                     </div>` : ''}
                 </div>
-                <div class="modal-footer border-0 bg-light"><button type="submit" class="btn btn-primary btn-sm fw-bold px-3 shadow-sm">Guardar Cambios</button></div>
+                <div class="modal-footer border-0 bg-body-tertiary"><button type="submit" class="btn btn-primary btn-sm fw-bold px-3 shadow-sm">Guardar Cambios</button></div>
             </form>
         `;
         document.getElementById('editModalContent').innerHTML = html;
@@ -441,7 +441,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer border-0 bg-light"><button type="submit" class="btn btn-info btn-sm fw-bold px-3 text-white shadow-sm">Actualizar</button></div>
+                <div class="modal-footer border-0 bg-body-tertiary"><button type="submit" class="btn btn-info btn-sm fw-bold px-3 text-white shadow-sm">Actualizar</button></div>
             </form>
         `;
         document.getElementById('permisosModalContent').innerHTML = html;
@@ -458,7 +458,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <i class="fas fa-exclamation-triangle text-danger fa-3x mb-3"></i>
                 <p>¿Deseas eliminar a <b>${tr.dataset.nombre}</b> permanentemente?</p>
             </div>
-            <div class="modal-footer border-0 bg-light">
+            <div class="modal-footer border-0 bg-body-tertiary">
                 <form action="${baseUrl}/${userId}" method="POST">@csrf @method('DELETE')<button class="btn btn-danger btn-sm px-4 shadow-sm">Eliminar Ahora</button></form>
             </div>
         `;
