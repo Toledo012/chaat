@@ -55,7 +55,7 @@
 
 
                             <td>
-                                <div class="fw-semibold">{{ $dep->nombre }}</div>
+                                <div class="fw-semibold text-break">{{ $dep->nombre }}</div>
                                 <small class="text-body-secondary">
                                     {{ $dep->descripcion ?? 'Sin descripción' }}
                                 </small>
@@ -120,6 +120,7 @@
                                                        name="nombre"
                                                        value="{{ $dep->nombre }}"
                                                        class="form-control"
+                                                       maxlength="300"
                                                        required>
                                             </div>
 
@@ -243,6 +244,7 @@
                         <input type="text"
                                name="nombre"
                                class="form-control"
+                               maxlength="300"
                                required>
                     </div>
 

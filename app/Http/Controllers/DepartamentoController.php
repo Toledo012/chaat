@@ -26,7 +26,7 @@ class DepartamentoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre' => 'required|string|max:50|unique:departamentos,nombre',
+            'nombre' => 'required|string|max:300|unique:departamentos,nombre',
         ]);
 
         Departamento::create($request->only('nombre','descripcion','activo'));
@@ -46,7 +46,7 @@ class DepartamentoController extends Controller
 public function update(Request $request, Departamento $departamento)
 {
     $request->validate([
-        'nombre' => 'required|string|max:50|unique:departamentos,nombre,'
+        'nombre' => 'required|string|max:300|unique:departamentos,nombre,'
             . $departamento->id_departamento . ',id_departamento',
     ]);
 
@@ -75,7 +75,7 @@ public function update(Request $request, Departamento $departamento)
         }
 
         $data = $request->validate([
-            'nombre' => 'required|string|max:250|unique:departamentos,nombre',
+            'nombre' => 'required|string|max:300|unique:departamentos,nombre',
             'descripcion' => 'nullable|string|max:255',
             'activo' => 'nullable|boolean',
         ]);

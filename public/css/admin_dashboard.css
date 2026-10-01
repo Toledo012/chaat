@@ -81,7 +81,9 @@ a, a:hover {
     z-index: 1000;
     border-right: 1px solid var(--border-color);
     border-radius: 0;
+    overflow-y: auto;
 }
+.sidebar-close, .sidebar-backdrop { display: none; }
 
 [data-bs-theme="dark"] .sidebar {
     background: var(--sidebar-bg-dark);
@@ -234,7 +236,28 @@ a, a:hover {
     border-radius: 0 0 var(--border-radius) var(--border-radius);
     border-bottom: 2px solid var(--accent-color);
     transition: margin-left 0.3s ease, background 0.3s ease, color 0.3s ease;
+    flex-wrap: wrap;
+    gap: .75rem;
 }
+
+.header-title-group { flex: 1 1 22rem; min-width: 0; gap: .75rem; }
+.header-title-text { min-width: 0; }
+.header-actions { flex: 0 0 auto; }
+.header-clock {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex: none;
+    margin-left: auto;
+    padding: .35rem .65rem;
+    border: 1px solid rgba(255, 255, 255, .27);
+    border-radius: .65rem;
+    background: rgba(255, 255, 255, .1);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.25;
+}
+.header-clock-time { color: #fff; font-size: .9rem; font-weight: 700; letter-spacing: .02em; }
+.header-clock-date { color: rgba(255, 255, 255, .85); font-size: .7rem; }
 
 [data-bs-theme="dark"] .admin-header {
     background: var(--header-bg-dark);
@@ -402,14 +425,21 @@ main {
 /* ====== RESPONSIVE MEJORADO ====== */
 @media (max-width: 992px) {
     .sidebar {
-        transform: translateX(-260px);
+        width: min(280px, calc(100vw - 3rem));
+        transform: translateX(-100%);
     }
     .sidebar.show {
         transform: translateX(0);
     }
+    .sidebar-close { display: block; position: absolute; top: .75rem; right: .75rem; z-index: 1; }
+    .sidebar-backdrop:not([hidden]) { display: block; position: fixed; inset: 0; z-index: 999; background: rgba(5, 14, 16, .62); }
+    body.navigation-open { overflow: hidden; }
     .admin-header, main {
         margin-left: 0 !important;
     }
+    .header-title-group { flex: 1 1 100%; min-width: 0; }
+    .header-actions { flex: 1 1 100%; justify-content: space-between; min-width: 0; }
+    .admin-header h1, .admin-header .subtitle { overflow-wrap: anywhere; }
     .quick-actions .btn {
         min-height: 80px;
         margin-bottom: 1rem;
@@ -428,6 +458,16 @@ main {
     main {
         padding: 1rem;
     }
+}
+@media (max-width: 575.98px) {
+    .header-actions { gap: .5rem !important; }
+    .admin-header .subtitle { display: none; }
+    .admin-header .user-info { max-width: 32vw; padding: .4rem .55rem; }
+    .admin-header .user-info span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .header-title-group { gap: .5rem; }
+    .header-title-text { flex: 1 1 auto; }
+    .header-clock { padding: .3rem .45rem; }
+    main { padding: .75rem; }
 }
 
 /* ====== ANIMACIONES ADICIONALES (Se conservan) ====== */

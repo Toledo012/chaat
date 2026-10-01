@@ -20,7 +20,8 @@
 <body>
 
     {{-- ===== SIDEBAR ===== --}}
-    <nav class="sidebar" id="navigation">
+    <nav class="sidebar" id="navigation" aria-label="Navegación principal">
+        <button type="button" id="sidebarClose" class="sidebar-close btn btn-sm btn-outline-secondary" aria-label="Cerrar menú"><i class="fas fa-xmark" aria-hidden="true"></i></button>
         <div class="logo">
             <a href="{{ route('admin.dashboard') }}">
                 <img src="{{ asset('images/logo_semahn2.png') }}" alt="Logo del Sistema" class="logo">
@@ -123,23 +124,25 @@
 
 
     </nav>
+    <div id="sidebarBackdrop" class="sidebar-backdrop" hidden></div>
 
 
 
 
     {{-- ===== HEADER ===== --}}
     <header class="admin-header d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center">
-            <button id="sidebarToggle" class="btn btn-sm text-white me-3" title="Contraer/Expandir">
+        <div class="header-title-group d-flex align-items-center">
+            <button type="button" id="sidebarToggle" class="btn btn-sm text-white" aria-controls="navigation" aria-expanded="true" aria-label="Contraer menú">
                 <i class="fas fa-bars fa-lg"></i>
             </button>
-            <div>
+            <div class="header-title-text">
                 <h1>@yield('header_title', 'Panel de Administración')</h1>
                 <p class="subtitle mb-0">@yield('header_subtitle', 'Control total del Sistema de Formatos Digitales')</p>
             </div>
+            @include('partials.header-clock')
         </div>
 
-        <div class="d-flex align-items-center gap-3">
+        <div class="header-actions d-flex align-items-center gap-3">
             <button type="button" id="darkModeToggle" class="btn btn-sm btn-outline-light" aria-label="Activar modo oscuro" aria-pressed="false">
                 <i class="fas fa-moon"></i>
             </button>
@@ -170,25 +173,8 @@
     {{-- ===== SCRIPTS ===== --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('navigation');
-            const toggleButton = document.getElementById('sidebarToggle');
-
-            // === Sidebar persistente ===
-            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (isCollapsed && sidebar) {
-                sidebar.classList.add('collapsed');
-            }
-
-            // Toggle sidebar
-            toggleButton?.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-            });
-
-        });
-    </script>
+    <script src="{{ asset('js/navigation.js') }}"></script>
+    <script src="{{ asset('js/header-clock.js') }}"></script>
 
     @yield('scripts')
 </body>

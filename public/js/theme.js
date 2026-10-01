@@ -35,6 +35,7 @@
                 // Keep the chosen theme for this page even without storage.
             }
             renderToggle();
+            document.dispatchEvent(new CustomEvent('themechange', { detail: { theme: dark ? 'dark' : 'light' } }));
         });
     });
 })();

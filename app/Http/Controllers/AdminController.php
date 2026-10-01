@@ -12,6 +12,7 @@ use App\Models\Departamento;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
 
 class AdminController extends Controller
 {
@@ -25,12 +26,23 @@ class AdminController extends Controller
             return redirect()->route('user.dashboard');
         }
 
+        $anioActual = now()->year;
+        $request->validate([
+            'anio' => "nullable|integer|between:2000,{$anioActual}",
+            'mes' => 'nullable|integer|between:0,12',
+        ]);
+        $anio = (int) $request->input('anio', $anioActual);
+        $mes = $request->has('mes')
+            ? (int) $request->input('mes')
+            : ($anio === $anioActual ? now()->month : 0);
+        $mesReferencia = $mes ?: ($anio === $anioActual ? now()->month : 12);
+
         // ── KPIs ──────────────────────────────────────────────
         $stats = [
             'total_usuarios'   => DB::table('usuarios_formatos')->count(),
             'total_servicios'  => DB::table('servicios')->count(),
             'cuentas_activas'  => DB::table('cuentas')->where('estado', 'activo')->count(),
-            'tickets_abiertos' => DB::table('tickets')->where('estado', 'nuevo')->count(),
+            'tickets_abiertos' => DB::table('tickets')->whereNotIn('estado', ['completado', 'cancelado'])->count(),
         ];
 
         // ── Últimos 5 materiales ───────────────────────────────
@@ -40,10 +52,54 @@ class AdminController extends Controller
         $ticketsRecientes = \App\Models\Ticket::orderBy('created_at', 'desc')->limit(5)->get();
 
         // ── Distribución formatos (gráfica doughnut) ───────────
-        $formatosPorTipo = DB::table('servicios')
+        $queryFormatos = DB::table('servicios')->whereYear('fecha', $anio);
+        if ($mes > 0) {
+            $queryFormatos->whereMonth('fecha', $mes);
+        }
+        $formatosPorTipo = $queryFormatos
             ->select('tipo_formato', DB::raw('COUNT(*) as total'))
             ->groupBy('tipo_formato')
             ->pluck('total', 'tipo_formato');
+        $tiposFormato = ['A', 'B', 'C', 'D'];
+        if (($formatosPorTipo['R'] ?? 0) > 0) {
+            $tiposFormato[] = 'R';
+        }
+        $totalFormatos = $formatosPorTipo->sum();
+        $etiquetasFormato = array_map(fn ($tipo) => "Formato {$tipo}", $tiposFormato);
+        $datosFormato = array_map(fn ($tipo) => (int) ($formatosPorTipo[$tipo] ?? 0), $tiposFormato);
+        $coloresFormato = array_map(fn ($tipo) => [
+            'A' => '#399e91', 'B' => '#65afbd', 'C' => '#c8a457',
+            'D' => '#9a364d', 'R' => '#788a8b',
+        ][$tipo], $tiposFormato);
+
+        $primerTicket = DB::table('tickets')->min('created_at');
+        $primerServicio = DB::table('servicios')->min('fecha');
+        $aniosConDatos = array_filter([
+            $primerTicket ? Carbon::parse($primerTicket)->year : null,
+            $primerServicio ? Carbon::parse($primerServicio)->year : null,
+        ]);
+        $anioMin = max(2000, min($anio, ...($aniosConDatos ?: [$anioActual])));
+
+        // Dos años de tickets en una sola lectura, agrupados por mes sin SQL específico de un motor.
+        $ticketsPorMes = [
+            $anio - 1 => array_fill(1, 12, 0),
+            $anio => array_fill(1, 12, 0),
+        ];
+        $desde = Carbon::create($anio - 1, 1, 1)->startOfDay();
+        $hasta = Carbon::create($anio, 12, 31)->endOfDay();
+        foreach (DB::table('tickets')->whereBetween('created_at', [$desde, $hasta])->select('created_at')->cursor() as $ticket) {
+            $fecha = Carbon::parse($ticket->created_at);
+            $ticketsPorMes[$fecha->year][$fecha->month]++;
+        }
+        $ticketsMes = $ticketsPorMes[$anio][$mesReferencia];
+        $ticketsMesAnterior = $mesReferencia === 1
+            ? $ticketsPorMes[$anio - 1][12]
+            : $ticketsPorMes[$anio][$mesReferencia - 1];
+        $ticketsMismoMesAnterior = $ticketsPorMes[$anio - 1][$mesReferencia];
+        $ticketsActuales = array_values($ticketsPorMes[$anio]);
+        $ticketsAnteriores = array_values($ticketsPorMes[$anio - 1]);
+        $ticketsAnio = array_sum($ticketsActuales);
+        $ticketsAnioAnterior = array_sum($ticketsAnteriores);
 
         // ── Productividad del equipo (top 5) ───────────────────
         $maxServicios = DB::table('usuarios_formatos')
@@ -74,6 +130,23 @@ class AdminController extends Controller
             'materiales',
             'ticketsRecientes',
             'formatosPorTipo',
+            'tiposFormato',
+            'totalFormatos',
+            'etiquetasFormato',
+            'datosFormato',
+            'coloresFormato',
+            'anioMin',
+            'ticketsPorMes',
+            'ticketsActuales',
+            'ticketsAnteriores',
+            'ticketsAnio',
+            'ticketsAnioAnterior',
+            'ticketsMes',
+            'ticketsMesAnterior',
+            'ticketsMismoMesAnterior',
+            'anio',
+            'mes',
+            'mesReferencia',
             'usuariosFormatos',
             'maxServicios'
         ));

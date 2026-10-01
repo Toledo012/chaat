@@ -169,7 +169,7 @@
                         <div class="modal-body p-4">
                             <div class="mb-3">
                                 <label class="form-label small fw-bold text-body-secondary text-uppercase">Nombre *</label>
-                                <input type="text" name="nombre" class="form-control shadow-sm" required maxlength="50">
+                                <input type="text" name="nombre" class="form-control shadow-sm" required maxlength="300">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label small fw-bold text-body-secondary text-uppercase">Descripción</label>
