@@ -1,0 +1,39 @@
+# MODO HTTPS: se activa solo cuando existe /etc/letsencrypt/live/${DOMAIN}/
+map $scheme $fcgi_https { https on; default ""; }
+
+# HTTP → HTTPS (excepto el reto de Let's Encrypt)
+server {
+    listen 80 default_server;
+    server_name ${DOMAIN} www.${DOMAIN} _;
+
+    location /.well-known/acme-challenge/ { root /var/www/certbot; }
+    location = /up { return 200 "ok\n"; }   # healthcheck interno
+    location / { return 301 https://${DOMAIN}$request_uri; }
+}
+
+# www → dominio principal
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name www.${DOMAIN};
+    ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+    return 301 https://${DOMAIN}$request_uri;
+}
+
+server {
+    listen 443 ssl default_server;
+    http2 on;
+    server_name ${DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    include /etc/nginx/snippets/laravel-common.conf;
+}

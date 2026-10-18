@@ -1,0 +1,56 @@
+# Dependencias y builds (se generan dentro de la imagen)
+vendor/
+node_modules/
+public/build/
+public/hot
+public/storage
+
+# Secretos — NUNCA dentro de la imagen
+.env
+.env.*
+!.env.example
+!.env.docker.example
+
+# Dumps de base de datos
+*.sql
+*.sql.gz
+docker/mysql/init/
+
+# Logs / cache / runtime
+storage/logs/*
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/framework/testing/*
+storage/pail
+bootstrap/cache/*.php
+
+# Tests, herramientas y archivos sueltos
+tests/
+phpunit.xml
+.phpunit.cache/
+.phpunit.result.cache
+_ide_helper.php
+tmp_*.php
+app-http*.txt
+app-models.txt
+boostrap-cache.txt
+middleware.txt
+routers.txt
+nixpacks.toml
+
+# Git / IDEs
+.git/
+.gitignore
+.gitattributes
+.editorconfig
+.idea/
+.vscode/
+*.log
+
+# Docker
+Dockerfile*
+compose*.yaml
+docker-compose*.yml
+.dockerignore
+README-Docker.md

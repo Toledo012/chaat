@@ -1,0 +1,86 @@
+# Producción — SEMAHN Tickets (https://semahnchiapas.com.mx)
+# Uso:  cp .env.docker.example .env  →  editar  →  docker compose up -d --build
+name: semahn
+
+services:
+  app:
+    build:
+      context: .
+      target: app
+    image: semahn-app:prod
+    restart: always
+    env_file: .env
+    volumes:
+      - storage:/var/www/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [internal]
+
+  web:
+    build:
+      context: .
+      target: web
+    image: semahn-web:prod
+    restart: always
+    environment:
+      DOMAIN: ${DOMAIN:-}
+      NGINX_ENVSUBST_FILTER: DOMAIN
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - certbot-www:/var/www/certbot:ro
+      - letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - app
+    healthcheck:
+      # HTTPS real (/up de Laravel) si hay certificado; si no, HTTP
+      test: ["CMD-SHELL", "curl -fsk -o /dev/null https://127.0.0.1/up || curl -fs -o /dev/null http://127.0.0.1/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks: [internal]
+
+  # Renueva el certificado cada 12 h (Let's Encrypt dura 90 días)
+  certbot:
+    image: certbot/certbot:v3.0.1
+    restart: always
+    volumes:
+      - certbot-www:/var/www/certbot
+      - letsencrypt:/etc/letsencrypt
+    entrypoint: ["/bin/sh", "-c", "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done"]
+    networks: [internal]
+
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      TZ: America/Mexico_City
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    # SIN "ports": la base solo es accesible desde la red interna de Docker.
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    networks: [internal]
+
+volumes:
+  dbdata:
+  storage:
+  certbot-www:
+  letsencrypt:
+
+networks:
+  internal:
+    driver: bridge
