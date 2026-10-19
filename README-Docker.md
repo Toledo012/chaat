@@ -1,12 +1,27 @@
 # SEMAHN Tickets — Docker (producción)
 
-Stack: Laravel 12 · PHP 8.4-FPM · Nginx 1.27 · MySQL 8.0 · Let's Encrypt · assets Vite compilados en la imagen.
-Producción: https://semahnchiapas.com.mx
+Stack: Laravel 12 · PHP 8.4-FPM · Nginx 1.27 · MySQL 8.0 · Caddy (proxy + HTTPS) · assets Vite en la imagen.
+Producción: https://semahnchiapas.com.mx/servicios
 
 ```
-Internet :80/:443 → web (Nginx + TLS) → app (PHP-FPM :9000) → db (MySQL, solo red interna)
-                     certbot (renueva el certificado cada 12 h)
+Internet :80/:443 → Caddy (/var/www/proxy, HTTPS automático, compartido por todos los sistemas)
+                      └─ red "proxy" → web (Nginx) → app (PHP-FPM) → db (MySQL, red interna)
 ```
+
+## 0. Proxy compartido (una sola vez por VPS)
+
+```bash
+cp -r /var/www/semahn/docker/proxy /var/www/proxy
+cd /var/www/proxy
+cp .env.example .env && nano .env      # ACME_EMAIL=tu correo
+docker compose up -d                   # crea la red "proxy"
+```
+Requisito: el registro `@` (y `www`) del dominio apunta a la IP del VPS.
+
+Agregar otro sistema en `/otro`: copia el bloque de ejemplo del `Caddyfile` →
+`docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile`.
+En su `.env`: `APP_URL`/`ASSET_URL` con `/otro`, `SESSION_PATH=/otro` y un `SESSION_COOKIE` propio.
+En sus vistas, nada de rutas escritas a mano (`'/admin/...'`): usar `route()`, `url()` o un `BASE` desde `url('/')`.
 
 ## Primer despliegue
 
@@ -32,17 +47,6 @@ docker compose logs -f
 
 Si el dump trae `CREATE DATABASE` / `USE ...` con otro nombre, quítalas o deja que coincida con `DB_DATABASE`.
 Si la base es nueva (sin dump): `docker compose exec app php artisan migrate --force`.
-
-## HTTPS (una sola vez)
-
-Sin certificado, Nginx arranca solo en HTTP. Con el registro A del dominio apuntando al VPS:
-
-```bash
-./scripts/init-ssl.sh --staging   # prueba (opcional)
-./scripts/init-ssl.sh             # certificado real → Nginx cambia solo a HTTPS
-```
-Incluye `www.` automáticamente si ese registro también apunta al VPS. La renovación es automática.
-Con `SESSION_SECURE_COOKIE=true` el login solo funciona por HTTPS.
 
 ## Actualizar el sistema (nuevo commit)
 

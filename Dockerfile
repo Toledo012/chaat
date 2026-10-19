@@ -62,11 +62,5 @@ CMD ["php-fpm"]
 # 4) Nginx (solo sirve /public y pasa PHP a app)
 ############################
 FROM nginx:1.27-alpine AS web
-RUN apk add --no-cache curl
-COPY docker/nginx/laravel-common.conf  /etc/nginx/snippets/laravel-common.conf
-COPY docker/nginx/default.conf         /etc/nginx/http-only.conf
-COPY docker/nginx/https.conf.template  /etc/nginx/templates/default.conf.template
-COPY docker/nginx/40-ssl-mode.sh       /docker-entrypoint.d/40-ssl-mode.sh
-RUN chmod +x /docker-entrypoint.d/40-ssl-mode.sh \
- && cp /etc/nginx/http-only.conf /etc/nginx/conf.d/default.conf
+COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=app /var/www/public /var/www/public

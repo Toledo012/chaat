@@ -198,6 +198,8 @@
 
 @section('scripts')
     <script>
+        // Raíz del sistema (incluye /servicios si corre en carpeta) — viene de APP_URL
+        const BASE = @json(rtrim(url('/'), '/'));
         const CSRF_DEPTO = '{{ csrf_token() }}';
 
         // ── Helpers ───────────────────────────────────────────────────────────────
@@ -298,7 +300,7 @@
                 const bloqueado  = ['completado','cancelado'].includes(t.estado);
                 const editable   = puedeEditar(t.estado); // solo "nuevo"
                 const tipo       = String(t.tipo_formato ?? '').toLowerCase();
-                const pdfUrl     = t.id_servicio ? `/admin/formatos/${tipo}/${t.id_servicio}/pdf` : '';
+                const pdfUrl     = t.id_servicio ? `${BASE}/admin/formatos/${tipo}/${t.id_servicio}/pdf` : '';
 
                 return `
             {{-- Modal gestionar --}}
@@ -353,7 +355,7 @@
                                     </div>
                                 ` : ''}
 
-                                <form method="POST" action="/departamento/tickets/${t.id_ticket}/cancelar">
+                                <form method="POST" action="${BASE}/departamento/tickets/${t.id_ticket}/cancelar">
                                     <input type="hidden" name="_token" value="${CSRF_DEPTO}">
                                     <button class="btn btn-outline-danger btn-sm w-100 fw-bold border-2"
                                             onclick="return confirm('¿Confirmar cancelación de la solicitud?')"
@@ -376,7 +378,7 @@
                                 <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2"></i>Editar Ticket #${escD(t.folio)}</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
-                            <form method="POST" action="/departamento/tickets/${t.id_ticket}">
+                            <form method="POST" action="${BASE}/departamento/tickets/${t.id_ticket}">
                                 <input type="hidden" name="_token" value="${CSRF_DEPTO}">
                                 <input type="hidden" name="_method" value="PUT">
                                 <div class="modal-body p-4 text-start">

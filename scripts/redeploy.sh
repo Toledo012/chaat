@@ -83,7 +83,7 @@ if [ -n "$DOMAIN" ]; then
   if curl -fsS -m 10 -o /dev/null "https://$DOMAIN/up"; then
     echo "https://$DOMAIN → OK"
   else
-    echo "AVISO: https://$DOMAIN/up no respondió (¿ya corriste ./scripts/init-ssl.sh?)"
+    echo "AVISO: https://$DOMAIN/up no respondió (¿está arriba el proxy en /var/www/proxy?)"
   fi
 fi
 

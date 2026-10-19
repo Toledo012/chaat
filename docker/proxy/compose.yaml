@@ -1,0 +1,28 @@
+# Proxy compartido del VPS — único contenedor con puertos públicos.
+# Vive FUERA de cada sistema:  cp -r docker/proxy /var/www/proxy
+# Cada sistema se conecta a la red "proxy" y se agrega en el Caddyfile.
+name: proxy
+
+services:
+  caddy:
+    image: caddy:2.8-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data        # certificados (no borrar)
+      - caddy_config:/config
+    networks: [proxy]
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  proxy:
+    name: proxy

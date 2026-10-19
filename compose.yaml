@@ -1,4 +1,5 @@
-# Producción — SEMAHN Tickets (https://semahnchiapas.com.mx)
+# Producción — SEMAHN Tickets (https://semahnchiapas.com.mx/servicios)
+# Requiere el proxy compartido arriba primero (docker/proxy → /var/www/proxy).
 # Uso:  cp .env.docker.example .env  →  editar  →  docker compose up -d --build
 name: semahn
 
@@ -23,35 +24,19 @@ services:
       target: web
     image: semahn-web:prod
     restart: always
-    environment:
-      DOMAIN: ${DOMAIN:-}
-      NGINX_ENVSUBST_FILTER: DOMAIN
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - certbot-www:/var/www/certbot:ro
-      - letsencrypt:/etc/letsencrypt:ro
+    # SIN "ports": solo Caddy (proxy) recibe tráfico de internet.
     depends_on:
       - app
     healthcheck:
-      # HTTPS real (/up de Laravel) si hay certificado; si no, HTTP
-      test: ["CMD-SHELL", "curl -fsk -o /dev/null https://127.0.0.1/up || curl -fs -o /dev/null http://127.0.0.1/up"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/up >/dev/null || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 20s
-    networks: [internal]
-
-  # Renueva el certificado cada 12 h (Let's Encrypt dura 90 días)
-  certbot:
-    image: certbot/certbot:v3.0.1
-    restart: always
-    volumes:
-      - certbot-www:/var/www/certbot
-      - letsencrypt:/etc/letsencrypt
-    entrypoint: ["/bin/sh", "-c", "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done"]
-    networks: [internal]
+    networks:
+      internal:
+      proxy:
+        aliases: [semahn-tickets]   # Caddy lo encuentra con este nombre
 
   db:
     image: mysql:8.0
@@ -78,9 +63,9 @@ services:
 volumes:
   dbdata:
   storage:
-  certbot-www:
-  letsencrypt:
 
 networks:
   internal:
     driver: bridge
+  proxy:
+    external: true   # la crea el proxy compartido

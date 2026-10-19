@@ -1,0 +1,52 @@
+# ============================================================
+#  Proxy del VPS SEMAHN — un sistema por carpeta del dominio.
+#  Caddy saca y renueva el HTTPS solo (Let's Encrypt).
+#  Después de editar:
+#    docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+#
+#  Requisito DNS: el registro "@" de semahnchiapas.com.mx → 187.127.254.154
+# ============================================================
+{
+	email {$ACME_EMAIL}
+}
+
+(seguridad) {
+	encode gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+}
+
+semahnchiapas.com.mx {
+	import seguridad
+
+	# --- Sistema de tickets: /servicios ---
+	# handle_path quita "/servicios" antes de pasar la petición;
+	# Laravel arma sus URLs con APP_URL (que ya incluye /servicios).
+	redir /servicios /servicios/ 308
+	handle_path /servicios/* {
+		reverse_proxy semahn-tickets:80 {
+			header_up X-Forwarded-Prefix /servicios
+		}
+	}
+
+	# --- Próximo sistema (ejemplo) ---
+	# redir /otro /otro/ 308
+	# handle_path /otro/* {
+	# 	reverse_proxy otro-web:80 {
+	# 		header_up X-Forwarded-Prefix /otro
+	# 	}
+	# }
+
+	# --- Raíz del dominio: sin redirección, solo aviso ---
+	handle {
+		header Content-Type "text/html; charset=utf-8"
+		respond `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SEMAHN</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:system-ui,sans-serif;background:#f6f4f1;color:#333}</style></head><body><p>Sitio en construcción</p></body></html>` 200
+	}
+}
+
+# www → dominio principal (conserva la ruta, p. ej. www.../servicios)
+www.semahnchiapas.com.mx {
+	redir https://semahnchiapas.com.mx{uri} 308
+}

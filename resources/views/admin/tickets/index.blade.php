@@ -297,6 +297,8 @@
     <script>
         const TECNICOS     = @json($tecnicos->map(fn($t) => ['id_cuenta' => $t->id_cuenta, 'username' => $t->username])->values());
         const DEPARTAMENTOS = @json($departamentos->map(fn($d) => ['id_departamento' => $d->id_departamento, 'nombre' => $d->nombre])->values());
+        // Raíz del sistema (incluye /servicios si corre en carpeta) — viene de APP_URL
+        const BASE = @json(rtrim(url('/'), '/'));
         const CSRF          = '{{ csrf_token() }}';
 
         // ── Helpers ──────────────────────────────────────────────────────────────
@@ -431,8 +433,8 @@
                 const bloqueado   = ['cancelado','completado'].includes(t.estado);
                 const dis         = bloqueado ? 'disabled' : '';
                 const tipo        = String(t.tipo_formato ?? '').toLowerCase();
-                const prevUrl     = t.id_servicio ? `/admin/formatos/${tipo}/${t.id_servicio}/preview` : '';
-                const pdfUrl      = t.id_servicio ? `/admin/formatos/${tipo}/${t.id_servicio}/pdf` : '';
+                const prevUrl     = t.id_servicio ? `${BASE}/admin/formatos/${tipo}/${t.id_servicio}/preview` : '';
+                const pdfUrl      = t.id_servicio ? `${BASE}/admin/formatos/${tipo}/${t.id_servicio}/pdf` : '';
 
                 return `
             {{-- Modal gestionar --}}
@@ -465,7 +467,7 @@
                                 </div>
                             </div>
                             <hr class="my-4">
-                            <form method="POST" action="/admin/tickets/${t.id_ticket}/asignar" class="mb-4">
+                            <form method="POST" action="${BASE}/admin/tickets/${t.id_ticket}/asignar" class="mb-4">
                                 <input type="hidden" name="_token" value="${CSRF}">
                                 <label class="form-label small fw-bold text-uppercase text-body-secondary">Asignar Responsable</label>
                                 <div class="input-group input-group-sm">
@@ -478,11 +480,11 @@
                                         data-bs-toggle="modal" data-bs-target="#modalEditarInfoAdmin${t.id_ticket}">
                                     <i class="fas fa-edit me-1"></i> Editar Información del Ticket
                                 </button>
-                                <a href="/admin/tickets/${t.id_ticket}/completar"
+                                <a href="${BASE}/admin/tickets/${t.id_ticket}/completar"
                                    class="btn btn-success py-2 shadow-sm fw-bold ${bloqueado ? 'disabled' : ''}">
                                     <i class="fas fa-check-circle me-1"></i> Completar Ticket
                                 </a>
-                                <form method="POST" action="/admin/tickets/${t.id_ticket}/cancelar">
+                                <form method="POST" action="${BASE}/admin/tickets/${t.id_ticket}/cancelar">
                                     <input type="hidden" name="_token" value="${CSRF}">
                                     <button class="btn btn-outline-danger btn-sm w-100 fw-bold border-2"
                                             onclick="return confirm('¿Confirmar cancelación definitiva?')" ${dis}>
@@ -511,7 +513,7 @@
                             <h6 class="modal-title fw-bold"><i class="fas fa-edit me-2"></i>Editar Ticket #${esc(t.folio)}</h6>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
-                        <form method="POST" action="/admin/tickets/${t.id_ticket}">
+                        <form method="POST" action="${BASE}/admin/tickets/${t.id_ticket}">
                             <input type="hidden" name="_token" value="${CSRF}">
                             <input type="hidden" name="_method" value="PUT">
                             <div class="modal-body p-4 text-start">

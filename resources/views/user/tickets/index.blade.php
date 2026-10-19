@@ -305,6 +305,8 @@
 @section('scripts')
     <script>
         const DEPARTAMENTOS_USER = @json($departamentos->map(fn($d) => ['id_departamento' => $d->id_departamento, 'nombre' => $d->nombre])->values());
+        // Raíz del sistema (incluye /servicios si corre en carpeta) — viene de APP_URL
+        const BASE = @json(rtrim(url('/'), '/'));
         const CSRF_USER = '{{ csrf_token() }}';
 
         // ── Helpers ───────────────────────────────────────────────────────────────
@@ -450,7 +452,7 @@
                     </div>
                 </td>
                 <td class="text-end pe-4">
-                    <form method="POST" action="/user/tickets/${t.id_ticket}/tomar">
+                    <form method="POST" action="${BASE}/user/tickets/${t.id_ticket}/tomar">
                         <input type="hidden" name="_token" value="${CSRF_USER}">
                         <button class="btn btn-sm btn-success rounded-pill px-3 fw-bold shadow-sm">
                             Tomar <i class="fas fa-hand-paper ms-1"></i>
@@ -518,8 +520,8 @@
             contenedor.innerHTML = (misTickets || []).map(t => {
                 const bloqueado  = ['completado','cancelado'].includes(t.estado);
                 const tipo       = String(t.tipo_formato ?? '').toLowerCase();
-                const prevUrl    = t.id_servicio ? `/admin/formatos/${tipo}/${t.id_servicio}/preview` : '';
-                const pdfUrl     = t.id_servicio ? `/admin/formatos/${tipo}/${t.id_servicio}/pdf` : '';
+                const prevUrl    = t.id_servicio ? `${BASE}/admin/formatos/${tipo}/${t.id_servicio}/preview` : '';
+                const pdfUrl     = t.id_servicio ? `${BASE}/admin/formatos/${tipo}/${t.id_servicio}/pdf` : '';
 
                 return `
 
@@ -564,7 +566,7 @@
                                             data-bs-toggle="modal" data-bs-target="#modalEditarTicketUser${t.id_ticket}">
                                         <i class="fas fa-edit me-2"></i> Editar Información
                                     </button>
-                                    <a href="/user/tickets/${t.id_ticket}/completar" class="btn btn-primary py-2 fw-bold shadow-sm">
+                                    <a href="${BASE}/user/tickets/${t.id_ticket}/completar" class="btn btn-primary py-2 fw-bold shadow-sm">
                                         <i class="fas fa-clipboard-check me-2"></i> Completar y Generar Formato
                                     </a>
                                 ` : ''}
@@ -595,7 +597,7 @@
                                 <h6 class="modal-title fw-bold"><i class="fas fa-edit me-2"></i>Editar Ticket #${escU(t.folio)}</h6>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
-                            <form method="POST" action="/user/tickets/${t.id_ticket}">
+                            <form method="POST" action="${BASE}/user/tickets/${t.id_ticket}">
                                 <input type="hidden" name="_token" value="${CSRF_USER}">
                                 <input type="hidden" name="_method" value="PUT">
                                 <div class="modal-body p-4 text-start">
