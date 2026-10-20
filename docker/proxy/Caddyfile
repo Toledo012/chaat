@@ -31,6 +31,12 @@ semahnchiapas.com.mx {
 		}
 	}
 
+	# Navegadores que piden /favicon.ico en la raíz → el del sistema de tickets
+	handle /favicon.ico {
+		rewrite * /favicon.ico
+		reverse_proxy semahn-tickets:80
+	}
+
 	# --- Próximo sistema (ejemplo) ---
 	# redir /otro /otro/ 308
 	# handle_path /otro/* {
